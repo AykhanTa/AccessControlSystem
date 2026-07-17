@@ -1,0 +1,121 @@
+@model ReportsViewModel
+@{
+    ViewData["Title"] = "Hesabatlar";
+    ViewData["Heading"] = "Hesabat arxivi";
+    ViewData["Active"] = "reports";
+    var r = Model.Report;
+
+    string PersonIcon() => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\"/><circle cx=\"12\" cy=\"7\" r=\"4\"/></svg>";
+}
+
+@functions {
+    Microsoft.AspNetCore.Html.IHtmlContent ListRows(List<AccessControlSystem.Application.DTOs.LabelCount> pairs)
+    {
+        if (pairs is null || pairs.Count == 0)
+            return new Microsoft.AspNetCore.Html.HtmlString("<div class=\"rrow\"><span class=\"rrow-lbl\">Məlumat yoxdur</span></div>");
+        var sb = new System.Text.StringBuilder();
+        foreach (var p in pairs)
+        {
+            var lbl = System.Text.Encodings.Web.HtmlEncoder.Default.Encode(p.Label);
+            sb.Append($"<div class=\"rrow\"><span class=\"rrow-lbl\">{lbl}</span><span class=\"rrow-val\">{p.Count}</span></div>");
+        }
+        return new Microsoft.AspNetCore.Html.HtmlString(sb.ToString());
+    }
+}
+
+<div class="page-head">
+  <div>
+    <p>İllər üzrə qonaq, giriş-çıxış, kart və struktur göstəriciləri.</p>
+  </div>
+  <button class="btn btn-ghost no-print" id="btnPrintReport" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Hesabatı çap et
+  </button>
+</div>
+
+<!-- İllik qovluqlar -->
+<div class="report-block">
+  <div class="rsection-title">İLLİK QOVLUQLAR</div>
+  <div class="year-folders">
+    @if (!Model.Years.Any())
+    {
+      <div class="year-folder active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <div><b>@Model.SelectedYear</b><span>İllik arxiv</span></div>
+      </div>
+    }
+    @foreach (var y in Model.Years)
+    {
+      <a class="year-folder @(y == Model.SelectedYear ? "active" : "")" href="/Reports?year=@y" style="text-decoration:none;color:inherit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <div><b>@y</b><span>İllik arxiv</span></div>
+      </a>
+    }
+  </div>
+</div>
+
+<!-- Yekun başlıq -->
+<div class="report-block report-header">
+  <span class="rh-ico">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+  </span>
+  <div>
+    <b>@Model.SelectedYear illik yekun hesabatı</b>
+    <span>01.01.@Model.SelectedYear – 31.12.@Model.SelectedYear</span>
+  </div>
+</div>
+
+<!-- Göstəricilər -->
+<div class="report-stats">
+  <div class="rstat"><div class="rstat-lbl">Ümumi ziyarət</div><div class="rstat-num">@r.TotalVisits</div></div>
+  <div class="rstat"><div class="rstat-lbl">Unikal qonaq</div><div class="rstat-num">@r.UniqueGuests</div></div>
+  <div class="rstat"><div class="rstat-lbl">Qeydə alınmış giriş</div><div class="rstat-num">@r.Entries</div></div>
+  <div class="rstat"><div class="rstat-lbl">Qeydə alınmış çıxış</div><div class="rstat-num">@r.Exits</div></div>
+  <div class="rstat"><div class="rstat-lbl">Kart istifadəsi</div><div class="rstat-num">@r.CardUse</div></div>
+  <div class="rstat"><div class="rstat-lbl">QR istifadəsi</div><div class="rstat-num">@r.QrUse</div></div>
+  <div class="rstat"><div class="rstat-lbl">Hazırda binada</div><div class="rstat-num">@r.Inside</div></div>
+  <div class="rstat"><div class="rstat-lbl">Gecikmiş çıxış</div><div class="rstat-num">@r.Late</div></div>
+  <div class="rstat"><div class="rstat-lbl">Nəzarət göstəricisi</div><div class="rstat-num">@r.ExitRatePercent%</div></div>
+  <div class="rstat"><div class="rstat-lbl">Orta qalma müddəti</div><div class="rstat-num">@r.AvgStayMinutes <small>dəq</small></div></div>
+</div>
+
+<!-- Struktur hesabatları -->
+<div class="report-grid">
+  <div class="rpanel">
+    <h3>Aylıq qeydiyyat jurnalı</h3>
+    @ListRows(r.Months)
+  </div>
+  <div class="rpanel">
+    <h3>Gəliş məqsədləri üzrə</h3>
+    @ListRows(r.Purposes)
+  </div>
+  <div class="rpanel">
+    <h3>Qəbul edən şəxslər üzrə</h3>
+    @ListRows(r.Hosts)
+  </div>
+  <div class="rpanel">
+    <h3>Ərazilər üzrə</h3>
+    @ListRows(r.Areas)
+  </div>
+  <div class="rpanel">
+    <h3>Kartların istifadə tezliyi</h3>
+    @ListRows(r.Cards)
+  </div>
+  <div class="rpanel">
+    <h3>Nəzarət göstəricisi</h3>
+    <div class="gauge">
+      <div class="gauge-cap">
+        <span class="person-ico">@Html.Raw(PersonIcon())</span>
+        <div><b>Çıxışı qeydə alınmış ziyarətlərin payı</b></div>
+      </div>
+      <div class="gauge-num">@r.ExitRatePercent%</div>
+      <div class="gauge-bar"><span style="width:@(r.ExitRatePercent)%"></span></div>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+  <script>
+    document.getElementById('btnPrintReport')?.addEventListener('click', function () { window.print(); });
+  </script>
+}

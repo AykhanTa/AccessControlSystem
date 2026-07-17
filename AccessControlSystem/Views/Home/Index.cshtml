@@ -1,0 +1,104 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Ana səhifə";
+    ViewData["Heading"] = "Ana səhifə";
+    ViewData["Active"] = "dashboard";
+    var s = Model.Stats;
+}
+
+<!-- Stat cards -->
+<section class="stats">
+  <div class="stat">
+    <div><div class="lbl">Bu gün qeydə alınan</div><div class="num">@s.TodayRegistered</div></div>
+    <div class="ico blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+  </div>
+  <div class="stat">
+    <div><div class="lbl">Hazırda binada</div><div class="num">@s.CurrentlyIn</div></div>
+    <div class="ico green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg></div>
+  </div>
+  <div class="stat">
+    <div><div class="lbl">Bu gün çıxış edən</div><div class="num">@s.TodayExited</div></div>
+    <div class="ico indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+  </div>
+  <div class="stat danger">
+    <div><div class="lbl">Gecikmiş çıxış</div><div class="num">@s.LateExits</div></div>
+    <div class="ico red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+  </div>
+  <div class="stat">
+    <div><div class="lbl">İstifadəyə hazır kart</div><div class="num">@s.FreeCards</div></div>
+    <div class="ico purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+  </div>
+  <div class="stat">
+    <div><div class="lbl">Aktiv sistem sessiyası</div><div class="num">@s.ActiveSessions</div></div>
+    <div class="ico teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg></div>
+  </div>
+</section>
+
+<!-- Son qonaqlar -->
+<section class="panel">
+  <div class="panel-head">
+    <h3>Son qonaqlar</h3>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="dashSearch" type="text" placeholder="Axtarış..." />
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Ad Soyad</th><th>Qəbul edən</th><th>Gəliş vaxtı</th>
+          <th>Ərazi</th><th>Məqsəd</th><th>Status</th><th>Əməliyyatlar</th>
+        </tr>
+      </thead>
+      <tbody id="guestRows">
+        @foreach (var g in Model.RecentGuests)
+        {
+          <tr data-search="@((g.Name + " " + g.Doc + " " + g.Host).ToLower())">
+            <td>
+              <div class="who-cell">
+                @ViewHelpers.Avatar(g.Photo, g.Name)
+                <div class="g-name"><b>@g.Name</b><span>@g.Doc</span></div>
+              </div>
+            </td>
+            <td class="cell-sub">@g.Host</td>
+            <td class="cell-sub">@g.Arrival</td>
+            <td class="cell-sub cell-multi">@g.Area</td>
+            <td class="cell-sub">@g.Purpose</td>
+            <td>@ViewHelpers.StatusChip(g.Status)</td>
+            <td>
+              <div class="row-actions">
+                <button class="act-btn view" title="Buraxılış sənədinə bax" data-id="@g.Id">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@section Scripts {
+  <script>
+    var RECENT = @Html.Raw(Json.Serialize(Model.RecentGuests));
+    document.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('guestRows').addEventListener('click', function (e) {
+        var btn = e.target.closest('.act-btn.view');
+        if (!btn) return;
+        var g = RECENT.find(function (x) { return String(x.id) === btn.dataset.id; });
+        if (g) openGuestPanel(g);
+      });
+      var search = document.getElementById('dashSearch');
+      if (search) {
+        search.addEventListener('input', function (e) {
+          var q = e.target.value.trim().toLowerCase();
+          document.querySelectorAll('#guestRows tr').forEach(function (tr) {
+            tr.style.display = (tr.dataset.search || '').includes(q) ? '' : 'none';
+          });
+        });
+      }
+    });
+  </script>
+}

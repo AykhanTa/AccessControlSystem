@@ -1,0 +1,103 @@
+@model LogsViewModel
+@{
+    ViewData["Title"] = "Sistem Loqları";
+    ViewData["Heading"] = "Sistem Loqları";
+    ViewData["Active"] = "logs";
+
+    int cur = Model.Page, tp = Model.TotalPages;
+    int start = Math.Max(1, cur - 2);
+    int end = Math.Min(tp, cur + 2);
+}
+
+<section class="panel">
+  <div class="panel-head">
+    <div>
+      <h3>Sistem logları</h3>
+      <div class="cell-sub">
+        @Model.Total qeyd@(string.IsNullOrWhiteSpace(Model.Query) ? "" : $" · \"{Model.Query}\" axtarışı")
+        @if (!Model.PrintMode && Model.TotalPages > 1)
+        {
+          <text> · səhifə @Model.Page / @Model.TotalPages</text>
+        }
+      </div>
+    </div>
+
+    @if (!Model.PrintMode)
+    {
+      <div style="display:flex; align-items:center; gap:12px;" class="no-print">
+        <form method="get" class="search" style="min-width:300px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" name="q" value="@Model.Query" placeholder="Loqda axtar" />
+          <button type="submit" style="position:absolute;left:-9999px" aria-label="Axtar">Axtar</button>
+        </form>
+        <a class="btn btn-ghost" href="@Url.Action("Index", new { q = Model.Query, print = 1 })" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Çap et
+        </a>
+      </div>
+    }
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Tarix və vaxt</th>
+          <th>Əməliyyat</th>
+          <th>Məzmun</th>
+          <th>İcra edən</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (!Model.Logs.Any())
+        {
+          <tr><td colspan="4" style="text-align:center;color:#9aa4b3;padding:20px">
+            @(string.IsNullOrWhiteSpace(Model.Query) ? "Hələ loq qeydi yoxdur." : "Axtarışa uyğun qeyd tapılmadı.")
+          </td></tr>
+        }
+        @foreach (var l in Model.Logs)
+        {
+          <tr>
+            <td class="cell-sub">@l.DateTime</td>
+            <td><span class="log-action">@l.Action</span></td>
+            <td class="cell-sub">@l.Content</td>
+            <td class="cell-sub">@l.PerformedBy</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (!Model.PrintMode && Model.TotalPages > 1)
+  {
+    <nav class="pager no-print">
+      <a class="@(cur <= 1 ? "disabled" : "")" href="@Url.Action("Index", new { q = Model.Query, page = cur - 1 })">‹ Əvvəlki</a>
+
+      @if (start > 1)
+      {
+        <a href="@Url.Action("Index", new { q = Model.Query, page = 1 })">1</a>
+        @if (start > 2) { <span class="gap">…</span> }
+      }
+
+      @for (int p = start; p <= end; p++)
+      {
+        <a class="@(p == cur ? "active" : "")" href="@Url.Action("Index", new { q = Model.Query, page = p })">@p</a>
+      }
+
+      @if (end < tp)
+      {
+        @if (end < tp - 1) { <span class="gap">…</span> }
+        <a href="@Url.Action("Index", new { q = Model.Query, page = tp })">@tp</a>
+      }
+
+      <a class="@(cur >= tp ? "disabled" : "")" href="@Url.Action("Index", new { q = Model.Query, page = cur + 1 })">Növbəti ›</a>
+    </nav>
+  }
+</section>
+
+@if (Model.PrintMode)
+{
+  <script>
+    window.addEventListener('load', function () { setTimeout(function () { window.print(); }, 300); });
+  </script>
+}

@@ -1,0 +1,93 @@
+@model RolesViewModel
+@{
+    ViewData["Title"] = "Rollar";
+    ViewData["Heading"] = "Rollar";
+    ViewData["Active"] = "roles";
+    var canAdd = ViewData["CanAdd"] as bool? ?? false;
+    var canEdit = ViewData["CanEdit"] as bool? ?? false;
+    var canDelete = ViewData["CanDelete"] as bool? ?? false;
+}
+
+@functions {
+    // name = bölmə üzrə (controller bunu oxuyur); id = rol üzrə unikal (label bağlantısı üçün)
+    Microsoft.AspNetCore.Html.IHtmlContent PermCell(long roleId, long sid, string perm, bool on, bool locked)
+    {
+        var name = $"p_{sid}_{perm}";
+        var id = $"r{roleId}_{name}";
+        var chk = on ? "checked" : "";
+        var dis = locked ? "disabled" : "";
+        return new Microsoft.AspNetCore.Html.HtmlString(
+            $"<input type=\"checkbox\" class=\"perm-toggle\" id=\"{id}\" name=\"{name}\" {chk} {dis} /><label for=\"{id}\"></label>");
+    }
+}
+
+<div class="page-head">
+  <div>
+    <p>Yeni rol yaradın, səhifə və əməliyyat səviyyəsində səlahiyyət verin.</p>
+  </div>
+</div>
+
+<!-- Yeni rol -->
+@if (canAdd)
+{
+  <section class="panel">
+    <form asp-action="Create" method="post" class="role-add">
+      <input name="name" type="text" placeholder="Rolun adı" required />
+      <input name="description" type="text" placeholder="Təsvir" />
+      <button class="btn btn-primary" type="submit">Yeni rol</button>
+    </form>
+  </section>
+}
+
+@foreach (var role in Model.Roles)
+{
+  <section class="panel role-card">
+    <div class="role-card-head">
+      <div>
+        <h3>@role.Name</h3>
+        <span>@role.Description · @role.UserCount istifadəçi@(role.IsSystem ? " · bütün icazələr sabit" : "")</span>
+      </div>
+      @if (!role.IsSystem && canDelete)
+      {
+        <form asp-action="Delete" method="post"
+              onsubmit="return confirm('&quot;@role.Name&quot; rolunu silmək istəyirsiniz?');">
+          <input type="hidden" name="id" value="@role.Id" />
+          <button class="btn-sm danger" type="submit">Rolu sil</button>
+        </form>
+      }
+    </div>
+
+    <form asp-action="SavePermissions" method="post">
+      <input type="hidden" name="roleId" value="@role.Id" />
+      @foreach (var p in role.Permissions)
+      {
+        <input type="hidden" name="sectionIds" value="@p.SectionId" />
+      }
+      <div class="table-wrap">
+        <table class="role-table">
+          <thead>
+            <tr><th>Bölmə</th><th>Baxış</th><th>Əlavə</th><th>Redaktə</th><th>Silmə</th></tr>
+          </thead>
+          <tbody>
+            @foreach (var p in role.Permissions)
+            {
+              <tr>
+                <td class="sec-name">@p.SectionName</td>
+                <td>@PermCell(role.Id, p.SectionId, "view", p.CanView, role.IsSystem || !canEdit)</td>
+                <td>@PermCell(role.Id, p.SectionId, "add", p.CanAdd, role.IsSystem || !canEdit)</td>
+                <td>@PermCell(role.Id, p.SectionId, "edit", p.CanEdit, role.IsSystem || !canEdit)</td>
+                <td>@PermCell(role.Id, p.SectionId, "delete", p.CanDelete, role.IsSystem || !canEdit)</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (!role.IsSystem && canEdit)
+      {
+        <div style="text-align:right;margin-top:12px">
+          <button class="btn btn-dark" type="submit">İcazələri yadda saxla</button>
+        </div>
+      }
+    </form>
+  </section>
+}

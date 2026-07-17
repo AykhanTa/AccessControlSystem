@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "oIbr9ohy22o=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Application\\AccessControlSystem.Application.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Aykhan Taghizada\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.2\\microsoft.extensions.dependencyinjection.abstractions.8.0.2.nupkg.sha512"
+  ],
+  "logs": []
+}

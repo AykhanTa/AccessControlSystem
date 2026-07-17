@@ -1,0 +1,15 @@
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\bin\Debug\net8.0\AccessControlSystem.Application.deps.json
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\bin\Debug\net8.0\AccessControlSystem.Application.dll
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\bin\Debug\net8.0\AccessControlSystem.Application.pdb
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\bin\Debug\net8.0\AccessControlSystem.Domain.dll
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\bin\Debug\net8.0\AccessControlSystem.Domain.pdb
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.csproj.AssemblyReference.cache
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.AssemblyInfoInputs.cache
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.AssemblyInfo.cs
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.csproj.CoreCompileInputs.cache
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessCo.90F15D36.Up2Date
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.dll
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\refint\AccessControlSystem.Application.dll
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.pdb
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\ref\AccessControlSystem.Application.dll

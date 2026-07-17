@@ -1,0 +1,127 @@
+@model SettingsViewModel
+@{
+    ViewData["Title"] = "Parametrlər";
+    ViewData["Heading"] = "Parametrlər";
+    ViewData["Active"] = "settings";
+    var canAdd = ViewData["CanAdd"] as bool? ?? false;
+    var canEdit = ViewData["CanEdit"] as bool? ?? false;
+    var canDelete = ViewData["CanDelete"] as bool? ?? false;
+}
+
+<div class="page-head">
+  <div>
+    <p>Qəbul edən şəxslər, məqsədlər və ərazilər bazadan idarə olunur.</p>
+  </div>
+</div>
+
+<!-- Qəbul edən şəxslər -->
+<section class="panel">
+  <div class="param-head"><h3>Qəbul edən şəxslər</h3></div>
+  @if (canAdd)
+  {
+    <form asp-action="AddHost" method="post" class="host-add">
+      <input name="firstName" type="text" placeholder="Ad" required />
+      <input name="lastName" type="text" placeholder="Soyad" required />
+      <input name="email" type="email" placeholder="Email" />
+      <input name="phone" type="text" placeholder="Telefon" />
+      <input name="department" type="text" placeholder="Şöbə/vəzifə" />
+      <button class="btn btn-primary" type="submit">Əlavə et</button>
+    </form>
+  }
+
+  <div>
+    @foreach (var h in Model.Hosts)
+    {
+      var fid = $"h{h.Id}";
+      <div class="host-row">
+        <form id="@fid" asp-action="UpdateHost" method="post" style="display:none"><input type="hidden" name="id" value="@h.Id" /></form>
+        <input class="cell-input" form="@fid" name="firstName" value="@h.FirstName" placeholder="Ad" @(canEdit ? "" : "readonly") />
+        <input class="cell-input" form="@fid" name="lastName" value="@h.LastName" placeholder="Soyad" @(canEdit ? "" : "readonly") />
+        <input class="cell-input" form="@fid" name="email" value="@h.Email" placeholder="Email" @(canEdit ? "" : "readonly") />
+        <input class="cell-input" form="@fid" name="phone" value="@h.Phone" placeholder="Telefon" @(canEdit ? "" : "readonly") />
+        <input class="cell-input" form="@fid" name="department" value="@h.Department" placeholder="Şöbə/vəzifə" @(canEdit ? "" : "readonly") />
+        <div class="host-actions">
+          @if (canEdit)
+          {
+            <button class="btn-sm dark" type="submit" form="@fid">Yadda saxla</button>
+            <form asp-action="ToggleHost" method="post" style="display:inline">
+              <input type="hidden" name="id" value="@h.Id" />
+              <button class="btn-sm @(h.IsActive ? "ok" : "muted")" type="submit">@(h.IsActive ? "Aktiv" : "Deaktiv")</button>
+            </form>
+          }
+          @if (canDelete)
+          {
+            <form asp-action="DeleteHost" method="post" style="display:inline"
+                  onsubmit="return confirm('&quot;@h.FirstName @h.LastName&quot; qəbul edəni silinsin?');">
+              <input type="hidden" name="id" value="@h.Id" />
+              <button class="btn-sm danger" type="submit">Sil</button>
+            </form>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</section>
+
+<div class="param-grid">
+  <!-- Giriş əraziləri -->
+  <section class="panel">
+    <div class="param-head"><h3>Giriş əraziləri</h3></div>
+    @if (canAdd)
+    {
+      <form asp-action="AddArea" method="post" class="param-add">
+        <input name="name" type="text" placeholder="Yeni ərazi adı" required />
+        <button class="btn btn-primary" type="submit">Əlavə et</button>
+      </form>
+    }
+    <div>
+      @foreach (var a in Model.Areas)
+      {
+        <div class="param-item">
+          <div class="param-item-info">
+            <b>@a.Name</b>
+            <span>@a.UsageCount ziyarətdə istifadə olunub</span>
+          </div>
+          @if (canDelete)
+          {
+            <form asp-action="DeleteArea" method="post"
+                  onsubmit="return confirm('&quot;@a.Name&quot; ərazisi silinsin?');">
+              <input type="hidden" name="id" value="@a.Id" />
+              <button class="btn-sm danger" type="submit">Sil</button>
+            </form>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Gəliş məqsədləri -->
+  <section class="panel">
+    <div class="param-head"><h3>Gəliş məqsədləri</h3></div>
+    @if (canAdd)
+    {
+      <form asp-action="AddPurpose" method="post" class="param-add">
+        <input name="name" type="text" placeholder="Yeni məqsəd" required />
+        <button class="btn btn-primary" type="submit">Əlavə et</button>
+      </form>
+    }
+    <div>
+      @foreach (var p in Model.Purposes)
+      {
+        <div class="param-item">
+          <div class="param-item-info">
+            <b>@p.Name</b>
+            <span class="@(p.IsActive ? "st-on" : "st-off")">@(p.IsActive ? "Aktiv" : "Deaktiv")</span>
+          </div>
+          @if (canEdit)
+          {
+            <form asp-action="TogglePurpose" method="post">
+              <input type="hidden" name="id" value="@p.Id" />
+              <button class="btn-sm outline" type="submit">@(p.IsActive ? "Deaktiv et" : "Aktiv et")</button>
+            </form>
+          }
+        </div>
+      }
+    </div>
+  </section>
+</div>

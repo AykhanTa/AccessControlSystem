@@ -1,0 +1,145 @@
+@model UsersViewModel
+@{
+    ViewData["Title"] = "İstifadəçilər";
+    ViewData["Heading"] = "İstifadəçilər";
+    ViewData["Active"] = "users";
+    var canAdd = ViewData["CanAdd"] as bool? ?? false;
+    var canEdit = ViewData["CanEdit"] as bool? ?? false;
+    var canDelete = ViewData["CanDelete"] as bool? ?? false;
+}
+
+<div class="page-head">
+  <div>
+    <p>Rol və sistem girişlərinin idarə edilməsi.</p>
+  </div>
+</div>
+
+<section class="panel">
+  <!-- Yeni istifadəçi -->
+  @if (canAdd)
+  {
+    <form asp-action="Create" method="post" class="user-add">
+      <input name="firstName" type="text" placeholder="Ad" required />
+      <input name="lastName" type="text" placeholder="Soyad" required />
+      <input name="email" type="email" placeholder="Email" required />
+      <input name="password" type="password" placeholder="Şifrə" required />
+      <div class="select">
+        <select name="roleId" required>
+          <option value="">Rol seçin</option>
+          @foreach (var r in Model.Roles) { <option value="@r.Id">@r.Name</option> }
+        </select>
+      </div>
+      <button class="btn btn-primary" type="submit">Əlavə et</button>
+    </form>
+  }
+
+  <div class="table-wrap">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>İstifadəçi</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Status</th>
+          <th class="ta-right">Əməliyyat</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var u in Model.Users)
+        {
+          <tr>
+            <td>
+              <div class="user-name">
+                <b>@u.FullName</b>
+                @if (u.IsGlobalAdmin)
+                {
+                  <span class="user-badge">GLOBAL ADMIN</span>
+                }
+              </div>
+            </td>
+            <td class="cell-sub">@u.Email</td>
+            <td class="cell-sub">@u.RoleName</td>
+            <td>
+              @if (u.Status == "active")
+              {
+                <span class="chip in">Aktiv</span>
+              }
+              else
+              {
+                <span class="chip out">Deaktiv</span>
+              }
+            </td>
+            <td class="ta-right">
+              @if (u.IsProtected)
+              {
+                <span class="protected-text">Qorunan hesab</span>
+              }
+              else
+              {
+                <div class="user-actions">
+                  @if (canEdit)
+                  {
+                    <button class="btn-sm outline" type="button"
+                            data-act="edit" data-id="@u.Id" data-first="@u.FirstName"
+                            data-last="@u.LastName" data-email="@u.Email" data-role="@u.RoleId">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+                      Redaktə
+                    </button>
+                    <form asp-action="Toggle" method="post" style="display:inline">
+                      <input type="hidden" name="id" value="@u.Id" />
+                      <button class="btn-sm outline" type="submit">@(u.Status == "active" ? "Deaktiv et" : "Aktiv et")</button>
+                    </form>
+                  }
+                  @if (canDelete)
+                  {
+                    <form asp-action="Delete" method="post" style="display:inline"
+                          onsubmit="return confirm('@u.FullName istifadəçisini silmək istəyirsiniz?');">
+                      <input type="hidden" name="id" value="@u.Id" />
+                      <button class="btn-sm danger" type="submit">Sil</button>
+                    </form>
+                  }
+                  @if (!canEdit && !canDelete)
+                  {
+                    <span class="cell-sub">—</span>
+                  }
+                </div>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ İSTİFADƏÇİ REDAKTƏ MODALI ============ -->
+<div class="modal-overlay" id="editModal">
+  <form class="modal modal-narrow" asp-action="Update" method="post">
+    <div class="modal-head">
+      <h2>İstifadəçini redaktə et</h2>
+      <button class="modal-close" id="editClose" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body modal-body-1col">
+      <input type="hidden" name="id" id="eId" />
+      <div class="field"><label>Ad</label><input name="firstName" id="eFirst" type="text" required /></div>
+      <div class="field"><label>Soyad</label><input name="lastName" id="eLast" type="text" required /></div>
+      <div class="field"><label>E-poçt</label><input name="email" id="eEmail" type="email" required /></div>
+      <div class="field"><label>Rol</label>
+        <select name="roleId" id="eRole" required>
+          @foreach (var r in Model.Roles) { <option value="@r.Id">@r.Name</option> }
+        </select>
+      </div>
+      <div class="field"><label>Yeni şifrə <span style="color:#9aa4b3">(dəyişmək istəmirsinizsə boş buraxın)</span></label><input name="password" id="ePass" type="password" placeholder="••••••" /></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="editCancel" type="button">Ləğv et</button>
+      <button class="btn btn-dark" type="submit">Yadda saxla</button>
+    </div>
+  </form>
+</div>
+
+@section Scripts {
+  <script src="~/js/users-mvc.js"></script>
+}

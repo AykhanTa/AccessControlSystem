@@ -1,0 +1,107 @@
+@model CardsViewModel
+@{
+    ViewData["Title"] = "Kartlar";
+    ViewData["Heading"] = "Müvəqqəti Kartlar";
+    ViewData["Active"] = "cards";
+    var canAdd = ViewData["CanAdd"] as bool? ?? false;
+    var canEdit = ViewData["CanEdit"] as bool? ?? false;
+    var canDelete = ViewData["CanDelete"] as bool? ?? false;
+
+    string NfcIcon() => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 8.32a7.43 7.43 0 0 1 0 7.36\"/><path d=\"M9.46 6.21a11.76 11.76 0 0 1 0 11.58\"/><path d=\"M12.91 4.1a15.91 15.91 0 0 1 .01 15.8\"/><path d=\"M16.37 2a20.16 20.16 0 0 1 0 20\"/></svg>";
+}
+
+<div class="page-head">
+  <div>
+    <p>Qonaqlara verilən giriş kartlarını qeydiyyata alın və idarə edin.</p>
+  </div>
+</div>
+
+<section class="panel">
+  <!-- Yeni kart əlavə et -->
+  @if (canAdd)
+  {
+    <form asp-action="Create" method="post" class="card-add">
+      <input name="no" type="text" placeholder="KART NÖMRƏSİ, MƏSƏLƏN MK-24-00087" required />
+      <input name="note" type="text" placeholder="Qeyd (istəyə bağlı)" />
+      <button class="btn btn-primary" type="submit">Yeni kart</button>
+    </form>
+  }
+
+  <div class="table-wrap">
+    <table class="cards-table">
+      <thead>
+        <tr>
+          <th>Kart nömrəsi</th>
+          <th>Qeyd</th>
+          <th>Vəziyyət</th>
+          <th class="ta-right">Əməliyyatlar</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (!Model.Cards.Any())
+        {
+          <tr><td colspan="4" style="text-align:center;color:#9aa4b3;padding:20px">Hələ kart əlavə edilməyib.</td></tr>
+        }
+        @foreach (var c in Model.Cards)
+        {
+          var locked = c.Status == "assigned";
+          var editId = $"e{c.Id}";
+          <tr>
+            <td>
+              <div class="card-no-cell">
+                <span class="card-chip">@Html.Raw(NfcIcon())</span>
+                <input class="cell-input mono" name="no" value="@c.No" form="@editId" @(canEdit ? "" : "readonly") />
+              </div>
+            </td>
+            <td>
+              <input class="cell-input" name="note" value="@c.Note" placeholder="Qeyd əlavə edin" form="@editId" @(canEdit ? "" : "readonly") />
+            </td>
+            <td>
+              @if (c.Status == "assigned")
+              {
+                <span class="chip assigned">@c.AssignedTo</span>
+              }
+              else if (!c.Active)
+              {
+                <span class="chip inactive">Deaktiv</span>
+              }
+              else
+              {
+                <span class="chip free">Boş</span>
+              }
+            </td>
+            <td>
+              <div class="card-actions">
+                @if (canEdit)
+                {
+                  <!-- Redaktə formu (input-lar form= atributu ilə bağlanır) -->
+                  <form id="@editId" asp-action="Update" method="post">
+                    <input type="hidden" name="id" value="@c.Id" />
+                  </form>
+                  <button class="btn-sm dark" type="submit" form="@editId">Yadda saxla</button>
+
+                  <form asp-action="Toggle" method="post" style="display:inline">
+                    <input type="hidden" name="id" value="@c.Id" />
+                    <button class="btn-sm outline" type="submit" @(locked ? "disabled" : "")>@(c.Active ? "Deaktiv et" : "Aktiv et")</button>
+                  </form>
+                }
+                @if (canDelete)
+                {
+                  <form asp-action="Delete" method="post" style="display:inline"
+                        onsubmit="return confirm('&quot;@c.No&quot; kartını silmək istədiyinizə əminsiniz?');">
+                    <input type="hidden" name="id" value="@c.Id" />
+                    <button class="btn-sm danger" type="submit" @(locked ? "disabled" : "")>Sil</button>
+                  </form>
+                }
+                @if (!canEdit && !canDelete)
+                {
+                  <span class="cell-sub">—</span>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
