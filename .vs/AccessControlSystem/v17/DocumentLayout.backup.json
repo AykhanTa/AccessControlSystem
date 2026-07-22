@@ -3,16 +3,8 @@
   "WorkspaceRootPath": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{AAA766CC-932E-4CE7-B49F-9B809C5026F0}|AccessControlSystem.Application\\AccessControlSystem.Application.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem.application\\common\\azdate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AAA766CC-932E-4CE7-B49F-9B809C5026F0}|AccessControlSystem.Application\\AccessControlSystem.Application.csproj|solutionrelative:accesscontrolsystem.application\\common\\azdate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{AAA766CC-932E-4CE7-B49F-9B809C5026F0}|AccessControlSystem.Application\\AccessControlSystem.Application.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem.application\\dependencyinjection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AAA766CC-932E-4CE7-B49F-9B809C5026F0}|AccessControlSystem.Application\\AccessControlSystem.Application.csproj|solutionrelative:accesscontrolsystem.application\\dependencyinjection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{AAA766CC-932E-4CE7-B49F-9B809C5026F0}|AccessControlSystem.Application\\AccessControlSystem.Application.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem.application\\dtos\\authdtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -23,12 +15,20 @@
       "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\views\\account\\accessdenied.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3018A149-B64E-4FD2-830E-F349E594A278}|AccessControlSystem.Domain\\AccessControlSystem.Domain.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem.domain\\entities\\appuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3018A149-B64E-4FD2-830E-F349E594A278}|AccessControlSystem.Domain\\AccessControlSystem.Domain.csproj|solutionrelative:accesscontrolsystem.domain\\entities\\appuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{AAA766CC-932E-4CE7-B49F-9B809C5026F0}|AccessControlSystem.Application\\AccessControlSystem.Application.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem.application\\dependencyinjection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AAA766CC-932E-4CE7-B49F-9B809C5026F0}|AccessControlSystem.Application\\AccessControlSystem.Application.csproj|solutionrelative:accesscontrolsystem.application\\dependencyinjection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{AAA766CC-932E-4CE7-B49F-9B809C5026F0}|AccessControlSystem.Application\\AccessControlSystem.Application.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem.application\\common\\azdate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AAA766CC-932E-4CE7-B49F-9B809C5026F0}|AccessControlSystem.Application\\AccessControlSystem.Application.csproj|solutionrelative:accesscontrolsystem.application\\common\\azdate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3018A149-B64E-4FD2-830E-F349E594A278}|AccessControlSystem.Domain\\AccessControlSystem.Domain.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem.domain\\entities\\appuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3018A149-B64E-4FD2-830E-F349E594A278}|AccessControlSystem.Domain\\AccessControlSystem.Domain.csproj|solutionrelative:accesscontrolsystem.domain\\entities\\appuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -38,11 +38,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 5,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\appsettings.json",
               "RelativeDocumentMoniker": "AccessControlSystem\\appsettings.json",
@@ -50,12 +50,11 @@
               "RelativeToolTip": "AccessControlSystem\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-07-16T06:11:53.991Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-16T06:11:53.991Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 4,
               "Title": "AzDate.cs",
               "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Application\\Common\\AzDate.cs",
               "RelativeDocumentMoniker": "AccessControlSystem.Application\\Common\\AzDate.cs",
@@ -63,12 +62,11 @@
               "RelativeToolTip": "AccessControlSystem.Application\\Common\\AzDate.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-16T06:10:32.21Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-16T06:10:32.21Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "DependencyInjection.cs",
               "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Application\\DependencyInjection.cs",
               "RelativeDocumentMoniker": "AccessControlSystem.Application\\DependencyInjection.cs",
@@ -76,25 +74,23 @@
               "RelativeToolTip": "AccessControlSystem.Application\\DependencyInjection.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-16T06:10:16.748Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-16T06:10:16.748Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 1,
               "Title": "AuthDtos.cs",
               "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Application\\DTOs\\AuthDtos.cs",
               "RelativeDocumentMoniker": "AccessControlSystem.Application\\DTOs\\AuthDtos.cs",
               "ToolTip": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Application\\DTOs\\AuthDtos.cs",
               "RelativeToolTip": "AccessControlSystem.Application\\DTOs\\AuthDtos.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAowAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAkAAAAAAAAAAAA4wA4AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-16T06:10:03.107Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-16T06:10:03.107Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 2,
               "Title": "AccessDenied.cshtml",
               "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Account\\AccessDenied.cshtml",
               "RelativeDocumentMoniker": "AccessControlSystem\\Views\\Account\\AccessDenied.cshtml",
@@ -102,12 +98,11 @@
               "RelativeToolTip": "AccessControlSystem\\Views\\Account\\AccessDenied.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-07-16T06:09:14.471Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-16T06:09:14.471Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "AppUser.cs",
               "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Domain\\Entities\\AppUser.cs",
               "RelativeDocumentMoniker": "AccessControlSystem.Domain\\Entities\\AppUser.cs",
@@ -115,20 +110,20 @@
               "RelativeToolTip": "AccessControlSystem.Domain\\Entities\\AppUser.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAABYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-15T10:39:02.026Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-15T10:39:02.026Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 0,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Program.cs",
               "RelativeDocumentMoniker": "AccessControlSystem\\Program.cs",
               "ToolTip": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Program.cs",
               "RelativeToolTip": "AccessControlSystem\\Program.cs",
-              "ViewState": "AgIAACsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-15T07:42:59.42Z"
+              "WhenOpened": "2026-07-15T07:42:59.42Z",
+              "EditorCaption": ""
             }
           ]
         }

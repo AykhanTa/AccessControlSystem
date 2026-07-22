@@ -17,3 +17,4 @@ C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Infras
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\AccessControlSystem.Infrastructure.pdb
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\AccessControlSystem.Infrastructure.genruntimeconfig.cache
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\ref\AccessControlSystem.Infrastructure.dll
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\AccessControlSystem.Infrastructure.sourcelink.json

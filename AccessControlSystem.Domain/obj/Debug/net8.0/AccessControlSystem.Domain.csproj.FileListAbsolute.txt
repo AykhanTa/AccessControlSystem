@@ -9,3 +9,4 @@ C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Domain
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Domain\obj\Debug\net8.0\refint\AccessControlSystem.Domain.dll
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Domain\obj\Debug\net8.0\AccessControlSystem.Domain.pdb
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Domain\obj\Debug\net8.0\ref\AccessControlSystem.Domain.dll
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Domain\obj\Debug\net8.0\AccessControlSystem.Domain.sourcelink.json

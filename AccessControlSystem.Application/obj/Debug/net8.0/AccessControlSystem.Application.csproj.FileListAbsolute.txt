@@ -13,3 +13,4 @@ C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Applic
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\refint\AccessControlSystem.Application.dll
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.pdb
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\ref\AccessControlSystem.Application.dll
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.sourcelink.json
