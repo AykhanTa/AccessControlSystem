@@ -5,9 +5,12 @@
    ========================================================= */
 
 const STATUS = {
-  in:   { label: 'Binadadır', cls: 'in'   },
-  out:  { label: 'Çıxıb',     cls: 'out'  },
-  late: { label: 'Gecikib',   cls: 'late' },
+  in:        { label: 'Binadadır',       cls: 'in'        },
+  onfloor:   { label: 'Mərtəbədə',       cls: 'onfloor'   },
+  checkedin: { label: 'Kart verilib',    cls: 'checkedin' },
+  planned:   { label: 'Planlaşdırılmış', cls: 'planned'   },
+  out:       { label: 'Çıxıb',           cls: 'out'       },
+  late:      { label: 'Gecikib',         cls: 'late'      },
 };
 
 const ICONS = {
@@ -44,7 +47,8 @@ function toAscii(s) {
 }
 
 function guestQrPayload(g) {
-  return toAscii([g.name, g.doc, 'ID:' + (g.id || g.doc)].join(' | '));
+  // Cihaza yazılan vahid nömrə (employeeNo = cardNo). QR oxutduqda cihaz bunu tanıyır.
+  return String(g.accessNumber || g.cardNo || g.doc || '');
 }
 
 /* QR kodunu konteynerə çəkir (qrcode.min.js tələb olunur) */

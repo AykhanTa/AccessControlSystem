@@ -10,13 +10,16 @@ public class LookupService : ILookupService
     private readonly IAreaRepository _areas;
     private readonly IPurposeRepository _purposes;
     private readonly ICardRepository _cards;
+    private readonly IFloorRepository _floors;
 
-    public LookupService(IHostRepository hosts, IAreaRepository areas, IPurposeRepository purposes, ICardRepository cards)
+    public LookupService(IHostRepository hosts, IAreaRepository areas, IPurposeRepository purposes,
+        ICardRepository cards, IFloorRepository floors)
     {
         _hosts = hosts;
         _areas = areas;
         _purposes = purposes;
         _cards = cards;
+        _floors = floors;
     }
 
     public async Task<List<LookupDto>> GetHostsAsync(CancellationToken ct = default) =>
@@ -30,4 +33,7 @@ public class LookupService : ILookupService
 
     public async Task<List<LookupDto>> GetFreeCardsAsync(CancellationToken ct = default) =>
         (await _cards.GetFreeActiveAsync(ct)).Select(c => new LookupDto { Id = c.Id, Name = c.CardNo }).ToList();
+
+    public async Task<List<LookupDto>> GetFloorsAsync(CancellationToken ct = default) =>
+        (await _floors.GetActiveAsync(ct)).Select(f => new LookupDto { Id = f.Id, Name = f.Name }).ToList();
 }

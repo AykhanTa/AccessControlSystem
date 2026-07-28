@@ -31,6 +31,9 @@ public static class ViewHelpers
         var (label, cls) = status switch
         {
             "in" => ("Binadadır", "in"),
+            "onfloor" => ("Mərtəbədə", "onfloor"),
+            "checkedin" => ("Kart verilib", "checkedin"),
+            "planned" => ("Planlaşdırılmış", "planned"),
             "late" => ("Gecikib", "late"),
             _ => ("Çıxıb", "out"),
         };

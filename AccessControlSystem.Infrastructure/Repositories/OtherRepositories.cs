@@ -69,6 +69,98 @@ public class AreaRepository : IAreaRepository
     public void Remove(Area area) => _db.Areas.Remove(area);
 }
 
+public class FloorRepository : IFloorRepository
+{
+    private readonly AppDbContext _db;
+    public FloorRepository(AppDbContext db) => _db = db;
+
+    public Task<List<Floor>> GetActiveAsync(CancellationToken ct = default) =>
+        _db.Floors.Where(f => f.IsActive).OrderBy(f => f.Name).ToListAsync(ct);
+
+    public Task<List<Floor>> GetAllAsync(CancellationToken ct = default) =>
+        _db.Floors.OrderBy(f => f.Name).ToListAsync(ct);
+
+    public Task<List<Floor>> GetByIdsAsync(IEnumerable<long> ids, CancellationToken ct = default) =>
+        _db.Floors.Where(f => ids.Contains(f.Id)).ToListAsync(ct);
+
+    public Task<Floor?> GetByIdAsync(long id, CancellationToken ct = default) =>
+        _db.Floors.FirstOrDefaultAsync(f => f.Id == id, ct);
+
+    public Task<bool> ExistsByNameAsync(string name, long? excludeId = null, CancellationToken ct = default) =>
+        _db.Floors.AnyAsync(f => f.Name == name && (excludeId == null || f.Id != excludeId), ct);
+
+    public Task<int> DeviceCountAsync(long floorId, CancellationToken ct = default) =>
+        _db.Devices.CountAsync(d => d.FloorId == floorId, ct);
+
+    public Task<int> VisitUsageCountAsync(long floorId, CancellationToken ct = default) =>
+        _db.VisitFloors.CountAsync(vf => vf.FloorId == floorId, ct);
+
+    public async Task AddAsync(Floor floor, CancellationToken ct = default) =>
+        await _db.Floors.AddAsync(floor, ct);
+
+    public void Remove(Floor floor) => _db.Floors.Remove(floor);
+}
+
+public class DeviceRepository : IDeviceRepository
+{
+    private readonly AppDbContext _db;
+    public DeviceRepository(AppDbContext db) => _db = db;
+
+    public Task<List<Device>> GetActiveByFloorIdsAsync(IEnumerable<long> floorIds, CancellationToken ct = default) =>
+        _db.Devices
+            .Where(d => d.IsActive && floorIds.Contains(d.FloorId))
+            .ToListAsync(ct);
+
+    public Task<Device?> GetByIpAsync(string ip, CancellationToken ct = default) =>
+        _db.Devices.Include(d => d.Floor).FirstOrDefaultAsync(d => d.Ip == ip, ct);
+
+    public Task<List<Device>> GetAllActiveAsync(CancellationToken ct = default) =>
+        _db.Devices.Where(d => d.IsActive).ToListAsync(ct);
+
+    public Task<List<Device>> GetAllWithFloorAsync(CancellationToken ct = default) =>
+        _db.Devices.Include(d => d.Floor).OrderBy(d => d.Floor.Name).ThenBy(d => d.Name).ToListAsync(ct);
+
+    public Task<Device?> GetByIdAsync(long id, CancellationToken ct = default) =>
+        _db.Devices.FirstOrDefaultAsync(d => d.Id == id, ct);
+
+    public Task<bool> ExistsByIpPortAsync(string ip, int port, long? excludeId = null, CancellationToken ct = default) =>
+        _db.Devices.AnyAsync(d => d.Ip == ip && d.Port == port && (excludeId == null || d.Id != excludeId), ct);
+
+    public async Task AddAsync(Device device, CancellationToken ct = default) =>
+        await _db.Devices.AddAsync(device, ct);
+
+    public void Remove(Device device) => _db.Devices.Remove(device);
+}
+
+public class DeviceEnrollmentRepository : IDeviceEnrollmentRepository
+{
+    private readonly AppDbContext _db;
+    public DeviceEnrollmentRepository(AppDbContext db) => _db = db;
+
+    public Task<List<DeviceEnrollment>> GetByVisitAsync(long visitId, CancellationToken ct = default) =>
+        _db.DeviceEnrollments
+            .Include(e => e.Device)
+            .Include(e => e.Visit).ThenInclude(v => v.Guest)
+            .Where(e => e.VisitId == visitId)
+            .ToListAsync(ct);
+
+    public async Task AddAsync(DeviceEnrollment enrollment, CancellationToken ct = default) =>
+        await _db.DeviceEnrollments.AddAsync(enrollment, ct);
+}
+
+public class AccessEventRepository : IAccessEventRepository
+{
+    private readonly AppDbContext _db;
+    public AccessEventRepository(AppDbContext db) => _db = db;
+
+    public async Task AddAsync(AccessEvent ev, CancellationToken ct = default) =>
+        await _db.AccessEvents.AddAsync(ev, ct);
+
+    public Task<List<AccessEvent>> GetRecentAsync(int take, CancellationToken ct = default) =>
+        _db.AccessEvents.Include(e => e.Device)
+            .OrderByDescending(e => e.Id).Take(take).ToListAsync(ct);
+}
+
 public class PurposeRepository : IPurposeRepository
 {
     private readonly AppDbContext _db;

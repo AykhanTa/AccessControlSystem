@@ -13,6 +13,9 @@ public static class DomainMappings
         VisitStatus.In => "in",
         VisitStatus.Out => "out",
         VisitStatus.Late => "late",
+        VisitStatus.Planned => "planned",
+        VisitStatus.CheckedIn => "checkedin",
+        VisitStatus.OnFloor => "onfloor",
         _ => "in"
     };
 
@@ -30,10 +33,14 @@ public static class DomainMappings
             Arrival = AzDate.Format(v.ArrivalAt) ?? string.Empty,
             Exit = AzDate.Format(v.ActualExitAt ?? v.ExpectedExitAt),
             Area = string.Join(", ", v.VisitAreas.Select(a => a.Area.Name)),
+            Floor = v.VisitFloors.Count > 0
+                ? string.Join(", ", v.VisitFloors.Select(f => f.Floor.Name))
+                : string.Join(", ", v.VisitAreas.Select(a => a.Area.Name)),   // köhnə ziyarətlər üçün ərazi fallback
             Purpose = string.Join(", ", v.VisitPurposes.Select(p => p.Purpose.Name)),
             Status = v.Status.ToKey(),
             PassType = v.PassType.ToKey(),
-            CardNo = v.Card?.CardNo
+            CardNo = v.Card?.CardNo,
+            AccessNumber = v.AccessNumber
         };
     }
 

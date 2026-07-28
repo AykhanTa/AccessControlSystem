@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "ContainingType": "AccessControlSystem.Controllers.HikEventsController",
+    "Method": "Events",
+    "RelativePath": "api/hik/events",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  }
+]

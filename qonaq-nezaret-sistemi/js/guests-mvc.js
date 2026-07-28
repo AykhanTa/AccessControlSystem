@@ -30,9 +30,61 @@ function applyFilters() {
   if (c) c.textContent = `${count} nəticə`;
 }
 
+/* ---------- Canlı status yeniləmə (səhifə refresh olmadan) ---------- */
+function applyRowActions(tr) {
+  const st = tr.dataset.status;
+  const ci = tr.querySelector('.js-checkin');
+  const co = tr.querySelector('.js-checkout');
+  if (ci) ci.style.display = (st === 'planned') ? '' : 'none';
+  if (co) co.style.display = (st === 'checkedin' || st === 'in' || st === 'onfloor') ? 'inline' : 'none';
+}
+
+function setRowStatus(tr, status) {
+  tr.dataset.status = status;
+  const chip = tr.querySelector('.js-status');
+  if (chip && typeof statusChip === 'function') chip.innerHTML = statusChip(status);
+  applyRowActions(tr);
+}
+
+async function pollStatuses() {
+  const rows = document.getElementById('registryRows');
+  if (!rows) return;
+  try {
+    const res = await fetch('/Guests/StatusFeed', { headers: { 'X-Requested-With': 'fetch' } });
+    if (!res.ok) return;
+    const list = await res.json();
+    let changed = false;
+    list.forEach(item => {
+      const tr = rows.querySelector(`tr[data-vid="${item.id}"]`);
+      if (tr && tr.dataset.status !== item.status) { setRowStatus(tr, item.status); changed = true; }
+    });
+    if (changed && typeof applyFilters === 'function' && document.getElementById('regSearch')) applyFilters();
+  } catch (e) { /* şəbəkə xətası — növbəti dövrədə təkrar cəhd */ }
+}
+
 /* ---------- Modal ---------- */
 function openModal()  { document.getElementById('guestModal').classList.add('open'); document.body.style.overflow = 'hidden'; }
 function closeModal() { document.getElementById('guestModal').classList.remove('open'); document.body.style.overflow = ''; }
+
+/* ---------- Check-in modalı ---------- */
+function openCheckIn(id, pass, name) {
+  document.getElementById('checkinVisitId').value = id;
+  const nm = document.getElementById('checkinName');
+  if (nm) nm.textContent = (name || '') + ' — gəlişi təsdiqlə, kart ver və cihazlara yaz.';
+  const isQr = pass === 'qr';
+  const cardField = document.getElementById('checkinCardField');
+  const qrNote = document.getElementById('checkinQrNote');
+  const cardSel = document.getElementById('checkinCard');
+  if (cardField) cardField.style.display = isQr ? 'none' : '';
+  if (qrNote) qrNote.style.display = isQr ? '' : 'none';
+  if (cardSel) cardSel.disabled = isQr;   // QR-də kart göndərilməsin
+  document.getElementById('checkinModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeCheckIn() {
+  document.getElementById('checkinModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
 
 let passChoice = 'card';
 function setPassChoice(choice) {
@@ -67,20 +119,43 @@ function attachTime24(input) {
   });
 }
 
+/* Gəliş tarixi seçiləndə çıxış tarixini avtomatik o gündən sonraya kökləyir */
+function syncExitDate() {
+  const arr = document.getElementById('inArrivalDate');
+  const exit = document.getElementById('inExitDate');
+  if (!arr || !exit || !arr.value) return;
+  exit.min = arr.value;                                   // gəlişdən əvvələ icazə vermə
+  if (!exit.value || exit.value < arr.value) exit.value = arr.value;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.time24').forEach(attachTime24);
+
+  const arrDate = document.getElementById('inArrivalDate');
+  if (arrDate) { arrDate.addEventListener('change', syncExitDate); syncExitDate(); }
 
   ['regSearch','fStatus','fHost','fArea','fPurpose'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', applyFilters);
   });
 
-  /* Buraxılış sənədi paneli — goz ikonu */
+  /* Sətir düymələri — sənəd paneli (göz) və ya check-in (kart) */
   document.getElementById('registryRows').addEventListener('click', e => {
     const view = e.target.closest('.act-btn.view');
-    if (!view) return;
-    const g = (window.GUESTS_DATA || []).find(x => String(x.id) === view.dataset.id);
-    if (g) openGuestPanel(g);
+    if (view) {
+      const g = (window.GUESTS_DATA || []).find(x => String(x.id) === view.dataset.id);
+      if (g) openGuestPanel(g);
+      return;
+    }
+    const chk = e.target.closest('.act-btn.checkin');
+    if (chk) openCheckIn(chk.dataset.id, chk.dataset.pass, chk.dataset.name);
+  });
+
+  /* Check-in modalı */
+  document.getElementById('checkinClose')?.addEventListener('click', closeCheckIn);
+  document.getElementById('checkinCancel')?.addEventListener('click', closeCheckIn);
+  document.getElementById('checkinModal')?.addEventListener('click', e => {
+    if (e.target.id === 'checkinModal') closeCheckIn();
   });
 
   /* Modal düymələri */
@@ -90,7 +165,13 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('guestModal')?.addEventListener('click', e => {
     if (e.target.id === 'guestModal') closeModal();
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeCheckIn(); } });
+
+  /* Canlı status yeniləmə — hər 4 saniyədə cihaz hadisələrini əks etdirir */
+  if (document.getElementById('registryRows')) {
+    document.querySelectorAll('#registryRows tr[data-vid]').forEach(applyRowActions);
+    setInterval(pollStatuses, 4000);
+  }
 
   /* Buraxılış növü seqment düymələri */
   document.querySelectorAll('.pass-choice .seg-btn').forEach(b => {

@@ -303,6 +303,9 @@ tbody tr:hover { background: #fafbfd; }
 .chip.in   { background: var(--green-soft);    color: var(--green); }
 .chip.out  { background: var(--gray-chip-bg);  color: var(--gray-chip-text); }
 .chip.late { background: var(--red-soft);       color: var(--red); }
+.chip.planned   { background: rgba(99,102,241,.12); color: #4f46e5; }
+.chip.checkedin { background: var(--amber-soft);    color: var(--amber); }
+.chip.onfloor   { background: rgba(14,165,233,.12);  color: #0284c7; }
 .chip.free     { background: var(--green-soft);   color: var(--green); }
 .chip.assigned { background: var(--amber-soft);   color: var(--amber); }
 .chip.inactive { background: var(--gray-chip-bg); color: var(--gray-chip-text); }
@@ -426,6 +429,37 @@ tbody tr:hover { background: #fafbfd; }
 .param-item-info span { font-size: 12.5px; color: var(--faint); }
 .param-item-info .st-on  { color: var(--green); }
 .param-item-info .st-off { color: var(--muted); }
+
+/* ===== Cihazlar (Hikvision) formu ===== */
+.device-form {
+  display: flex; flex-wrap: wrap; gap: 12px 14px;
+  padding: 16px 22px; border-bottom: 1px solid var(--border);
+}
+.device-add { align-items: flex-end; }
+.device-row { align-items: center; }
+.device-row:last-child { border-bottom: none; }
+.device-form .fld { display: flex; flex-direction: column; gap: 5px; width: 130px; flex: 0 0 auto; }
+.device-form .fld.grow { flex: 1 1 190px; width: auto; min-width: 160px; }
+.device-form .fld.md { width: 148px; }
+.device-form .fld.sm { width: 80px; }
+.device-form .fld.chk { width: 56px; align-items: flex-start; }
+.device-form .fld.end { flex: 0 0 auto; margin-left: auto; }
+.device-form .fld > label { font-size: 11.5px; font-weight: 600; color: var(--faint); white-space: nowrap; }
+.device-form input:not([type=checkbox]), .device-form select {
+  width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+  font-size: 13.5px; color: var(--text); outline: none; font-family: inherit; background: #fff;
+  transition: border-color .15s, box-shadow .15s;
+}
+.device-form input::placeholder { color: #c2c9d4; }
+.device-form input:focus, .device-form select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(47,107,236,.12); }
+.device-form input[type=checkbox] { width: 18px; height: 18px; margin-top: 8px; accent-color: var(--primary); cursor: pointer; }
+.device-row .fld.chk input[type=checkbox] { margin-top: 0; }
+.device-row .host-actions { margin-left: auto; }
+@media (max-width: 900px) {
+  .device-form .fld, .device-form .fld.grow, .device-form .fld.md, .device-form .fld.sm { width: 100%; flex: 1 1 100%; }
+  .device-form .fld.chk { width: auto; flex: 0 0 auto; }
+  .device-form .fld.end { width: 100%; margin-left: 0; }
+}
 
 /* ================= Rollar ================= */
 .role-add {

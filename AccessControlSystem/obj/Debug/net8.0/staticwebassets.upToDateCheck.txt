@@ -59,5 +59,6 @@ wwwroot\lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.js
 wwwroot\lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.min.js
 wwwroot\lib\jquery-validation-unobtrusive\LICENSE.txt
 wwwroot\uploads\guests\48454bb87d334fc6b195985754878aab.png
+wwwroot\uploads\guests\73c5f99bd92542c9956adbfbd81197e8.png
 wwwroot\uploads\guests\75b556ab641948d9bd781abae164d9b2.png
 wwwroot\uploads\guests\acb7b80ecf04483eaeaebdd34bcb0803.png

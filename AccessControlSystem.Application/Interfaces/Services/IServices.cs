@@ -11,7 +11,12 @@ public interface IDashboardService
 public interface IGuestService
 {
     Task<List<VisitRowDto>> GetRegistryAsync(CancellationToken ct = default);
+    /// <summary>Canlı UI üçün — id + status cütləri.</summary>
+    Task<List<VisitStatusDto>> GetStatusesAsync(CancellationToken ct = default);
+    /// <summary>Əvvəlcədən qeydiyyat — status "planlaşdırılmış". Kart check-in-də təyin olunur.</summary>
     Task<long> RegisterAsync(GuestCreateDto dto, CancellationToken ct = default);
+    /// <summary>Nəzarətçi check-in: boş kart təyin edir, cihazlara yazır, status "kart verilib".</summary>
+    Task CheckInAsync(long visitId, long? cardId, CancellationToken ct = default);
     /// <summary>Ziyarətin çıxışını təsdiqləyir (status "out"). Kart varsa boşaldılır.</summary>
     Task CheckOutAsync(long visitId, CancellationToken ct = default);
 }
@@ -104,6 +109,19 @@ public interface ISettingsService
     Task<List<PurposeItemDto>> GetPurposesAsync(CancellationToken ct = default);
     Task<long> AddPurposeAsync(string name, CancellationToken ct = default);
     Task TogglePurposeAsync(long id, CancellationToken ct = default);
+
+    // Mərtəbələr
+    Task<List<FloorItemDto>> GetFloorsAsync(CancellationToken ct = default);
+    Task<long> AddFloorAsync(string name, CancellationToken ct = default);
+    Task ToggleFloorAsync(long id, CancellationToken ct = default);
+    Task DeleteFloorAsync(long id, CancellationToken ct = default);
+
+    // Cihazlar
+    Task<List<DeviceItemDto>> GetDevicesAsync(CancellationToken ct = default);
+    Task<long> AddDeviceAsync(DeviceInputDto dto, CancellationToken ct = default);
+    Task UpdateDeviceAsync(long id, DeviceInputDto dto, CancellationToken ct = default);
+    Task ToggleDeviceAsync(long id, CancellationToken ct = default);
+    Task DeleteDeviceAsync(long id, CancellationToken ct = default);
 }
 
 public interface ILookupService
@@ -112,4 +130,27 @@ public interface ILookupService
     Task<List<LookupDto>> GetAreasAsync(CancellationToken ct = default);
     Task<List<LookupDto>> GetPurposesAsync(CancellationToken ct = default);
     Task<List<LookupDto>> GetFreeCardsAsync(CancellationToken ct = default);
+    Task<List<LookupDto>> GetFloorsAsync(CancellationToken ct = default);
+}
+
+/// <summary>
+/// Bir ziyarəti fiziki Hikvision cihazlarına yazan/silən orchestration servisi.
+/// Cihaz xətaları qeydiyyatı bloklamır — hər cihazın nəticəsi DeviceEnrollment-də saxlanır.
+/// </summary>
+public interface IVisitAccessService
+{
+    /// <summary>Ziyarətin icazəli mərtəbələrinin bütün aktiv cihazlarına AccessNumber yazır.
+    /// Uğurla yazılan cihaz sayını qaytarır.</summary>
+    Task<int> EnrollAsync(long visitId, string accessNumber, string guestName,
+        DateTime begin, DateTime end, IEnumerable<long> floorIds, CancellationToken ct = default);
+
+    /// <summary>Ziyarətin bütün cihaz-qeydlərini cihazlardan silir.</summary>
+    Task RevokeAsync(long visitId, CancellationToken ct = default);
+}
+
+/// <summary>Cihazdan gələn keçid hadisələrini emal edir və status keçidlərini icra edir.</summary>
+public interface IVisitEventService
+{
+    /// <summary>Bir keçid hadisəsini emal edir: AccessEvent yazır, statusu yeniləyir.</summary>
+    Task ProcessAsync(HikEventDto ev, CancellationToken ct = default);
 }

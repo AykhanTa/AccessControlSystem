@@ -55,7 +55,7 @@ public class GuestsController : Controller
                 ExpectedExitAt = exitAt,
                 PassType = form.PassType,
                 CardId = form.PassType == "card" ? form.CardId : null,
-                AreaIds = form.AreaId > 0 ? new List<long> { form.AreaId } : new(),
+                FloorIds = form.FloorId > 0 ? new List<long> { form.FloorId } : new(),
                 PurposeIds = form.PurposeId > 0 ? new List<long> { form.PurposeId } : new(),
                 Note = form.Note
             };
@@ -64,6 +64,28 @@ public class GuestsController : Controller
             TempData["Success"] = $"{form.FirstName} {form.LastName} uğurla qeydiyyata alındı.";
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            TempData["Error"] = ex.Message;
+        }
+        return RedirectToAction(nameof(Index));
+    }
+
+    /// <summary>Canlı UI üçün — bütün ziyarətlərin id + status cütləri (JSON). Polling ilə çağırılır.</summary>
+    [HttpGet]
+    public async Task<IActionResult> StatusFeed() => Json(await _guests.GetStatusesAsync());
+
+    /// <summary>Nəzarətçi check-in: planlaşdırılmış qonağa kart təyin edir və cihazlara yazır.</summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [RequirePermission("guests", PermType.Edit)]
+    public async Task<IActionResult> CheckIn(long id, long? cardId)
+    {
+        try
+        {
+            await _guests.CheckInAsync(id, cardId);
+            TempData["Success"] = "Check-in tamamlandı — kart verildi və cihazlara yazıldı.";
+        }
+        catch (Exception ex)
         {
             TempData["Error"] = ex.Message;
         }
@@ -93,6 +115,7 @@ public class GuestsController : Controller
         Guests = await _guests.GetRegistryAsync(),
         Hosts = await _lookups.GetHostsAsync(),
         Areas = await _lookups.GetAreasAsync(),
+        Floors = await _lookups.GetFloorsAsync(),
         Purposes = await _lookups.GetPurposesAsync(),
         FreeCards = await _lookups.GetFreeCardsAsync()
     };

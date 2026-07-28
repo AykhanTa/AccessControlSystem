@@ -22,6 +22,67 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("AccessControlSystem.Domain.Entities.AccessEvent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AccessNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("DeviceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("DeviceIp")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<bool>("Granted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("OccurredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PersonName")
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("Raw")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("VisitId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccessNumber");
+
+                    b.HasIndex("DeviceId");
+
+                    b.HasIndex("OccurredAt");
+
+                    b.HasIndex("VisitId");
+
+                    b.ToTable("AccessEvents", (string)null);
+                });
+
             modelBuilder.Entity("AccessControlSystem.Domain.Entities.AppUser", b =>
                 {
                     b.Property<long>("Id")
@@ -147,6 +208,142 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Cards", (string)null);
+                });
+
+            modelBuilder.Entity("AccessControlSystem.Domain.Entities.Device", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Direction")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("DoorNo")
+                        .HasColumnType("int");
+
+                    b.Property<long>("FloorId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Ip")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<int>("Port")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("UseHttps")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FloorId");
+
+                    b.HasIndex("Ip", "Port")
+                        .IsUnique();
+
+                    b.ToTable("Devices", (string)null);
+                });
+
+            modelBuilder.Entity("AccessControlSystem.Domain.Entities.DeviceEnrollment", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AccessNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("DeviceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("SyncedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("VisitId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("VisitId", "DeviceId")
+                        .IsUnique();
+
+                    b.ToTable("DeviceEnrollments", (string)null);
+                });
+
+            modelBuilder.Entity("AccessControlSystem.Domain.Entities.Floor", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Floors", (string)null);
                 });
 
             modelBuilder.Entity("AccessControlSystem.Domain.Entities.Guest", b =>
@@ -438,6 +635,10 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("AccessNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<DateTime?>("ActualExitAt")
                         .HasColumnType("datetime2");
 
@@ -446,6 +647,9 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
 
                     b.Property<long?>("CardId")
                         .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("CheckedInAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -485,6 +689,9 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AccessNumber")
+                        .HasFilter("[AccessNumber] IS NOT NULL");
+
                     b.HasIndex("ArrivalAt");
 
                     b.HasIndex("CardId");
@@ -517,6 +724,21 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
                     b.ToTable("VisitAreas", (string)null);
                 });
 
+            modelBuilder.Entity("AccessControlSystem.Domain.Entities.VisitFloor", b =>
+                {
+                    b.Property<long>("VisitId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("FloorId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("VisitId", "FloorId");
+
+                    b.HasIndex("FloorId");
+
+                    b.ToTable("VisitFloors", (string)null);
+                });
+
             modelBuilder.Entity("AccessControlSystem.Domain.Entities.VisitPurpose", b =>
                 {
                     b.Property<long>("VisitId")
@@ -532,6 +754,23 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
                     b.ToTable("VisitPurposes", (string)null);
                 });
 
+            modelBuilder.Entity("AccessControlSystem.Domain.Entities.AccessEvent", b =>
+                {
+                    b.HasOne("AccessControlSystem.Domain.Entities.Device", "Device")
+                        .WithMany()
+                        .HasForeignKey("DeviceId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("AccessControlSystem.Domain.Entities.Visit", "Visit")
+                        .WithMany()
+                        .HasForeignKey("VisitId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Device");
+
+                    b.Navigation("Visit");
+                });
+
             modelBuilder.Entity("AccessControlSystem.Domain.Entities.AppUser", b =>
                 {
                     b.HasOne("AccessControlSystem.Domain.Entities.Role", "Role")
@@ -541,6 +780,36 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("AccessControlSystem.Domain.Entities.Device", b =>
+                {
+                    b.HasOne("AccessControlSystem.Domain.Entities.Floor", "Floor")
+                        .WithMany("Devices")
+                        .HasForeignKey("FloorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Floor");
+                });
+
+            modelBuilder.Entity("AccessControlSystem.Domain.Entities.DeviceEnrollment", b =>
+                {
+                    b.HasOne("AccessControlSystem.Domain.Entities.Device", "Device")
+                        .WithMany("Enrollments")
+                        .HasForeignKey("DeviceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AccessControlSystem.Domain.Entities.Visit", "Visit")
+                        .WithMany("DeviceEnrollments")
+                        .HasForeignKey("VisitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Device");
+
+                    b.Navigation("Visit");
                 });
 
             modelBuilder.Entity("AccessControlSystem.Domain.Entities.RolePermission", b =>
@@ -607,6 +876,25 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
                     b.Navigation("Visit");
                 });
 
+            modelBuilder.Entity("AccessControlSystem.Domain.Entities.VisitFloor", b =>
+                {
+                    b.HasOne("AccessControlSystem.Domain.Entities.Floor", "Floor")
+                        .WithMany("VisitFloors")
+                        .HasForeignKey("FloorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AccessControlSystem.Domain.Entities.Visit", "Visit")
+                        .WithMany("VisitFloors")
+                        .HasForeignKey("VisitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Floor");
+
+                    b.Navigation("Visit");
+                });
+
             modelBuilder.Entity("AccessControlSystem.Domain.Entities.VisitPurpose", b =>
                 {
                     b.HasOne("AccessControlSystem.Domain.Entities.Purpose", "Purpose")
@@ -634,6 +922,18 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("AccessControlSystem.Domain.Entities.Card", b =>
                 {
                     b.Navigation("Visits");
+                });
+
+            modelBuilder.Entity("AccessControlSystem.Domain.Entities.Device", b =>
+                {
+                    b.Navigation("Enrollments");
+                });
+
+            modelBuilder.Entity("AccessControlSystem.Domain.Entities.Floor", b =>
+                {
+                    b.Navigation("Devices");
+
+                    b.Navigation("VisitFloors");
                 });
 
             modelBuilder.Entity("AccessControlSystem.Domain.Entities.Guest", b =>
@@ -665,7 +965,11 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("AccessControlSystem.Domain.Entities.Visit", b =>
                 {
+                    b.Navigation("DeviceEnrollments");
+
                     b.Navigation("VisitAreas");
+
+                    b.Navigation("VisitFloors");
 
                     b.Navigation("VisitPurposes");
                 });

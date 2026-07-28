@@ -22,6 +22,8 @@ public static class DependencyInjection
         services.AddScoped<ISystemLogWriter, SystemLogWriter>();
         services.AddScoped<ISystemLogService, SystemLogService>();
         services.AddScoped<ILookupService, LookupService>();
+        services.AddScoped<IVisitAccessService, VisitAccessService>();
+        services.AddScoped<IVisitEventService, VisitEventService>();
         return services;
     }
 }

@@ -1,5 +1,6 @@
 using AccessControlSystem.Application.Interfaces.Repositories;
 using AccessControlSystem.Application.Interfaces.Services;
+using AccessControlSystem.Infrastructure.Hikvision;
 using AccessControlSystem.Infrastructure.Persistence;
 using AccessControlSystem.Infrastructure.Repositories;
 using AccessControlSystem.Infrastructure.Security;
@@ -28,6 +29,10 @@ public static class DependencyInjection
         services.AddScoped<IGuestRepository, GuestRepository>();
         services.AddScoped<IHostRepository, HostRepository>();
         services.AddScoped<IAreaRepository, AreaRepository>();
+        services.AddScoped<IFloorRepository, FloorRepository>();
+        services.AddScoped<IDeviceRepository, DeviceRepository>();
+        services.AddScoped<IDeviceEnrollmentRepository, DeviceEnrollmentRepository>();
+        services.AddScoped<IAccessEventRepository, AccessEventRepository>();
         services.AddScoped<IPurposeRepository, PurposeRepository>();
         services.AddScoped<ISectionRepository, SectionRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
@@ -36,6 +41,10 @@ public static class DependencyInjection
 
         // Təhlükəsizlik
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
+
+        // Hikvision cihaz inteqrasiyası (ISAPI, Digest auth). HttpClient-ləri
+        // daxildə keşlədiyi üçün singleton.
+        services.AddSingleton<IHikvisionDeviceService, HikvisionDeviceService>();
 
         return services;
     }

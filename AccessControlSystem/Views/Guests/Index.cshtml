@@ -8,7 +8,6 @@
     var canEdit = ViewData["CanEdit"] as bool? ?? false;
 
     string EyeIcon() => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg>";
-    string EditIcon() => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7\"/><path d=\"M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z\"/></svg>";
     string CheckIcon() => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M22 11.08V12a10 10 0 1 1-5.93-9.14\"/><polyline points=\"22 4 12 14.01 9 11.01\"/></svg>";
     string CardIcon() => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"1\" y=\"4\" width=\"22\" height=\"16\" rx=\"2\"/><line x1=\"1\" y1=\"10\" x2=\"23\" y2=\"10\"/></svg>";
     string QrIcon() => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\"/><line x1=\"14\" y1=\"14\" x2=\"14\" y2=\"14.01\"/><line x1=\"21\" y1=\"14\" x2=\"21\" y2=\"14.01\"/><line x1=\"14\" y1=\"21\" x2=\"14\" y2=\"21.01\"/><line x1=\"17.5\" y1=\"14\" x2=\"17.5\" y2=\"21\"/><line x1=\"14\" y1=\"17.5\" x2=\"21\" y2=\"17.5\"/></svg>";
@@ -47,7 +46,10 @@
     <div class="select">
       <select id="fStatus">
         <option value="">Bütün statuslar</option>
+        <option value="planned">Planlaşdırılmış</option>
+        <option value="checkedin">Kart verilib</option>
         <option value="in">Binadadır</option>
+        <option value="onfloor">Mərtəbədə</option>
         <option value="out">Çıxıb</option>
         <option value="late">Gecikib</option>
       </select>
@@ -60,8 +62,8 @@
     </div>
     <div class="select">
       <select id="fArea">
-        <option value="">Bütün ərazilər</option>
-        @foreach (var a in Model.Areas) { <option value="@a.Name">@a.Name</option> }
+        <option value="">Bütün mərtəbələr</option>
+        @foreach (var f in Model.Floors) { <option value="@f.Name">@f.Name</option> }
       </select>
     </div>
     <div class="select">
@@ -77,15 +79,16 @@
       <thead>
         <tr>
           <th>Ad Soyad</th><th>Qəbul edən</th><th>Gəliş vaxtı</th>
-          <th>Ərazi</th><th>Məqsəd</th><th>Status</th><th>Əməliyyatlar</th>
+          <th>Mərtəbə</th><th>Məqsəd</th><th>Status</th><th>Əməliyyatlar</th>
         </tr>
       </thead>
       <tbody id="registryRows">
         @foreach (var g in Model.Guests)
         {
-          var canCheck = g.Status == "in";   // gecikən qonaqlarda manual çıxış yoxdur
-          <tr data-search="@((g.Name + " " + g.Doc).ToLower())"
-              data-status="@g.Status" data-host="@g.Host" data-area="@g.Area" data-purpose="@g.Purpose">
+          var canCheck = g.Status == "in" || g.Status == "onfloor" || g.Status == "checkedin";  // binadadırsa çıxış
+          var canCheckIn = g.Status == "planned";   // planlaşdırılmışa kart ver
+          <tr data-vid="@g.Id" data-search="@((g.Name + " " + g.Doc).ToLower())"
+              data-status="@g.Status" data-host="@g.Host" data-area="@g.Floor" data-purpose="@g.Purpose">
             <td>
               <div class="who-cell">
                 @ViewHelpers.Avatar(g.Photo, g.Name)
@@ -94,7 +97,7 @@
             </td>
             <td class="cell-sub">@g.Host</td>
             <td class="cell-sub">@g.Arrival</td>
-            <td class="cell-sub cell-multi">@g.Area</td>
+            <td class="cell-sub cell-multi">@g.Floor</td>
             <td class="cell-sub">@g.Purpose</td>
             <td>
               @if (g.PassType == "qr")
@@ -105,18 +108,17 @@
               {
                 <span class="pass-tag card" title="Kartla buraxılış">@Html.Raw(CardIcon())</span>
               }
-              @ViewHelpers.StatusChip(g.Status)
+              <span class="js-status">@ViewHelpers.StatusChip(g.Status)</span>
             </td>
             <td>
               <div class="row-actions">
                 <button class="act-btn view" title="Buraxılış sənədinə bax" data-id="@g.Id">@Html.Raw(EyeIcon())</button>
                 @if (canEdit)
                 {
-                  <button class="act-btn edit" title="Redaktə et">@Html.Raw(EditIcon())</button>
-                }
-                @if (canCheck && canEdit)
-                {
-                  <form asp-action="Checkout" method="post" style="display:inline"
+                  <button class="act-btn checkin js-checkin" title="Check-in / Kart ver" type="button"
+                          style="@(canCheckIn ? "" : "display:none")"
+                          data-id="@g.Id" data-pass="@g.PassType" data-name="@g.Name">@Html.Raw(CardIcon())</button>
+                  <form asp-action="Checkout" method="post" class="js-checkout" style="@(canCheck ? "display:inline" : "display:none")"
                         onsubmit="return confirm('@g.Name üçün çıxışı təsdiqləyirsiniz?');">
                     <input type="hidden" name="id" value="@g.Id" />
                     <button class="act-btn check" title="Çıxışı təsdiqlə" type="submit">@Html.Raw(CheckIcon())</button>
@@ -163,7 +165,7 @@
           </select>
         </div>
         <div class="field-row">
-          <div class="field"><label>Gəliş tarixi <span class="req">*</span></label><input name="ArrivalDate" type="date" value="@today" min="@today" required /></div>
+          <div class="field"><label>Gəliş tarixi <span class="req">*</span></label><input id="inArrivalDate" name="ArrivalDate" type="date" value="@today" min="@today" required /></div>
           <div class="field"><label>Vaxt <span class="req">*</span></label><input class="time24" name="ArrivalTime" type="text" value="09:00" required pattern="([01][0-9]|2[0-3]):[0-5][0-9]" placeholder="SS:DD" maxlength="5" inputmode="numeric" title="24 saatlıq format, məsələn 14:30" /></div>
         </div>
         <div class="field">
@@ -173,9 +175,9 @@
           </select>
         </div>
         <div class="field">
-          <label>İcazə verilən ərazilər <span class="req">*</span></label>
-          <select name="AreaId" required>
-            @foreach (var a in Model.Areas) { <option value="@a.Id">@a.Name</option> }
+          <label>İcazə verilən mərtəbə <span class="req">*</span></label>
+          <select name="FloorId" required>
+            @foreach (var f in Model.Floors) { <option value="@f.Id">@f.Name</option> }
           </select>
         </div>
         <div class="field">
@@ -190,20 +192,20 @@
             </button>
           </div>
         </div>
-        <div class="field" id="cardSelectField">
-          <label>Müvəqqəti kart <span class="req">*</span></label>
-          <select name="CardId" id="inCard">
-            @foreach (var c in Model.FreeCards) { <option value="@c.Id">@c.Name</option> }
-          </select>
-        </div>
         <div class="field qr-note" id="qrNoteField" style="display:none;">
           <div class="qr-info-box">
             @Html.Raw(QrIcon())
             QR kod qonaq məlumatlarından avtomatik generasiya olunacaq və çap edilə biləcək.
           </div>
         </div>
+        <div class="field">
+          <div class="qr-info-box" style="background:rgba(99,102,241,.08);color:#4f46e5">
+            @Html.Raw(CardIcon())
+            Kartla buraxılışda kart gəlişdə (check-in zamanı) nəzarətçi tərəfindən təyin olunur.
+          </div>
+        </div>
         <div class="field-row">
-          <div class="field"><label>Çıxış tarixi</label><input name="ExitDate" type="date" value="@today" min="@today" /></div>
+          <div class="field"><label>Çıxış tarixi</label><input id="inExitDate" name="ExitDate" type="date" value="@today" min="@today" /></div>
           <div class="field"><label>Vaxt</label><input class="time24" name="ExitTime" type="text" value="17:00" pattern="([01][0-9]|2[0-3]):[0-5][0-9]" placeholder="SS:DD" maxlength="5" inputmode="numeric" title="24 saatlıq format, məsələn 17:00" /></div>
         </div>
         <div class="field"><label>Qeyd</label><textarea name="Note" placeholder="Əlavə qeyd..."></textarea></div>
@@ -232,6 +234,36 @@
     <div class="modal-foot">
       <button class="btn btn-ghost" id="modalCancel" type="button">Ləğv et</button>
       <button class="btn btn-primary" type="submit">Qeydiyyatı tamamla</button>
+    </div>
+  </form>
+</div>
+
+<!-- ============ CHECK-IN MODALI ============ -->
+<div class="modal-overlay" id="checkinModal">
+  <form class="modal" asp-action="CheckIn" method="post" style="max-width:460px">
+    <div class="modal-head">
+      <h2>Check-in — Kart ver</h2>
+      <button class="modal-close" id="checkinClose" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="display:block">
+      <input type="hidden" name="id" id="checkinVisitId" />
+      <p class="hint" id="checkinName" style="margin:0 0 16px"></p>
+      <div class="field" id="checkinCardField">
+        <label>Müvəqqəti kart <span class="req">*</span></label>
+        <select name="cardId" id="checkinCard">
+          @foreach (var c in Model.FreeCards) { <option value="@c.Id">@c.Name</option> }
+        </select>
+        <small class="hint">Seçilən kart cihazlara yazılacaq və qonağa veriləcək.</small>
+      </div>
+      <div class="field" id="checkinQrNote" style="display:none">
+        <div class="qr-info-box">@Html.Raw(QrIcon()) QR növü — fiziki kart lazım deyil. Nömrə cihazlara yazılacaq.</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="checkinCancel" type="button">Ləğv et</button>
+      <button class="btn btn-primary" type="submit">Check-in et</button>
     </div>
   </form>
 </div>

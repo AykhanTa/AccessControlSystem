@@ -17,6 +17,7 @@ public class VisitRepository : IVisitRepository
             .Include(v => v.Host)
             .Include(v => v.Card)
             .Include(v => v.VisitAreas).ThenInclude(va => va.Area)
+            .Include(v => v.VisitFloors).ThenInclude(vf => vf.Floor)
             .Include(v => v.VisitPurposes).ThenInclude(vp => vp.Purpose);
 
     public Task<List<Visit>> GetRegistryAsync(CancellationToken ct = default) =>
@@ -27,7 +28,8 @@ public class VisitRepository : IVisitRepository
 
     public Task<List<Visit>> GetActivePermitsAsync(CancellationToken ct = default) =>
         WithDetails()
-            .Where(v => v.Status == VisitStatus.In)   // yalnız binadadır; gecikənlər göstərilmir
+            // Aktiv icazə: kart verilib / binadadır / mərtəbədə (gecikənlər göstərilmir)
+            .Where(v => v.Status == VisitStatus.CheckedIn || v.Status == VisitStatus.In || v.Status == VisitStatus.OnFloor)
             .OrderByDescending(v => v.ArrivalAt)
             .ToListAsync(ct);
 
@@ -48,8 +50,46 @@ public class VisitRepository : IVisitRepository
     public Task<Visit?> GetByIdAsync(long id, CancellationToken ct = default) =>
         _db.Visits.Include(v => v.Card).Include(v => v.Guest).FirstOrDefaultAsync(v => v.Id == id, ct);
 
+    public Task<Visit?> GetForCheckInAsync(long id, CancellationToken ct = default) =>
+        _db.Visits
+            .Include(v => v.Guest)
+            .Include(v => v.Card)
+            .Include(v => v.VisitFloors)
+            .FirstOrDefaultAsync(v => v.Id == id, ct);
+
     public async Task AddAsync(Visit visit, CancellationToken ct = default) =>
         await _db.Visits.AddAsync(visit, ct);
+
+    public Task<bool> AccessNumberExistsAsync(string accessNumber, CancellationToken ct = default) =>
+        _db.Visits.AnyAsync(v => v.AccessNumber == accessNumber, ct);
+
+    public Task<Visit?> GetActiveByAccessNumberAsync(string accessNumber, CancellationToken ct = default) =>
+        _db.Visits
+            .Include(v => v.Guest)
+            .Include(v => v.Card)
+            .Where(v => v.AccessNumber == accessNumber && v.Status != VisitStatus.Out)
+            .OrderByDescending(v => v.CreatedAt)
+            .FirstOrDefaultAsync(ct);
+
+    public async Task<List<(long Id, VisitStatus Status)>> GetIdStatusesAsync(CancellationToken ct = default)
+    {
+        var rows = await _db.Visits.Select(v => new { v.Id, v.Status }).ToListAsync(ct);
+        return rows.Select(r => (r.Id, r.Status)).ToList();
+    }
+
+    public Task<List<Visit>> GetForMaintenanceAsync(CancellationToken ct = default) =>
+        _db.Visits
+            .Include(v => v.Guest)
+            .Include(v => v.Card)
+            .Include(v => v.DeviceEnrollments).ThenInclude(e => e.Device)
+            .Where(v => v.Status != VisitStatus.Out
+                        || v.DeviceEnrollments.Any(e => e.Status != EnrollmentStatus.Revoked))
+            .ToListAsync(ct);
+
+    public Task<bool> HasOtherActiveWithAccessNumberAsync(string accessNumber, long excludeVisitId, CancellationToken ct = default) =>
+        _db.Visits.AnyAsync(v => v.AccessNumber == accessNumber
+                                 && v.Id != excludeVisitId
+                                 && v.Status != VisitStatus.Out, ct);
 
     public Task<int> CountTodayRegisteredAsync(CancellationToken ct = default)
     {
@@ -58,7 +98,7 @@ public class VisitRepository : IVisitRepository
     }
 
     public Task<int> CountCurrentlyInAsync(CancellationToken ct = default) =>
-        _db.Visits.CountAsync(v => v.Status == VisitStatus.In, ct);
+        _db.Visits.CountAsync(v => v.Status == VisitStatus.In || v.Status == VisitStatus.OnFloor, ct);
 
     public Task<int> CountTodayExitedAsync(CancellationToken ct = default)
     {

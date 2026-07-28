@@ -193,4 +193,42 @@ public static class DbSeeder
 
         await db.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Mərtəbə + cihaz başlanğıc datası. Cihazlar cədvəli boş olduqda işləyir —
+    /// yəni mövcud (artıq seed edilmiş) bazaya da bir dəfə tətbiq olunur.
+    /// Həmçinin real test kartını (Mifare UID) təmin edir.
+    /// </summary>
+    public static async Task SeedDevicesAsync(AppDbContext db)
+    {
+        if (!await db.Floors.AnyAsync())
+        {
+            var floor = new Floor { Name = "1-ci mərtəbə" };
+            db.Floors.Add(floor);
+            db.Devices.Add(new Device
+            {
+                Name = "1-ci mərtəbə - Giriş",
+                Ip = "10.130.0.189",
+                Port = 80,
+                Floor = floor,
+                Direction = DeviceDirection.Entry,
+                DoorNo = 1,
+                IsActive = true
+            });
+            await db.SaveChangesAsync();
+        }
+
+        // Real test kartı (cihazdan oxunan Mifare UID) — yoxdursa əlavə et.
+        if (!await db.Cards.AnyAsync(c => c.CardNo == "2903913593"))
+        {
+            db.Cards.Add(new Card
+            {
+                CardNo = "2903913593",
+                Note = "Real test kartı (Mifare UID)",
+                Status = CardStatus.Free,
+                IsActive = true
+            });
+            await db.SaveChangesAsync();
+        }
+    }
 }

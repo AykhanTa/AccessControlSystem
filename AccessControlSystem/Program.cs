@@ -11,6 +11,14 @@ using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Development-də Hikvision cihazlarının serverə (real-vaxt event) çata bilməsi üçün
+// yalnız localhost yox, BÜTÜN şəbəkə interfeyslərində dinlə. Brauzer yenə
+// http://localhost:5082-də açılır; cihaz isə http://<PC_LAN_IP>:5082-yə çatır.
+if (builder.Environment.IsDevelopment())
+{
+    builder.WebHost.UseUrls("http://0.0.0.0:5082");
+}
+
 // ---- Autentifikasiya (cookie) ----
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -37,6 +45,18 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// Hikvision paylaşılan admin krediti (bütün cihazlar üçün) — konfiqurasiyadan.
+var hikOptions = builder.Configuration.GetSection("Hikvision")
+    .Get<AccessControlSystem.Application.Common.HikvisionOptions>()
+    ?? new AccessControlSystem.Application.Common.HikvisionOptions();
+builder.Services.AddSingleton(hikOptions);
+
+// Cihaz hadisələrini PULL edən arxa-plan servisi (httpHosts backlog-unu keçir).
+builder.Services.AddHostedService<AccessControlSystem.Services.DeviceEventPoller>();
+
+// Ziyarət təmizləmə: gecikmə + çıxmış/vaxtı keçmişləri cihazlardan silmə (grace period).
+builder.Services.AddHostedService<AccessControlSystem.Services.VisitMaintenanceService>();
+
 var app = builder.Build();
 
 // ---- Verilənlər bazasını yarat/miqrasiya et və seed et ----
@@ -47,6 +67,7 @@ using (var scope = app.Services.CreateScope())
     await DbSeeder.SeedAsync(db);
     var hasher = scope.ServiceProvider.GetRequiredService<AccessControlSystem.Application.Interfaces.Services.IPasswordHasher>();
     await DbSeeder.SeedIdentityAsync(db, hasher);
+    await DbSeeder.SeedDevicesAsync(db);
 }
 
 if (!app.Environment.IsDevelopment())

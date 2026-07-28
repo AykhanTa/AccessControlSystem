@@ -15,6 +15,7 @@ public class GuestsViewModel
     public List<VisitRowDto> Guests { get; set; } = new();
     public List<LookupDto> Hosts { get; set; } = new();
     public List<LookupDto> Areas { get; set; } = new();
+    public List<LookupDto> Floors { get; set; } = new();
     public List<LookupDto> Purposes { get; set; } = new();
     public List<LookupDto> FreeCards { get; set; } = new();
 }
@@ -69,6 +70,8 @@ public class SettingsViewModel
     public List<HostItemDto> Hosts { get; set; } = new();
     public List<AreaItemDto> Areas { get; set; } = new();
     public List<PurposeItemDto> Purposes { get; set; } = new();
+    public List<FloorItemDto> Floors { get; set; } = new();
+    public List<DeviceItemDto> Devices { get; set; } = new();
 }
 
 /// <summary>Sistem Loqları səhifəsi view modeli.</summary>
@@ -110,7 +113,7 @@ public class GuestFormModel
 
     public string PassType { get; set; } = "card";   // "card" | "qr"
     public long? CardId { get; set; }
-    public long AreaId { get; set; }
+    public long FloorId { get; set; }                  // icazəli mərtəbə
     public long PurposeId { get; set; }
     public string? Note { get; set; }
 

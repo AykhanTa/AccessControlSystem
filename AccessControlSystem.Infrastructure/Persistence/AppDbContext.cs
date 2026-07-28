@@ -16,6 +16,11 @@ public class AppDbContext : DbContext, IUnitOfWork
     public DbSet<Visit> Visits => Set<Visit>();
     public DbSet<VisitArea> VisitAreas => Set<VisitArea>();
     public DbSet<VisitPurpose> VisitPurposes => Set<VisitPurpose>();
+    public DbSet<Floor> Floors => Set<Floor>();
+    public DbSet<Device> Devices => Set<Device>();
+    public DbSet<VisitFloor> VisitFloors => Set<VisitFloor>();
+    public DbSet<DeviceEnrollment> DeviceEnrollments => Set<DeviceEnrollment>();
+    public DbSet<AccessEvent> AccessEvents => Set<AccessEvent>();
     public DbSet<Section> Sections => Set<Section>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();

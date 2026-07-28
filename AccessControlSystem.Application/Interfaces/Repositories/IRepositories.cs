@@ -22,7 +22,20 @@ public interface IVisitRepository
     /// <summary>Ziyarətlərin mövcud olduğu illər (azalan).</summary>
     Task<List<int>> GetDistinctYearsAsync(CancellationToken ct = default);
     Task<Visit?> GetByIdAsync(long id, CancellationToken ct = default);
+    /// <summary>Check-in üçün — Guest və VisitFloors daxil.</summary>
+    Task<Visit?> GetForCheckInAsync(long id, CancellationToken ct = default);
+    /// <summary>AccessNumber üzrə hazırda aktiv ziyarət (Guest+Card daxil). Event emalı üçün.</summary>
+    Task<Visit?> GetActiveByAccessNumberAsync(string accessNumber, CancellationToken ct = default);
+    /// <summary>Canlı status feed üçün — bütün ziyarətlərin id + status cütləri.</summary>
+    Task<List<(long Id, Domain.Enums.VisitStatus Status)>> GetIdStatusesAsync(CancellationToken ct = default);
+    /// <summary>Background təmizləmə üçün — aktiv və ya hələ cihazda qeydi qalan çıxmış ziyarətlər
+    /// (Guest, Card, DeviceEnrollments.Device daxil).</summary>
+    Task<List<Visit>> GetForMaintenanceAsync(CancellationToken ct = default);
+    /// <summary>Verilmiş AccessNumber-i başqa AKTİV ziyarət istifadə edirmi (kart təkrar istifadə qorunması).</summary>
+    Task<bool> HasOtherActiveWithAccessNumberAsync(string accessNumber, long excludeVisitId, CancellationToken ct = default);
     Task AddAsync(Visit visit, CancellationToken ct = default);
+    /// <summary>Verilmiş AccessNumber artıq mövcuddurmu (unikallıq üçün).</summary>
+    Task<bool> AccessNumberExistsAsync(string accessNumber, CancellationToken ct = default);
 
     Task<int> CountTodayRegisteredAsync(CancellationToken ct = default);
     Task<int> CountCurrentlyInAsync(CancellationToken ct = default);
@@ -78,6 +91,48 @@ public interface IPurposeRepository
     Task<List<Purpose>> GetByIdsAsync(IEnumerable<long> ids, CancellationToken ct = default);
     Task<bool> ExistsByNameAsync(string name, CancellationToken ct = default);
     Task AddAsync(Purpose purpose, CancellationToken ct = default);
+}
+
+public interface IFloorRepository
+{
+    Task<List<Floor>> GetActiveAsync(CancellationToken ct = default);
+    Task<List<Floor>> GetAllAsync(CancellationToken ct = default);
+    Task<List<Floor>> GetByIdsAsync(IEnumerable<long> ids, CancellationToken ct = default);
+    Task<Floor?> GetByIdAsync(long id, CancellationToken ct = default);
+    Task<bool> ExistsByNameAsync(string name, long? excludeId = null, CancellationToken ct = default);
+    Task<int> DeviceCountAsync(long floorId, CancellationToken ct = default);
+    Task<int> VisitUsageCountAsync(long floorId, CancellationToken ct = default);
+    Task AddAsync(Floor floor, CancellationToken ct = default);
+    void Remove(Floor floor);
+}
+
+public interface IAccessEventRepository
+{
+    Task AddAsync(AccessEvent ev, CancellationToken ct = default);
+    /// <summary>Son N hadisə (Device daxil) — diaqnostika üçün.</summary>
+    Task<List<AccessEvent>> GetRecentAsync(int take, CancellationToken ct = default);
+}
+
+public interface IDeviceRepository
+{
+    /// <summary>Verilmiş mərtəbələrin bütün aktiv cihazları (giriş + çıxış).</summary>
+    Task<List<Device>> GetActiveByFloorIdsAsync(IEnumerable<long> floorIds, CancellationToken ct = default);
+    /// <summary>IP üzrə cihaz (Floor daxil). Event mənbəyini tapmaq üçün.</summary>
+    Task<Device?> GetByIpAsync(string ip, CancellationToken ct = default);
+    /// <summary>Bütün aktiv cihazlar — poll üçün.</summary>
+    Task<List<Device>> GetAllActiveAsync(CancellationToken ct = default);
+    Task<List<Device>> GetAllWithFloorAsync(CancellationToken ct = default);
+    Task<Device?> GetByIdAsync(long id, CancellationToken ct = default);
+    Task<bool> ExistsByIpPortAsync(string ip, int port, long? excludeId = null, CancellationToken ct = default);
+    Task AddAsync(Device device, CancellationToken ct = default);
+    void Remove(Device device);
+}
+
+public interface IDeviceEnrollmentRepository
+{
+    /// <summary>Ziyarətin cihaz-qeydləri (Device daxil).</summary>
+    Task<List<DeviceEnrollment>> GetByVisitAsync(long visitId, CancellationToken ct = default);
+    Task AddAsync(DeviceEnrollment enrollment, CancellationToken ct = default);
 }
 
 public interface ISectionRepository

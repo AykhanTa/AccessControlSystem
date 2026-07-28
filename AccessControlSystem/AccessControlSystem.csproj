@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
     <ProjectReference Include="..\AccessControlSystem.Application\AccessControlSystem.Application.csproj" />
@@ -16,6 +16,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>74a5a8f7-0cb0-4bc9-b8a4-5b217d92b7a6</UserSecretsId>
   </PropertyGroup>
 
 </Project>
