@@ -120,6 +120,10 @@ public class HikvisionTestController : Controller
     [HttpGet("EventHost")]
     public IActionResult EventHost() => Run(d => _hik.GetEventHostAsync(d));
 
+    // GET /HikvisionTest/FaceLibs — cihazdakı üz kitabxanalarını göstərir (FDID/faceLibType üçün)
+    [HttpGet("FaceLibs")]
+    public IActionResult FaceLibs() => Run(d => _hik.GetFaceLibsAsync(d));
+
     // GET /HikvisionTest/EventStats — serverə çatan BÜTÜN POST-lar (saxlanmasa belə).
     // totalReceived artırsa cihaz hələ göndərir; recent-də deviceTime 2026 + 2903913593 = canlı oxutma.
     [HttpGet("EventStats")]

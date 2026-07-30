@@ -11,6 +11,9 @@ public class AccessEvent : BaseEntity
     public long? VisitId { get; set; }
     public Visit? Visit { get; set; }
 
+    public long? EmployeeId { get; set; }
+    public Employee? Employee { get; set; }
+
     public long? DeviceId { get; set; }
     public Device? Device { get; set; }
 

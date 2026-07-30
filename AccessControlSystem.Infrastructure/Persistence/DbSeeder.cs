@@ -199,6 +199,119 @@ public static class DbSeeder
     /// yəni mövcud (artıq seed edilmiş) bazaya da bir dəfə tətbiq olunur.
     /// Həmçinin real test kartını (Mifare UID) təmin edir.
     /// </summary>
+    /// <summary>
+    /// Default mərkəz (bina) + mövcud mərtəbələri ona bağlayır. Çoxbina təməli.
+    /// Mərkəzlər boş olduqda işləyir — mövcud bazaya da bir dəfə tətbiq olunur.
+    /// </summary>
+    public static async Task SeedCentersAsync(AppDbContext db)
+    {
+        Center center;
+        if (!await db.Centers.AnyAsync())
+        {
+            center = new Center
+            {
+                Code = "HQ",
+                Name = "Baş Ofis",
+                City = "Bakı",
+                TimeZone = "CST-4:00:00",
+                IsActive = true
+            };
+            db.Centers.Add(center);
+            await db.SaveChangesAsync();
+        }
+        else
+        {
+            center = await db.Centers.OrderBy(c => c.Id).FirstAsync();
+        }
+
+        // Mərkəzsiz mərtəbələri default mərkəzə bağla.
+        var orphanFloors = await db.Floors.Where(f => f.CenterId == null).ToListAsync();
+        if (orphanFloors.Count > 0)
+        {
+            foreach (var f in orphanFloors) f.CenterId = center.Id;
+            await db.SaveChangesAsync();
+        }
+    }
+
+    /// <summary>Default şirkət — işçilər/şöbələr/vəzifələr üçün. Şirkətlər boş olduqda işləyir.</summary>
+    public static async Task SeedOrganizationAsync(AppDbContext db)
+    {
+        if (await db.Companies.AnyAsync()) return;
+        db.Companies.Add(new Company { Name = "Baş Şirkət", IsActive = true });
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>"İşçilər" bölməsini (Section) və Administrator roluna icazəsini bir dəfə əlavə edir.</summary>
+    public static async Task SeedEmployeesSectionAsync(AppDbContext db)
+    {
+        if (await db.Sections.AnyAsync(s => s.Code == "employees")) return;
+        var section = new Section { Code = "employees", Name = "İşçilər", SortOrder = 11 };
+        db.Sections.Add(section);
+        await db.SaveChangesAsync();
+
+        var adminRole = await db.Roles.FirstOrDefaultAsync(r => r.Name == "Administrator");
+        if (adminRole is not null)
+        {
+            db.RolePermissions.Add(new RolePermission
+            {
+                RoleId = adminRole.Id, SectionId = section.Id,
+                CanView = true, CanAdd = true, CanEdit = true, CanDelete = true
+            });
+            await db.SaveChangesAsync();
+        }
+    }
+
+    /// <summary>"Keçid hadisələri" bölməsini (Section) və Administrator roluna icazəsini bir dəfə əlavə edir.</summary>
+    public static async Task SeedAccessEventsSectionAsync(AppDbContext db)
+    {
+        if (await db.Sections.AnyAsync(s => s.Code == "access_events")) return;
+        var section = new Section { Code = "access_events", Name = "Keçid hadisələri", SortOrder = 12 };
+        db.Sections.Add(section);
+        await db.SaveChangesAsync();
+
+        var adminRole = await db.Roles.FirstOrDefaultAsync(r => r.Name == "Administrator");
+        if (adminRole is not null)
+        {
+            db.RolePermissions.Add(new RolePermission
+            {
+                RoleId = adminRole.Id, SectionId = section.Id,
+                CanView = true, CanAdd = true, CanEdit = true, CanDelete = true
+            });
+            await db.SaveChangesAsync();
+        }
+    }
+
+    /// <summary>
+    /// Hər cihaz üçün (AccessPointId boşdursa) 1:1 keçid nöqtəsi yaradır və bağlayır.
+    /// Mövcud bazaya da bir dəfə tətbiq olunur.
+    /// </summary>
+    public static async Task SeedAccessPointsAsync(AppDbContext db)
+    {
+        var devices = await db.Devices
+            .Include(d => d.Floor)
+            .Where(d => d.AccessPointId == null)
+            .ToListAsync();
+        if (devices.Count == 0) return;
+
+        foreach (var d in devices)
+        {
+            var ap = new AccessPoint
+            {
+                Name = d.Name,
+                FloorId = d.FloorId,
+                CenterId = d.Floor?.CenterId,
+                Direction = d.Direction,
+                // Default: Door (generic) — köhnə status evristikası qorunur. İstifadəçi
+                // sonra Əsas giriş / Mərtəbə girişi seçib dəqiq məntiqi aktivləşdirə bilər.
+                PointType = PointType.Door,
+                IsActive = true
+            };
+            db.AccessPoints.Add(ap);
+            d.AccessPoint = ap;
+        }
+        await db.SaveChangesAsync();
+    }
+
     public static async Task SeedDevicesAsync(AppDbContext db)
     {
         if (!await db.Floors.AnyAsync())

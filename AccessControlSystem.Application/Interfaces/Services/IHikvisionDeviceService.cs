@@ -77,6 +77,27 @@ public interface IHikvisionDeviceService
     Task<HikResult> SearchAcsEventRawAsync(HikDevice device, DateTimeOffset start, DateTimeOffset end,
         int major, int minor, int position, CancellationToken ct = default);
 
+    /// <summary>
+    /// Cihaz jurnalının BİR səhifəsini (bütün hadisə tipləri: qapı, login, üz və s.) + ümumi sayı qaytarır.
+    /// Server tərəfli pagination üçün: position = offset, maxResults = səhifə ölçüsü. Ən yenidən köhnəyə.
+    /// employeeNo/name/cardNo verilibsə cihaz özü süzür (totalMatches süzülmüş sayı göstərir).
+    /// </summary>
+    Task<HikEventRawPage> SearchEventPageAsync(HikDevice device, DateTimeOffset start, DateTimeOffset end,
+        int position, int maxResults, string? employeeNo = null, string? name = null, string? cardNo = null,
+        int major = 0, int minor = 0, CancellationToken ct = default);
+
+    /// <summary>Cihazdan bir şəkli (hadisə snapshot-u) Digest auth ilə yükləyir. Uğursuzsa null.</summary>
+    Task<byte[]?> DownloadPictureAsync(HikDevice device, string pictureUrl, CancellationToken ct = default);
+
     /// <summary>Cihazın hazırkı yerli vaxtını (öz timezone-u ilə) qaytarır — vaxt-pəncərəli sorğular üçün.</summary>
     Task<DateTimeOffset?> GetDeviceTimeAsync(HikDevice device, CancellationToken ct = default);
+
+    /// <summary>
+    /// İşçinin üzünü cihaza yükləyir (POST /ISAPI/Intelligent/FDLib/FaceDataRecord, multipart).
+    /// personId = cihazdakı employeeNo (FPID). Şəkil JPEG.
+    /// </summary>
+    Task<HikResult> UploadFaceAsync(HikDevice device, string personId, byte[] imageJpeg, CancellationToken ct = default);
+
+    /// <summary>Cihazdakı üz kitabxanalarını oxuyur (GET /ISAPI/Intelligent/FDLib) — diaqnostika.</summary>
+    Task<HikResult> GetFaceLibsAsync(HikDevice device, CancellationToken ct = default);
 }

@@ -100,6 +100,21 @@ public class VisitConfiguration : IEntityTypeConfiguration<Visit>
     }
 }
 
+public class CenterConfiguration : IEntityTypeConfiguration<Center>
+{
+    public void Configure(EntityTypeBuilder<Center> b)
+    {
+        b.ToTable("Centers");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Code).HasMaxLength(40).IsRequired();
+        b.Property(x => x.Name).HasMaxLength(160).IsRequired();
+        b.Property(x => x.Address).HasMaxLength(255);
+        b.Property(x => x.City).HasMaxLength(120);
+        b.Property(x => x.TimeZone).HasMaxLength(40);
+        b.HasIndex(x => x.Code).IsUnique();
+    }
+}
+
 public class FloorConfiguration : IEntityTypeConfiguration<Floor>
 {
     public void Configure(EntityTypeBuilder<Floor> b)
@@ -108,6 +123,25 @@ public class FloorConfiguration : IEntityTypeConfiguration<Floor>
         b.HasKey(x => x.Id);
         b.Property(x => x.Name).HasMaxLength(120).IsRequired();
         b.HasIndex(x => x.Name).IsUnique();
+        b.HasOne(x => x.Center).WithMany(c => c.Floors)
+            .HasForeignKey(x => x.CenterId).OnDelete(DeleteBehavior.SetNull);
+    }
+}
+
+public class AccessPointConfiguration : IEntityTypeConfiguration<AccessPoint>
+{
+    public void Configure(EntityTypeBuilder<AccessPoint> b)
+    {
+        b.ToTable("AccessPoints");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Name).HasMaxLength(120).IsRequired();
+        b.Property(x => x.PointType).HasConversion<string>().HasMaxLength(20);
+        b.Property(x => x.Direction).HasConversion<string>().HasMaxLength(10);
+        // Restrict — Floor→Device onsuz da cascade-dir; çoxlu cascade yolunun qarşısını alır.
+        b.HasOne(x => x.Floor).WithMany()
+            .HasForeignKey(x => x.FloorId).OnDelete(DeleteBehavior.Restrict);
+        b.HasOne(x => x.Center).WithMany()
+            .HasForeignKey(x => x.CenterId).OnDelete(DeleteBehavior.SetNull);
     }
 }
 
@@ -120,8 +154,12 @@ public class DeviceConfiguration : IEntityTypeConfiguration<Device>
         b.Property(x => x.Name).HasMaxLength(120).IsRequired();
         b.Property(x => x.Ip).HasMaxLength(64).IsRequired();
         b.Property(x => x.Direction).HasConversion<string>().HasMaxLength(10);
+        b.Property(x => x.SerialNo).HasMaxLength(80);
+        b.Property(x => x.Model).HasMaxLength(120);
         b.HasOne(x => x.Floor).WithMany(f => f.Devices)
             .HasForeignKey(x => x.FloorId).OnDelete(DeleteBehavior.Cascade);
+        b.HasOne(x => x.AccessPoint).WithMany(a => a.Devices)
+            .HasForeignKey(x => x.AccessPointId).OnDelete(DeleteBehavior.SetNull);
         // Bir mərtəbədə eyni istiqamətdə eyni IP təkrarlanmasın.
         b.HasIndex(x => new { x.Ip, x.Port }).IsUnique();
     }
@@ -140,6 +178,88 @@ public class VisitFloorConfiguration : IEntityTypeConfiguration<VisitFloor>
     }
 }
 
+public class CompanyConfiguration : IEntityTypeConfiguration<Company>
+{
+    public void Configure(EntityTypeBuilder<Company> b)
+    {
+        b.ToTable("Companies");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Name).HasMaxLength(200).IsRequired();
+        b.Property(x => x.TaxNumber).HasMaxLength(40);
+        b.Property(x => x.ContactPerson).HasMaxLength(160);
+        b.Property(x => x.Phone).HasMaxLength(40);
+        b.Property(x => x.Email).HasMaxLength(160);
+        b.HasIndex(x => x.Name);
+    }
+}
+
+public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
+{
+    public void Configure(EntityTypeBuilder<Department> b)
+    {
+        b.ToTable("Departments");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Name).HasMaxLength(160).IsRequired();
+        b.HasOne(x => x.Company).WithMany(c => c.Departments)
+            .HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Restrict);
+        b.HasOne(x => x.ParentDepartment).WithMany(d => d.SubDepartments)
+            .HasForeignKey(x => x.ParentDepartmentId).OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
+public class PositionConfiguration : IEntityTypeConfiguration<Position>
+{
+    public void Configure(EntityTypeBuilder<Position> b)
+    {
+        b.ToTable("Positions");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Name).HasMaxLength(160).IsRequired();
+        b.HasOne(x => x.Company).WithMany(c => c.Positions)
+            .HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
+public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
+{
+    public void Configure(EntityTypeBuilder<Employee> b)
+    {
+        b.ToTable("Employees");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.EmployeeNo).HasMaxLength(40).IsRequired();
+        b.Property(x => x.FirstName).HasMaxLength(80).IsRequired();
+        b.Property(x => x.LastName).HasMaxLength(80).IsRequired();
+        b.Property(x => x.Patronymic).HasMaxLength(80);
+        b.Property(x => x.FinCode).HasMaxLength(20);
+        b.Property(x => x.DocumentNo).HasMaxLength(40);
+        b.Property(x => x.Phone).HasMaxLength(40);
+        b.Property(x => x.Email).HasMaxLength(160);
+        b.Property(x => x.PhotoPath).HasMaxLength(255);
+        b.Property(x => x.AccessNumber).HasMaxLength(20);
+        b.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+        b.Property(x => x.FaceStatus).HasConversion<string>().HasMaxLength(20);
+        b.Property(x => x.CurrentPresence).HasConversion<string>().HasMaxLength(10);
+        b.Ignore(x => x.FullName);
+        b.HasIndex(x => x.EmployeeNo).IsUnique();
+        b.HasIndex(x => x.AccessNumber).HasFilter("[AccessNumber] IS NOT NULL");
+        b.HasOne(x => x.Company).WithMany().HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Restrict);
+        b.HasOne(x => x.Department).WithMany().HasForeignKey(x => x.DepartmentId).OnDelete(DeleteBehavior.SetNull);
+        b.HasOne(x => x.Position).WithMany().HasForeignKey(x => x.PositionId).OnDelete(DeleteBehavior.SetNull);
+    }
+}
+
+public class EmployeeFloorConfiguration : IEntityTypeConfiguration<EmployeeFloor>
+{
+    public void Configure(EntityTypeBuilder<EmployeeFloor> b)
+    {
+        b.ToTable("EmployeeFloors");
+        b.HasKey(x => new { x.EmployeeId, x.FloorId });
+        b.HasOne(x => x.Employee).WithMany(e => e.EmployeeFloors)
+            .HasForeignKey(x => x.EmployeeId).OnDelete(DeleteBehavior.Cascade);
+        b.HasOne(x => x.Floor).WithMany()
+            .HasForeignKey(x => x.FloorId).OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
 public class AccessEventConfiguration : IEntityTypeConfiguration<AccessEvent>
 {
     public void Configure(EntityTypeBuilder<AccessEvent> b)
@@ -152,6 +272,7 @@ public class AccessEventConfiguration : IEntityTypeConfiguration<AccessEvent>
         b.Property(x => x.DeviceIp).HasMaxLength(64);
         b.Property(x => x.Raw).HasMaxLength(4000);
         b.HasOne(x => x.Visit).WithMany().HasForeignKey(x => x.VisitId).OnDelete(DeleteBehavior.SetNull);
+        b.HasOne(x => x.Employee).WithMany().HasForeignKey(x => x.EmployeeId).OnDelete(DeleteBehavior.SetNull);
         b.HasOne(x => x.Device).WithMany().HasForeignKey(x => x.DeviceId).OnDelete(DeleteBehavior.SetNull);
         b.HasIndex(x => x.OccurredAt);
         b.HasIndex(x => x.AccessNumber);

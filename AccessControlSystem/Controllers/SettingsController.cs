@@ -18,6 +18,10 @@ public class SettingsController : Controller
             Hosts = await _settings.GetHostsAsync(),
             Areas = await _settings.GetAreasAsync(),
             Purposes = await _settings.GetPurposesAsync(),
+            Companies = await _settings.GetCompaniesAsync(),
+            Departments = await _settings.GetDepartmentsAsync(),
+            Positions = await _settings.GetPositionsAsync(),
+            Centers = await _settings.GetCentersAsync(),
             Floors = await _settings.GetFloorsAsync(),
             Devices = await _settings.GetDevicesAsync()
         };
@@ -63,10 +67,70 @@ public class SettingsController : Controller
     public Task<IActionResult> TogglePurpose(long id) =>
         Guard(() => _settings.TogglePurposeAsync(id), "Məqsədin statusu dəyişdirildi.");
 
+    // ---- Şirkətlər ----
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Add)]
+    public Task<IActionResult> AddCompany(string name, string? taxNumber, string? contactPerson, string? phone, string? email) =>
+        Guard(() => _settings.AddCompanyAsync(new CompanyInputDto
+        { Name = name, TaxNumber = taxNumber, ContactPerson = contactPerson, Phone = phone, Email = email }),
+        "Şirkət əlavə edildi.");
+
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
+    public Task<IActionResult> ToggleCompany(long id) =>
+        Guard(() => _settings.ToggleCompanyAsync(id), "Şirkətin statusu dəyişdirildi.");
+
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Delete)]
+    public Task<IActionResult> DeleteCompany(long id) =>
+        Guard(() => _settings.DeleteCompanyAsync(id), "Şirkət silindi.");
+
+    // ---- Şöbələr ----
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Add)]
+    public Task<IActionResult> AddDepartment(string name, long companyId, long? parentId) =>
+        Guard(() => _settings.AddDepartmentAsync(name, companyId, parentId), "Şöbə əlavə edildi.");
+
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
+    public Task<IActionResult> ToggleDepartment(long id) =>
+        Guard(() => _settings.ToggleDepartmentAsync(id), "Şöbənin statusu dəyişdirildi.");
+
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Delete)]
+    public Task<IActionResult> DeleteDepartment(long id) =>
+        Guard(() => _settings.DeleteDepartmentAsync(id), "Şöbə silindi.");
+
+    // ---- Vəzifələr ----
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Add)]
+    public Task<IActionResult> AddPosition(string name, long companyId) =>
+        Guard(() => _settings.AddPositionAsync(name, companyId), "Vəzifə əlavə edildi.");
+
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
+    public Task<IActionResult> TogglePosition(long id) =>
+        Guard(() => _settings.TogglePositionAsync(id), "Vəzifənin statusu dəyişdirildi.");
+
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Delete)]
+    public Task<IActionResult> DeletePosition(long id) =>
+        Guard(() => _settings.DeletePositionAsync(id), "Vəzifə silindi.");
+
+    // ---- Mərkəzlər ----
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Add)]
+    public Task<IActionResult> AddCenter(string code, string name, string? address, string? city) =>
+        Guard(() => _settings.AddCenterAsync(new CenterInputDto { Code = code, Name = name, Address = address, City = city }),
+        "Mərkəz əlavə edildi.");
+
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
+    public Task<IActionResult> UpdateCenter(long id, string code, string name, string? address, string? city) =>
+        Guard(() => _settings.UpdateCenterAsync(id, new CenterInputDto { Code = code, Name = name, Address = address, City = city }),
+        "Mərkəz yeniləndi.");
+
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
+    public Task<IActionResult> ToggleCenter(long id) =>
+        Guard(() => _settings.ToggleCenterAsync(id), "Mərkəzin statusu dəyişdirildi.");
+
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Delete)]
+    public Task<IActionResult> DeleteCenter(long id) =>
+        Guard(() => _settings.DeleteCenterAsync(id), "Mərkəz silindi.");
+
     // ---- Mərtəbələr ----
     [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Add)]
-    public Task<IActionResult> AddFloor(string name) =>
-        Guard(() => _settings.AddFloorAsync(name), "Mərtəbə əlavə edildi.");
+    public Task<IActionResult> AddFloor(string name, long? centerId) =>
+        Guard(() => _settings.AddFloorAsync(name, centerId), "Mərtəbə əlavə edildi.");
 
     [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
     public Task<IActionResult> ToggleFloor(long id) =>
@@ -78,15 +142,15 @@ public class SettingsController : Controller
 
     // ---- Cihazlar ----
     [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Add)]
-    public Task<IActionResult> AddDevice(string name, string ip, int port, bool useHttps, int doorNo, long floorId, string direction) =>
+    public Task<IActionResult> AddDevice(string name, string ip, int port, bool useHttps, int doorNo, long floorId, string direction, string pointType) =>
         Guard(() => _settings.AddDeviceAsync(new DeviceInputDto
-        { Name = name, Ip = ip, Port = port, UseHttps = useHttps, DoorNo = doorNo, FloorId = floorId, Direction = direction }),
+        { Name = name, Ip = ip, Port = port, UseHttps = useHttps, DoorNo = doorNo, FloorId = floorId, Direction = direction, PointType = pointType }),
         "Cihaz əlavə edildi.");
 
     [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
-    public Task<IActionResult> UpdateDevice(long id, string name, string ip, int port, bool useHttps, int doorNo, long floorId, string direction) =>
+    public Task<IActionResult> UpdateDevice(long id, string name, string ip, int port, bool useHttps, int doorNo, long floorId, string direction, string pointType) =>
         Guard(() => _settings.UpdateDeviceAsync(id, new DeviceInputDto
-        { Name = name, Ip = ip, Port = port, UseHttps = useHttps, DoorNo = doorNo, FloorId = floorId, Direction = direction }),
+        { Name = name, Ip = ip, Port = port, UseHttps = useHttps, DoorNo = doorNo, FloorId = floorId, Direction = direction, PointType = pointType }),
         "Cihaz yeniləndi.");
 
     [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]

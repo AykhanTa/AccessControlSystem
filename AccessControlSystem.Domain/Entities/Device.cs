@@ -22,5 +22,15 @@ public class Device : BaseEntity
     public DeviceDirection Direction { get; set; } = DeviceDirection.Entry;
     public bool IsActive { get; set; } = true;
 
+    // Keçid nöqtəsi (məntiqi). Status məntiqi bunun PointType/Direction-una baxır (fallback: Device.Direction).
+    public long? AccessPointId { get; set; }
+    public AccessPoint? AccessPoint { get; set; }
+
+    // Fiziki avadanlıq məlumatları (diaqrama uyğun)
+    public string? SerialNo { get; set; }
+    public string? Model { get; set; }
+    public bool IsOnline { get; set; }
+    public DateTime? LastSeenAt { get; set; }
+
     public ICollection<DeviceEnrollment> Enrollments { get; set; } = new List<DeviceEnrollment>();
 }

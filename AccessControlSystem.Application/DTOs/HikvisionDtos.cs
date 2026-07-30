@@ -45,6 +45,28 @@ public class HikEventDto
     public string? Raw { get; set; }
 }
 
+/// <summary>Cihazın AcsEvent jurnalından bir xam sətir (bütün tiplər — qapı, login, üz və s.).</summary>
+public class HikRawEvent
+{
+    public string? EmployeeNo { get; set; }
+    public string? Name { get; set; }
+    public string? CardNo { get; set; }
+    public int? Major { get; set; }
+    public int? Minor { get; set; }
+    public DateTimeOffset? Time { get; set; }   // cihazın bildirdiyi hadisə vaxtı
+    public string? PictureUrl { get; set; }     // cihazdakı snapshot URL-i (varsa)
+}
+
+/// <summary>Cihazdan bir səhifə hadisə + ümumi say (server tərəfli pagination üçün).</summary>
+public class HikEventRawPage
+{
+    public bool Ok { get; set; }
+    public string? Error { get; set; }
+    public int Total { get; set; }               // totalMatches — bütün uyğun hadisələr
+    public string? Status { get; set; }          // OK | MORE | NO MATCH
+    public List<HikRawEvent> Items { get; set; } = new();
+}
+
 /// <summary>Canlı UI yeniləməsi üçün yüngül status cütü.</summary>
 public class VisitStatusDto
 {

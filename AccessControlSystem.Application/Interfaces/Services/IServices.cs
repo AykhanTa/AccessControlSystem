@@ -21,6 +21,23 @@ public interface IGuestService
     Task CheckOutAsync(long visitId, CancellationToken ct = default);
 }
 
+public interface IAccessEventService
+{
+    /// <summary>Verilmiş günün bütün keçid hadisələri (day null → bugün).</summary>
+    Task<List<AccessEventRowDto>> GetByDayAsync(DateTime? day = null, CancellationToken ct = default);
+}
+
+public interface IEmployeeService
+{
+    Task<List<EmployeeRowDto>> GetAllAsync(CancellationToken ct = default);
+    /// <summary>Canlı UI üçün — id + mövqe cütləri.</summary>
+    Task<List<EmployeePresenceDto>> GetPresencesAsync(CancellationToken ct = default);
+    Task<long> CreateAsync(EmployeeCreateDto dto, CancellationToken ct = default);
+    Task UpdateAsync(long id, EmployeeCreateDto dto, CancellationToken ct = default);
+    Task ToggleStatusAsync(long id, CancellationToken ct = default);
+    Task DeleteAsync(long id, CancellationToken ct = default);
+}
+
 public interface ICardService
 {
     Task<List<CardDto>> GetAllAsync(CancellationToken ct = default);
@@ -110,9 +127,34 @@ public interface ISettingsService
     Task<long> AddPurposeAsync(string name, CancellationToken ct = default);
     Task TogglePurposeAsync(long id, CancellationToken ct = default);
 
+    // Şirkətlər
+    Task<List<CompanyItemDto>> GetCompaniesAsync(CancellationToken ct = default);
+    Task<long> AddCompanyAsync(CompanyInputDto dto, CancellationToken ct = default);
+    Task ToggleCompanyAsync(long id, CancellationToken ct = default);
+    Task DeleteCompanyAsync(long id, CancellationToken ct = default);
+
+    // Şöbələr
+    Task<List<DepartmentItemDto>> GetDepartmentsAsync(CancellationToken ct = default);
+    Task<long> AddDepartmentAsync(string name, long companyId, long? parentId, CancellationToken ct = default);
+    Task ToggleDepartmentAsync(long id, CancellationToken ct = default);
+    Task DeleteDepartmentAsync(long id, CancellationToken ct = default);
+
+    // Vəzifələr
+    Task<List<PositionItemDto>> GetPositionsAsync(CancellationToken ct = default);
+    Task<long> AddPositionAsync(string name, long companyId, CancellationToken ct = default);
+    Task TogglePositionAsync(long id, CancellationToken ct = default);
+    Task DeletePositionAsync(long id, CancellationToken ct = default);
+
+    // Mərkəzlər (binalar)
+    Task<List<CenterItemDto>> GetCentersAsync(CancellationToken ct = default);
+    Task<long> AddCenterAsync(CenterInputDto dto, CancellationToken ct = default);
+    Task UpdateCenterAsync(long id, CenterInputDto dto, CancellationToken ct = default);
+    Task ToggleCenterAsync(long id, CancellationToken ct = default);
+    Task DeleteCenterAsync(long id, CancellationToken ct = default);
+
     // Mərtəbələr
     Task<List<FloorItemDto>> GetFloorsAsync(CancellationToken ct = default);
-    Task<long> AddFloorAsync(string name, CancellationToken ct = default);
+    Task<long> AddFloorAsync(string name, long? centerId, CancellationToken ct = default);
     Task ToggleFloorAsync(long id, CancellationToken ct = default);
     Task DeleteFloorAsync(long id, CancellationToken ct = default);
 

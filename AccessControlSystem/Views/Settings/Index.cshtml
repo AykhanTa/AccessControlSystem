@@ -10,8 +10,195 @@
 
 <div class="page-head">
   <div>
-    <p>Qəbul edən şəxslər, məqsədlər və ərazilər bazadan idarə olunur.</p>
+    <p>Mərkəzlər, mərtəbələr, cihazlar, qəbul edən şəxslər və məqsədlər bazadan idarə olunur.</p>
   </div>
+</div>
+
+<!-- Mərkəzlər (binalar) -->
+<section class="panel">
+  <div class="param-head"><h3>Mərkəzlər (binalar)</h3></div>
+  @if (canAdd)
+  {
+    <form asp-action="AddCenter" method="post" class="device-form device-add">
+      <div class="fld sm"><label>Kod</label><input name="code" type="text" placeholder="HQ" required /></div>
+      <div class="fld grow"><label>Ad</label><input name="name" type="text" placeholder="Baş Ofis" required /></div>
+      <div class="fld"><label>Şəhər</label><input name="city" type="text" placeholder="Bakı" /></div>
+      <div class="fld end"><button class="btn btn-primary" type="submit">Əlavə et</button></div>
+    </form>
+  }
+  <div>
+    @foreach (var c in Model.Centers)
+    {
+      <div class="param-item">
+        <div class="param-item-info">
+          <b>@c.Name <span style="color:var(--faint);font-weight:500">(@c.Code)</span></b>
+          <span>@(string.IsNullOrEmpty(c.City) ? "—" : c.City) · @c.FloorCount mərtəbə · <span class="@(c.IsActive ? "st-on" : "st-off")">@(c.IsActive ? "Aktiv" : "Deaktiv")</span></span>
+        </div>
+        <div class="host-actions">
+          @if (canEdit)
+          {
+            <form asp-action="ToggleCenter" method="post" style="display:inline">
+              <input type="hidden" name="id" value="@c.Id" />
+              <button class="btn-sm outline" type="submit">@(c.IsActive ? "Deaktiv et" : "Aktiv et")</button>
+            </form>
+          }
+          @if (canDelete)
+          {
+            <form asp-action="DeleteCenter" method="post" style="display:inline"
+                  onsubmit="return confirm('&quot;@c.Name&quot; mərkəzi silinsin?');">
+              <input type="hidden" name="id" value="@c.Id" />
+              <button class="btn-sm danger" type="submit">Sil</button>
+            </form>
+          }
+        </div>
+      </div>
+    }
+    @if (Model.Centers.Count == 0)
+    {
+      <p class="hint" style="padding:14px 22px">Hələ mərkəz əlavə edilməyib.</p>
+    }
+  </div>
+</section>
+
+<!-- Şirkətlər -->
+<section class="panel">
+  <div class="param-head"><h3>Şirkətlər</h3></div>
+  @if (canAdd)
+  {
+    <form asp-action="AddCompany" method="post" class="device-form device-add">
+      <div class="fld grow"><label>Ad</label><input name="name" type="text" placeholder="Şirkət adı" required /></div>
+      <div class="fld"><label>Əlaqədar şəxs</label><input name="contactPerson" type="text" /></div>
+      <div class="fld"><label>Telefon</label><input name="phone" type="text" /></div>
+      <div class="fld end"><button class="btn btn-primary" type="submit">Əlavə et</button></div>
+    </form>
+  }
+  <div>
+    @foreach (var c in Model.Companies)
+    {
+      <div class="param-item">
+        <div class="param-item-info">
+          <b>@c.Name</b>
+          <span>@c.DepartmentCount şöbə · <span class="@(c.IsActive ? "st-on" : "st-off")">@(c.IsActive ? "Aktiv" : "Deaktiv")</span></span>
+        </div>
+        <div class="host-actions">
+          @if (canEdit)
+          {
+            <form asp-action="ToggleCompany" method="post" style="display:inline">
+              <input type="hidden" name="id" value="@c.Id" />
+              <button class="btn-sm outline" type="submit">@(c.IsActive ? "Deaktiv et" : "Aktiv et")</button>
+            </form>
+          }
+          @if (canDelete)
+          {
+            <form asp-action="DeleteCompany" method="post" style="display:inline"
+                  onsubmit="return confirm('&quot;@c.Name&quot; şirkəti silinsin?');">
+              <input type="hidden" name="id" value="@c.Id" />
+              <button class="btn-sm danger" type="submit">Sil</button>
+            </form>
+          }
+        </div>
+      </div>
+    }
+    @if (Model.Companies.Count == 0) { <p class="hint" style="padding:14px 22px">Hələ şirkət əlavə edilməyib.</p> }
+  </div>
+</section>
+
+<div class="param-grid">
+  <!-- Şöbələr -->
+  <section class="panel">
+    <div class="param-head"><h3>Şöbələr</h3></div>
+    @if (canAdd)
+    {
+      <form asp-action="AddDepartment" method="post" class="device-form device-add">
+        <div class="fld grow"><label>Şöbə adı</label><input name="name" type="text" placeholder="Mühasibatlıq" required /></div>
+        <div class="fld md"><label>Şirkət</label>
+          <select name="companyId" required>
+            @foreach (var c in Model.Companies) { <option value="@c.Id">@c.Name</option> }
+          </select>
+        </div>
+        <div class="fld md"><label>Ana şöbə</label>
+          <select name="parentId">
+            <option value="">— Yoxdur —</option>
+            @foreach (var d in Model.Departments) { <option value="@d.Id">@d.Name</option> }
+          </select>
+        </div>
+        <div class="fld end"><button class="btn btn-primary" type="submit">Əlavə et</button></div>
+      </form>
+    }
+    <div>
+      @foreach (var d in Model.Departments)
+      {
+        <div class="param-item">
+          <div class="param-item-info">
+            <b>@d.Name</b>
+            <span>@d.CompanyName@(d.ParentName != null ? " · " + d.ParentName : "") · <span class="@(d.IsActive ? "st-on" : "st-off")">@(d.IsActive ? "Aktiv" : "Deaktiv")</span></span>
+          </div>
+          <div class="host-actions">
+            @if (canEdit)
+            {
+              <form asp-action="ToggleDepartment" method="post" style="display:inline">
+                <input type="hidden" name="id" value="@d.Id" />
+                <button class="btn-sm outline" type="submit">@(d.IsActive ? "Deaktiv et" : "Aktiv et")</button>
+              </form>
+            }
+            @if (canDelete)
+            {
+              <form asp-action="DeleteDepartment" method="post" style="display:inline"
+                    onsubmit="return confirm('&quot;@d.Name&quot; şöbəsi silinsin?');">
+                <input type="hidden" name="id" value="@d.Id" />
+                <button class="btn-sm danger" type="submit">Sil</button>
+              </form>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Vəzifələr -->
+  <section class="panel">
+    <div class="param-head"><h3>Vəzifələr</h3></div>
+    @if (canAdd)
+    {
+      <form asp-action="AddPosition" method="post" class="device-form device-add">
+        <div class="fld grow"><label>Vəzifə adı</label><input name="name" type="text" placeholder="Mühasib" required /></div>
+        <div class="fld md"><label>Şirkət</label>
+          <select name="companyId" required>
+            @foreach (var c in Model.Companies) { <option value="@c.Id">@c.Name</option> }
+          </select>
+        </div>
+        <div class="fld end"><button class="btn btn-primary" type="submit">Əlavə et</button></div>
+      </form>
+    }
+    <div>
+      @foreach (var p in Model.Positions)
+      {
+        <div class="param-item">
+          <div class="param-item-info">
+            <b>@p.Name</b>
+            <span>@p.CompanyName · <span class="@(p.IsActive ? "st-on" : "st-off")">@(p.IsActive ? "Aktiv" : "Deaktiv")</span></span>
+          </div>
+          <div class="host-actions">
+            @if (canEdit)
+            {
+              <form asp-action="TogglePosition" method="post" style="display:inline">
+                <input type="hidden" name="id" value="@p.Id" />
+                <button class="btn-sm outline" type="submit">@(p.IsActive ? "Deaktiv et" : "Aktiv et")</button>
+              </form>
+            }
+            @if (canDelete)
+            {
+              <form asp-action="DeletePosition" method="post" style="display:inline"
+                    onsubmit="return confirm('&quot;@p.Name&quot; vəzifəsi silinsin?');">
+                <input type="hidden" name="id" value="@p.Id" />
+                <button class="btn-sm danger" type="submit">Sil</button>
+              </form>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </section>
 </div>
 
 <!-- Qəbul edən şəxslər -->
@@ -99,9 +286,15 @@
     <div class="param-head"><h3>Mərtəbələr</h3></div>
     @if (canAdd)
     {
-      <form asp-action="AddFloor" method="post" class="param-add">
-        <input name="name" type="text" placeholder="Yeni mərtəbə adı" required />
-        <button class="btn btn-primary" type="submit">Əlavə et</button>
+      <form asp-action="AddFloor" method="post" class="device-form device-add">
+        <div class="fld grow"><label>Mərtəbə adı</label><input name="name" type="text" placeholder="1-ci mərtəbə" required /></div>
+        <div class="fld md"><label>Mərkəz</label>
+          <select name="centerId">
+            <option value="">— Mərkəz seç —</option>
+            @foreach (var c in Model.Centers) { <option value="@c.Id">@c.Name</option> }
+          </select>
+        </div>
+        <div class="fld end"><button class="btn btn-primary" type="submit">Əlavə et</button></div>
       </form>
     }
     <div>
@@ -110,7 +303,7 @@
         <div class="param-item">
           <div class="param-item-info">
             <b>@f.Name</b>
-            <span>@f.DeviceCount cihaz · <span class="@(f.IsActive ? "st-on" : "st-off")">@(f.IsActive ? "Aktiv" : "Deaktiv")</span></span>
+            <span>@(f.CenterName ?? "Mərkəzsiz") · @f.DeviceCount cihaz · <span class="@(f.IsActive ? "st-on" : "st-off")">@(f.IsActive ? "Aktiv" : "Deaktiv")</span></span>
           </div>
           <div class="host-actions">
             @if (canEdit)
@@ -157,6 +350,16 @@
           <option value="Exit">Çıxış</option>
         </select>
       </div>
+      <div class="fld md"><label title="Status məntiqi bundan asılıdır">Keçid tipi</label>
+        <select name="pointType">
+          <option value="Door">Adi qapı</option>
+          <option value="MainEntrance">Əsas giriş (→ Binadadır)</option>
+          <option value="FloorEntrance">Mərtəbə girişi (→ Mərtəbədə)</option>
+          <option value="MainExit">Əsas çıxış (→ Çıxıb)</option>
+          <option value="FloorExit">Mərtəbə çıxışı</option>
+          <option value="Turnstile">Turniket</option>
+        </select>
+      </div>
       <div class="fld sm"><label title="Cihazdakı qapı nömrəsi — tək qapılı terminalda 1 qalır">Qapı №</label><input name="doorNo" type="number" value="1" min="1" title="Cihazdakı qapı nömrəsi. Tək qapılı terminalda 1 saxlanılır." /></div>
       <div class="fld chk"><label>HTTPS</label><input name="useHttps" type="checkbox" value="true" /></div>
       <div class="fld end"><button class="btn btn-primary" type="submit">Əlavə et</button></div>
@@ -185,6 +388,16 @@
           <select form="@did" name="direction" @(canEdit ? "" : "disabled")>
             <option value="Entry" selected="@(d.Direction == "Entry")">Giriş</option>
             <option value="Exit" selected="@(d.Direction == "Exit")">Çıxış</option>
+          </select>
+        </div>
+        <div class="fld md">
+          <select form="@did" name="pointType" @(canEdit ? "" : "disabled")>
+            <option value="Door" selected="@(d.PointType == "Door")">Adi qapı</option>
+            <option value="MainEntrance" selected="@(d.PointType == "MainEntrance")">Əsas giriş</option>
+            <option value="FloorEntrance" selected="@(d.PointType == "FloorEntrance")">Mərtəbə girişi</option>
+            <option value="MainExit" selected="@(d.PointType == "MainExit")">Əsas çıxış</option>
+            <option value="FloorExit" selected="@(d.PointType == "FloorExit")">Mərtəbə çıxışı</option>
+            <option value="Turnstile" selected="@(d.PointType == "Turnstile")">Turniket</option>
           </select>
         </div>
         <div class="fld sm"><input form="@did" name="doorNo" type="number" value="@d.DoorNo" @(canEdit ? "" : "readonly") /></div>

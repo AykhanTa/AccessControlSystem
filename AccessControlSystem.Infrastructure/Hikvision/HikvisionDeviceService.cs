@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using AccessControlSystem.Application.DTOs;
@@ -269,6 +270,132 @@ public class HikvisionDeviceService : IHikvisionDeviceService
         return PostJson(device, "/ISAPI/AccessControl/AcsEvent?format=json", payload, ct);
     }
 
+    public async Task<HikEventRawPage> SearchEventPageAsync(HikDevice device, DateTimeOffset start, DateTimeOffset end,
+        int position, int maxResults, string? employeeNo = null, string? name = null, string? cardNo = null,
+        int major = 0, int minor = 0, CancellationToken ct = default)
+    {
+        var page = new HikEventRawPage();
+        var cond = new Dictionary<string, object>
+        {
+            ["searchID"] = Guid.NewGuid().ToString("N"),
+            ["searchResultPosition"] = position,
+            ["maxResults"] = maxResults,
+            ["major"] = major,
+            ["minor"] = minor,
+            ["startTime"] = IsoOffset(start),
+            ["endTime"] = IsoOffset(end),
+            ["timeReverseOrder"] = true,           // ən yeni əvvəl
+            ["picEnable"] = true                   // hadisə snapshot-larının pictureURL-ini qaytar
+        };
+        if (!string.IsNullOrWhiteSpace(employeeNo)) cond["employeeNoString"] = employeeNo!.Trim();
+        if (!string.IsNullOrWhiteSpace(name)) cond["name"] = name!.Trim();
+        if (!string.IsNullOrWhiteSpace(cardNo)) cond["cardNo"] = cardNo!.Trim();
+
+        var res = await PostJson(device, "/ISAPI/AccessControl/AcsEvent?format=json",
+            new { AcsEventCond = cond }, ct);
+        if (!res.Success || string.IsNullOrWhiteSpace(res.RawBody))
+        {
+            page.Ok = false;
+            page.Error = res.ErrorMessage ?? $"Cihaz cavab vermədi (HTTP {res.HttpStatus}).";
+            return page;
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(res.RawBody);
+            if (!doc.RootElement.TryGetProperty("AcsEvent", out var ae))
+            {
+                page.Ok = false;
+                page.Error = "AcsEvent cavabı gözlənilməz formatdadır.";
+                return page;
+            }
+            page.Ok = true;
+            if (ae.TryGetProperty("responseStatusStrg", out var s)) page.Status = s.GetString();
+            if (ae.TryGetProperty("totalMatches", out var tm) && tm.ValueKind == JsonValueKind.Number)
+                page.Total = tm.GetInt32();
+
+            if (ae.TryGetProperty("InfoList", out var infos) && infos.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var e in infos.EnumerateArray())
+                {
+                    DateTimeOffset? t = null;
+                    if (Str(e, "time") is { } ts && DateTimeOffset.TryParse(ts, out var parsed)) t = parsed;
+                    page.Items.Add(new HikRawEvent
+                    {
+                        EmployeeNo = Str(e, "employeeNoString"),
+                        Name = Str(e, "name"),
+                        CardNo = Str(e, "cardNo"),
+                        Major = Int(e, "major"),
+                        Minor = Int(e, "minor"),
+                        Time = t,
+                        PictureUrl = Str(e, "pictureURL")
+                    });
+                }
+            }
+        }
+        catch (JsonException ex)
+        {
+            page.Ok = false;
+            page.Error = "Cavab parse edilmədi: " + ex.Message;
+        }
+        return page;
+    }
+
+    public async Task<byte[]?> DownloadPictureAsync(HikDevice device, string pictureUrl, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(pictureUrl)) return null;
+        var client = GetClient(device);
+        var url = pictureUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            ? pictureUrl
+            : device.BaseUrl + (pictureUrl.StartsWith('/') ? pictureUrl : "/" + pictureUrl);
+        try
+        {
+            using var resp = await client.GetAsync(url, ct);
+            if (!resp.IsSuccessStatusCode) return null;
+            return await resp.Content.ReadAsByteArrayAsync(ct);
+        }
+        catch (HttpRequestException) { return null; }
+        catch (TaskCanceledException) { return null; }
+    }
+
+    public async Task<HikResult> UploadFaceAsync(HikDevice device, string personId, byte[] imageJpeg, CancellationToken ct = default)
+    {
+        var client = GetClient(device);
+        var url = device.BaseUrl + "/ISAPI/Intelligent/FDLib/FaceDataRecord?format=json";
+        try
+        {
+            var boundary = "----Hik" + Guid.NewGuid().ToString("N");
+            using var content = new MultipartFormDataContent(boundary);
+            var meta = JsonSerializer.Serialize(new { faceLibType = "blackFD", FDID = "1", FPID = personId });
+            // Content-Type "application/json" (charset OLMADAN — Hikvision charset-i rədd edir).
+            var metaPart = new StringContent(meta);
+            metaPart.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            content.Add(metaPart, "FaceDataRecord");
+            var img = new ByteArrayContent(imageJpeg);
+            img.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+            content.Add(img, "img", "face.jpg");
+            // .NET boundary-ni DIRNAQ içində qoyur; Hikvision parseri dırnağı qəbul etmir → dırnaqsız yenidən qur.
+            content.Headers.Remove("Content-Type");
+            content.Headers.TryAddWithoutValidation("Content-Type", $"multipart/form-data; boundary={boundary}");
+
+            using var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
+            using var resp = await client.SendAsync(req, ct);
+            var raw = await resp.Content.ReadAsStringAsync(ct);
+            return Parse((int)resp.StatusCode, resp.IsSuccessStatusCode, raw);
+        }
+        catch (TaskCanceledException) when (!ct.IsCancellationRequested)
+        {
+            return HikResult.Fail($"Vaxt bitdi (cihaz {device.Ip}).");
+        }
+        catch (HttpRequestException ex)
+        {
+            return HikResult.Fail($"Bağlantı xətası: {ex.Message}");
+        }
+    }
+
+    public Task<HikResult> GetFaceLibsAsync(HikDevice device, CancellationToken ct = default) =>
+        SendAsync(device, HttpMethod.Get, "/ISAPI/Intelligent/FDLib?format=json", null, "application/json", ct);
+
     public async Task<DateTimeOffset?> GetDeviceTimeAsync(HikDevice device, CancellationToken ct = default)
     {
         var res = await GetTimeAsync(device, ct);
@@ -317,8 +444,8 @@ public class HikvisionDeviceService : IHikvisionDeviceService
                             MinorType = minor,
                             SerialNo = Int(e, "serialNo"),
                             DeviceIp = device.Ip,
-                            // AcsEvent axtarışında icazə verilmiş kart/üz autentifikasiyası minor=1-dir.
-                            Granted = minor == 1,
+                            // AcsEvent-də icazə verilmiş: kart/QR = minor 1, üz = minor 75.
+                            Granted = minor is 1 or 75,
                             OccurredAt = DateTime.Now,
                             Raw = e.GetRawText()
                         });

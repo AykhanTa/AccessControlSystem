@@ -20,6 +20,38 @@ public class GuestsViewModel
     public List<LookupDto> FreeCards { get; set; } = new();
 }
 
+/// <summary>İşçilər səhifəsi view modeli.</summary>
+public class EmployeesViewModel
+{
+    public List<EmployeeRowDto> Employees { get; set; } = new();
+    public List<CompanyItemDto> Companies { get; set; } = new();
+    public List<DepartmentItemDto> Departments { get; set; } = new();
+    public List<PositionItemDto> Positions { get; set; } = new();
+    public List<LookupDto> Floors { get; set; } = new();
+}
+
+/// <summary>İşçi əlavə/redaktə formu (binding üçün).</summary>
+public class EmployeeFormModel
+{
+    public long Id { get; set; }
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string? Patronymic { get; set; }
+    public string? EmployeeNo { get; set; }
+    public string? FinCode { get; set; }
+    public string? DocumentNo { get; set; }
+    public string? Phone { get; set; }
+    public string? Email { get; set; }
+
+    public long CompanyId { get; set; }
+    public long? DepartmentId { get; set; }
+    public long? PositionId { get; set; }
+    public DateTime? EmploymentStartAt { get; set; }
+    public List<long> FloorIds { get; set; } = new();
+
+    public IFormFile? Photo { get; set; }
+}
+
 /// <summary>Kartlar səhifəsi view modeli.</summary>
 public class CardsViewModel
 {
@@ -70,6 +102,10 @@ public class SettingsViewModel
     public List<HostItemDto> Hosts { get; set; } = new();
     public List<AreaItemDto> Areas { get; set; } = new();
     public List<PurposeItemDto> Purposes { get; set; } = new();
+    public List<CompanyItemDto> Companies { get; set; } = new();
+    public List<DepartmentItemDto> Departments { get; set; } = new();
+    public List<PositionItemDto> Positions { get; set; } = new();
+    public List<CenterItemDto> Centers { get; set; } = new();
     public List<FloorItemDto> Floors { get; set; } = new();
     public List<DeviceItemDto> Devices { get; set; } = new();
 }

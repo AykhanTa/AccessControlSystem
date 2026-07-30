@@ -15,15 +15,17 @@ namespace AccessControlSystem.Application.Services;
 public class VisitEventService : IVisitEventService
 {
     private readonly IVisitRepository _visits;
+    private readonly IEmployeeRepository _employees;
     private readonly IDeviceRepository _devices;
     private readonly IAccessEventRepository _events;
     private readonly IUnitOfWork _uow;
     private readonly ISystemLogWriter _log;
 
-    public VisitEventService(IVisitRepository visits, IDeviceRepository devices,
+    public VisitEventService(IVisitRepository visits, IEmployeeRepository employees, IDeviceRepository devices,
         IAccessEventRepository events, IUnitOfWork uow, ISystemLogWriter log)
     {
         _visits = visits;
+        _employees = employees;
         _devices = devices;
         _events = events;
         _uow = uow;
@@ -36,16 +38,27 @@ public class VisitEventService : IVisitEventService
         if (string.IsNullOrWhiteSpace(ev.AccessNumber))
             return;
 
-        // MATCH-FIRST: yalnız bizim aktiv qonağa uyğun gələn hadisəni saxla/emal et.
-        // Backlog və cihazdakı başqa istifadəçilər (uyğun ziyarət yoxdur) tez keçilir —
-        // bu, cihaz saatından asılı deyil və DB-ni doldurmur.
-        var visit = await _visits.GetActiveByAccessNumberAsync(ev.AccessNumber!, ct);
-        if (visit is null)
-            return;
-
         var device = string.IsNullOrWhiteSpace(ev.DeviceIp)
             ? null : await _devices.GetByIpAsync(ev.DeviceIp!, ct);
 
+        // MATCH-FIRST: əvvəl aktiv QONAQ, sonra aktiv İŞÇİ. Heç biri yoxsa — nəzərə alma
+        // (backlog / cihazdakı bizə aid olmayan istifadəçilər DB-ni doldurmasın).
+        var visit = await _visits.GetActiveByAccessNumberAsync(ev.AccessNumber!, ct);
+        if (visit is not null)
+        {
+            await ProcessVisitAsync(ev, device, visit, ct);
+            return;
+        }
+
+        var employee = await _employees.GetActiveByAccessNumberAsync(ev.AccessNumber!, ct);
+        if (employee is not null)
+        {
+            await ProcessEmployeeAsync(ev, device, employee, ct);
+        }
+    }
+
+    private async Task ProcessVisitAsync(HikEventDto ev, Domain.Entities.Device? device, Visit visit, CancellationToken ct)
+    {
         await _events.AddAsync(new AccessEvent
         {
             VisitId = visit.Id,
@@ -59,46 +72,104 @@ public class VisitEventService : IVisitEventService
             Raw = ev.Raw is { Length: > 4000 } ? ev.Raw[..4000] : ev.Raw
         }, ct);
 
-        // Status keçidi yalnız tanınan cihaz + icazə verildikdə.
         if (device is not null && ev.Granted)
         {
-            var newStatus = NextStatus(visit.Status, device.Direction);
+            var direction = device.AccessPoint?.Direction ?? device.Direction;
+            var pointType = device.AccessPoint?.PointType;
+            var newStatus = NextStatus(visit.Status, direction, pointType);
             if (newStatus != visit.Status)
             {
                 visit.Status = newStatus;
                 visit.UpdatedAt = DateTime.Now;
-
                 if (newStatus == VisitStatus.Out)
                 {
                     visit.ActualExitAt = DateTime.Now;
-                    if (visit.Card is not null)
-                    {
-                        visit.Card.Status = CardStatus.Free;
-                        visit.Card.UpdatedAt = DateTime.Now;
-                    }
+                    if (visit.Card is not null) { visit.Card.Status = CardStatus.Free; visit.Card.UpdatedAt = DateTime.Now; }
                 }
-
-                var dir = device.Direction == DeviceDirection.Entry ? "giriş" : "çıxış";
+                var dir = direction == DeviceDirection.Entry ? "giriş" : "çıxış";
                 await _log.LogAsync("ACCESS_EVENT",
-                    $"{visit.Guest?.FullName} — {device.Floor?.Name} {dir} → {StatusLabel(newStatus)}.",
+                    $"{visit.Guest?.FullName} — {device.AccessPoint?.Name ?? device.Floor?.Name} {dir} → {StatusLabel(newStatus)}.",
                     "visit", visit.Id, ct: ct);
             }
         }
-
         await _uow.SaveChangesAsync(ct);
     }
 
-    private static VisitStatus NextStatus(VisitStatus current, DeviceDirection dir)
+    private async Task ProcessEmployeeAsync(HikEventDto ev, Domain.Entities.Device? device, Employee emp, CancellationToken ct)
     {
-        if (dir == DeviceDirection.Exit)
-            return VisitStatus.Out;
+        await _events.AddAsync(new AccessEvent
+        {
+            EmployeeId = emp.Id,
+            DeviceId = device?.Id,
+            AccessNumber = ev.AccessNumber!,
+            PersonName = ev.PersonName ?? emp.FullName,
+            EventType = ev.Granted ? "AccessGranted" : "AccessDenied",
+            Granted = ev.Granted,
+            OccurredAt = ev.OccurredAt,
+            DeviceIp = ev.DeviceIp,
+            Raw = ev.Raw is { Length: > 4000 } ? ev.Raw[..4000] : ev.Raw
+        }, ct);
 
-        // Giriş cihazı
+        if (device is not null && ev.Granted)
+        {
+            emp.LastSeenAt = ev.OccurredAt;
+            var direction = device.AccessPoint?.Direction ?? device.Direction;
+            var pointType = device.AccessPoint?.PointType;
+            var newPresence = NextPresence(emp.CurrentPresence, direction, pointType);
+            if (newPresence != emp.CurrentPresence)
+            {
+                emp.CurrentPresence = newPresence;
+                emp.UpdatedAt = DateTime.Now;
+                var dir = direction == DeviceDirection.Entry ? "giriş" : "çıxış";
+                await _log.LogAsync("EMPLOYEE_ACCESS",
+                    $"{emp.FullName} — {device.AccessPoint?.Name ?? device.Floor?.Name} {dir} → {PresenceLabel(newPresence)}.",
+                    "employee", emp.Id, ct: ct);
+            }
+        }
+        await _uow.SaveChangesAsync(ct);
+    }
+
+    private static PresenceStatus NextPresence(PresenceStatus current, DeviceDirection dir, PointType? pointType)
+    {
+        if (dir == DeviceDirection.Exit || pointType is PointType.MainExit or PointType.FloorExit)
+            return PresenceStatus.Out;
+        if (pointType is PointType.FloorEntrance)
+            return PresenceStatus.OnFloor;
+        if (pointType is PointType.MainEntrance or PointType.Turnstile)
+            return PresenceStatus.In;
         return current switch
         {
-            VisitStatus.Planned or VisitStatus.CheckedIn or VisitStatus.Late => VisitStatus.In,  // binaya giriş
-            VisitStatus.In => VisitStatus.OnFloor,   // mərtəbəyə giriş
-            _ => current                              // OnFloor → OnFloor
+            PresenceStatus.Out => PresenceStatus.In,
+            PresenceStatus.In => PresenceStatus.OnFloor,
+            _ => current
+        };
+    }
+
+    private static string PresenceLabel(PresenceStatus s) => s switch
+    {
+        PresenceStatus.In => "Binadadır",
+        PresenceStatus.OnFloor => "Mərtəbədə",
+        _ => "Çıxıb"
+    };
+
+    private static VisitStatus NextStatus(VisitStatus current, DeviceDirection dir, PointType? pointType)
+    {
+        // Çıxış (istiqamət və ya çıxış tipli nöqtə) → Çıxıb
+        if (dir == DeviceDirection.Exit || pointType is PointType.MainExit or PointType.FloorExit)
+            return VisitStatus.Out;
+
+        // Giriş — keçid nöqtəsinin tipinə görə dəqiq status
+        if (pointType is PointType.FloorEntrance)
+            return VisitStatus.OnFloor;                                  // mərtəbəyə giriş → Mərtəbədə
+        if (pointType is PointType.MainEntrance or PointType.Turnstile)
+            return VisitStatus.In;                                       // binaya giriş → Binadadır
+
+        // Fallback (Door / tip təyin edilməyib) — köhnə evristika
+        return current switch
+        {
+            VisitStatus.Planned or VisitStatus.CheckedIn or VisitStatus.Late => VisitStatus.In,
+            VisitStatus.In => VisitStatus.OnFloor,
+            _ => current
         };
     }
 

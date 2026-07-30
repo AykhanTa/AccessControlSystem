@@ -12,22 +12,246 @@ public class SettingsService : ISettingsService
     private readonly IHostRepository _hosts;
     private readonly IAreaRepository _areas;
     private readonly IPurposeRepository _purposes;
+    private readonly ICenterRepository _centers;
     private readonly IFloorRepository _floors;
     private readonly IDeviceRepository _devices;
+    private readonly ICompanyRepository _companies;
+    private readonly IDepartmentRepository _departments;
+    private readonly IPositionRepository _positions;
     private readonly IUnitOfWork _uow;
     private readonly ISystemLogWriter _log;
 
     public SettingsService(IHostRepository hosts, IAreaRepository areas, IPurposeRepository purposes,
-                           IFloorRepository floors, IDeviceRepository devices,
+                           ICenterRepository centers, IFloorRepository floors, IDeviceRepository devices,
+                           ICompanyRepository companies, IDepartmentRepository departments, IPositionRepository positions,
                            IUnitOfWork uow, ISystemLogWriter log)
     {
         _hosts = hosts;
         _areas = areas;
         _purposes = purposes;
+        _centers = centers;
         _floors = floors;
         _devices = devices;
+        _companies = companies;
+        _departments = departments;
+        _positions = positions;
         _uow = uow;
         _log = log;
+    }
+
+    // ---------- Şirkətlər ----------
+
+    public async Task<List<CompanyItemDto>> GetCompaniesAsync(CancellationToken ct = default)
+    {
+        var companies = await _companies.GetAllAsync(ct);
+        var result = new List<CompanyItemDto>();
+        foreach (var c in companies)
+            result.Add(new CompanyItemDto
+            {
+                Id = c.Id, Name = c.Name, TaxNumber = c.TaxNumber, Phone = c.Phone, IsActive = c.IsActive,
+                DepartmentCount = await _companies.DepartmentCountAsync(c.Id, ct)
+            });
+        return result;
+    }
+
+    public async Task<long> AddCompanyAsync(CompanyInputDto dto, CancellationToken ct = default)
+    {
+        var name = (dto.Name ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Şirkət adını daxil edin.");
+        var company = new Company
+        {
+            Name = name, TaxNumber = dto.TaxNumber?.Trim(), ContactPerson = dto.ContactPerson?.Trim(),
+            Phone = dto.Phone?.Trim(), Email = dto.Email?.Trim(), IsActive = true
+        };
+        await _companies.AddAsync(company, ct);
+        await _uow.SaveChangesAsync(ct);
+        await _log.LogAsync("COMPANY_CREATED", $"{company.Name} şirkəti əlavə edildi.", "company", company.Id, ct: ct);
+        return company.Id;
+    }
+
+    public async Task ToggleCompanyAsync(long id, CancellationToken ct = default)
+    {
+        var company = await _companies.GetByIdAsync(id, ct) ?? throw new KeyNotFoundException("Şirkət tapılmadı.");
+        company.IsActive = !company.IsActive;
+        company.UpdatedAt = DateTime.Now;
+        await _uow.SaveChangesAsync(ct);
+        await _log.LogAsync("COMPANY_STATUS_CHANGED",
+            $"{company.Name} şirkəti {(company.IsActive ? "aktiv" : "deaktiv")} edildi.", "company", company.Id, ct: ct);
+    }
+
+    public async Task DeleteCompanyAsync(long id, CancellationToken ct = default)
+    {
+        var company = await _companies.GetByIdAsync(id, ct) ?? throw new KeyNotFoundException("Şirkət tapılmadı.");
+        if (await _companies.HasDependentsAsync(id, ct))
+            throw new InvalidOperationException("Bu şirkətdə şöbə/vəzifə var. Əvvəlcə onları silin.");
+        var name = company.Name;
+        _companies.Remove(company);
+        await _uow.SaveChangesAsync(ct);
+        await _log.LogAsync("COMPANY_DELETED", $"{name} şirkəti silindi.", "company", id, ct: ct);
+    }
+
+    // ---------- Şöbələr ----------
+
+    public async Task<List<DepartmentItemDto>> GetDepartmentsAsync(CancellationToken ct = default) =>
+        (await _departments.GetAllWithCompanyAsync(ct)).Select(d => new DepartmentItemDto
+        {
+            Id = d.Id, Name = d.Name, CompanyId = d.CompanyId, CompanyName = d.Company?.Name ?? "",
+            ParentName = d.ParentDepartment?.Name, IsActive = d.IsActive
+        }).ToList();
+
+    public async Task<long> AddDepartmentAsync(string name, long companyId, long? parentId, CancellationToken ct = default)
+    {
+        name = (name ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Şöbə adını daxil edin.");
+        if (await _companies.GetByIdAsync(companyId, ct) is null)
+            throw new ArgumentException("Şirkət seçilməlidir.");
+        var dep = new Department { Name = name, CompanyId = companyId, ParentDepartmentId = parentId, IsActive = true };
+        await _departments.AddAsync(dep, ct);
+        await _uow.SaveChangesAsync(ct);
+        await _log.LogAsync("DEPARTMENT_CREATED", $"{dep.Name} şöbəsi əlavə edildi.", "department", dep.Id, ct: ct);
+        return dep.Id;
+    }
+
+    public async Task ToggleDepartmentAsync(long id, CancellationToken ct = default)
+    {
+        var dep = await _departments.GetByIdAsync(id, ct) ?? throw new KeyNotFoundException("Şöbə tapılmadı.");
+        dep.IsActive = !dep.IsActive;
+        dep.UpdatedAt = DateTime.Now;
+        await _uow.SaveChangesAsync(ct);
+        await _log.LogAsync("DEPARTMENT_STATUS_CHANGED",
+            $"{dep.Name} şöbəsi {(dep.IsActive ? "aktiv" : "deaktiv")} edildi.", "department", dep.Id, ct: ct);
+    }
+
+    public async Task DeleteDepartmentAsync(long id, CancellationToken ct = default)
+    {
+        var dep = await _departments.GetByIdAsync(id, ct) ?? throw new KeyNotFoundException("Şöbə tapılmadı.");
+        var name = dep.Name;
+        try
+        {
+            _departments.Remove(dep);
+            await _uow.SaveChangesAsync(ct);
+        }
+        catch (Exception)
+        {
+            throw new InvalidOperationException("Bu şöbə istifadə olunub (alt şöbə/işçi), silinə bilməz. Deaktiv edin.");
+        }
+        await _log.LogAsync("DEPARTMENT_DELETED", $"{name} şöbəsi silindi.", "department", id, ct: ct);
+    }
+
+    // ---------- Vəzifələr ----------
+
+    public async Task<List<PositionItemDto>> GetPositionsAsync(CancellationToken ct = default) =>
+        (await _positions.GetAllWithCompanyAsync(ct)).Select(p => new PositionItemDto
+        {
+            Id = p.Id, Name = p.Name, CompanyId = p.CompanyId, CompanyName = p.Company?.Name ?? "", IsActive = p.IsActive
+        }).ToList();
+
+    public async Task<long> AddPositionAsync(string name, long companyId, CancellationToken ct = default)
+    {
+        name = (name ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Vəzifə adını daxil edin.");
+        if (await _companies.GetByIdAsync(companyId, ct) is null)
+            throw new ArgumentException("Şirkət seçilməlidir.");
+        var pos = new Position { Name = name, CompanyId = companyId, IsActive = true };
+        await _positions.AddAsync(pos, ct);
+        await _uow.SaveChangesAsync(ct);
+        await _log.LogAsync("POSITION_CREATED", $"{pos.Name} vəzifəsi əlavə edildi.", "position", pos.Id, ct: ct);
+        return pos.Id;
+    }
+
+    public async Task TogglePositionAsync(long id, CancellationToken ct = default)
+    {
+        var pos = await _positions.GetByIdAsync(id, ct) ?? throw new KeyNotFoundException("Vəzifə tapılmadı.");
+        pos.IsActive = !pos.IsActive;
+        pos.UpdatedAt = DateTime.Now;
+        await _uow.SaveChangesAsync(ct);
+        await _log.LogAsync("POSITION_STATUS_CHANGED",
+            $"{pos.Name} vəzifəsi {(pos.IsActive ? "aktiv" : "deaktiv")} edildi.", "position", pos.Id, ct: ct);
+    }
+
+    public async Task DeletePositionAsync(long id, CancellationToken ct = default)
+    {
+        var pos = await _positions.GetByIdAsync(id, ct) ?? throw new KeyNotFoundException("Vəzifə tapılmadı.");
+        var name = pos.Name;
+        try
+        {
+            _positions.Remove(pos);
+            await _uow.SaveChangesAsync(ct);
+        }
+        catch (Exception)
+        {
+            throw new InvalidOperationException("Bu vəzifə işçilərdə istifadə olunub, silinə bilməz. Deaktiv edin.");
+        }
+        await _log.LogAsync("POSITION_DELETED", $"{name} vəzifəsi silindi.", "position", id, ct: ct);
+    }
+
+    // ---------- Mərkəzlər (binalar) ----------
+
+    public async Task<List<CenterItemDto>> GetCentersAsync(CancellationToken ct = default)
+    {
+        var centers = await _centers.GetAllAsync(ct);
+        var result = new List<CenterItemDto>();
+        foreach (var c in centers)
+            result.Add(new CenterItemDto
+            {
+                Id = c.Id, Code = c.Code, Name = c.Name, City = c.City, IsActive = c.IsActive,
+                FloorCount = await _centers.FloorCountAsync(c.Id, ct)
+            });
+        return result;
+    }
+
+    public async Task<long> AddCenterAsync(CenterInputDto dto, CancellationToken ct = default)
+    {
+        var code = (dto.Code ?? string.Empty).Trim();
+        var name = (dto.Name ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Mərkəz kodu və adı daxil edin.");
+        if (await _centers.ExistsByCodeAsync(code, null, ct))
+            throw new ArgumentException("Bu kodla mərkəz artıq mövcuddur.");
+        var center = new Center { Code = code, Name = name, Address = dto.Address?.Trim(), City = dto.City?.Trim(), IsActive = true };
+        await _centers.AddAsync(center, ct);
+        await _uow.SaveChangesAsync(ct);
+        await _log.LogAsync("CENTER_CREATED", $"{center.Name} mərkəzi əlavə edildi.", "center", center.Id, ct: ct);
+        return center.Id;
+    }
+
+    public async Task UpdateCenterAsync(long id, CenterInputDto dto, CancellationToken ct = default)
+    {
+        var center = await _centers.GetByIdAsync(id, ct) ?? throw new KeyNotFoundException("Mərkəz tapılmadı.");
+        var code = (dto.Code ?? string.Empty).Trim();
+        var name = (dto.Name ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Mərkəz kodu və adı boş ola bilməz.");
+        if (await _centers.ExistsByCodeAsync(code, id, ct))
+            throw new ArgumentException("Bu kodla başqa mərkəz mövcuddur.");
+        center.Code = code; center.Name = name; center.Address = dto.Address?.Trim(); center.City = dto.City?.Trim();
+        center.UpdatedAt = DateTime.Now;
+        await _uow.SaveChangesAsync(ct);
+        await _log.LogAsync("CENTER_UPDATED", $"{center.Name} mərkəzi yeniləndi.", "center", center.Id, ct: ct);
+    }
+
+    public async Task ToggleCenterAsync(long id, CancellationToken ct = default)
+    {
+        var center = await _centers.GetByIdAsync(id, ct) ?? throw new KeyNotFoundException("Mərkəz tapılmadı.");
+        center.IsActive = !center.IsActive;
+        center.UpdatedAt = DateTime.Now;
+        await _uow.SaveChangesAsync(ct);
+        await _log.LogAsync("CENTER_STATUS_CHANGED",
+            $"{center.Name} mərkəzi {(center.IsActive ? "aktiv" : "deaktiv")} edildi.", "center", center.Id, ct: ct);
+    }
+
+    public async Task DeleteCenterAsync(long id, CancellationToken ct = default)
+    {
+        var center = await _centers.GetByIdAsync(id, ct) ?? throw new KeyNotFoundException("Mərkəz tapılmadı.");
+        if (await _centers.FloorCountAsync(id, ct) > 0)
+            throw new InvalidOperationException("Bu mərkəzdə mərtəbələr var. Əvvəlcə onları başqa mərkəzə köçürün və ya silin.");
+        var name = center.Name;
+        _centers.Remove(center);
+        await _uow.SaveChangesAsync(ct);
+        await _log.LogAsync("CENTER_DELETED", $"{name} mərkəzi silindi.", "center", id, ct: ct);
     }
 
     // ---------- Qəbul edən şəxslər ----------
@@ -187,19 +411,20 @@ public class SettingsService : ISettingsService
             result.Add(new FloorItemDto
             {
                 Id = f.Id, Name = f.Name, IsActive = f.IsActive,
-                DeviceCount = await _floors.DeviceCountAsync(f.Id, ct)
+                DeviceCount = await _floors.DeviceCountAsync(f.Id, ct),
+                CenterId = f.CenterId, CenterName = f.Center?.Name
             });
         return result;
     }
 
-    public async Task<long> AddFloorAsync(string name, CancellationToken ct = default)
+    public async Task<long> AddFloorAsync(string name, long? centerId, CancellationToken ct = default)
     {
         name = (name ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Mərtəbə adını daxil edin.");
         if (await _floors.ExistsByNameAsync(name, null, ct))
             throw new ArgumentException("Bu mərtəbə artıq mövcuddur.");
-        var floor = new Floor { Name = name, IsActive = true };
+        var floor = new Floor { Name = name, CenterId = centerId, IsActive = true };
         await _floors.AddAsync(floor, ct);
         await _uow.SaveChangesAsync(ct);
         await _log.LogAsync("FLOOR_CREATED", $"{floor.Name} mərtəbəsi əlavə edildi.", "floor", floor.Id, ct: ct);
@@ -238,7 +463,9 @@ public class SettingsService : ISettingsService
         {
             Id = d.Id, Name = d.Name, Ip = d.Ip, Port = d.Port, UseHttps = d.UseHttps,
             DoorNo = d.DoorNo, FloorId = d.FloorId, FloorName = d.Floor?.Name ?? "",
-            Direction = d.Direction.ToString(), IsActive = d.IsActive
+            Direction = d.Direction.ToString(),
+            PointType = (d.AccessPoint?.PointType ?? PointType.Door).ToString(),
+            IsActive = d.IsActive
         }).ToList();
 
     public async Task<long> AddDeviceAsync(DeviceInputDto dto, CancellationToken ct = default)
@@ -246,9 +473,11 @@ public class SettingsService : ISettingsService
         ValidateDevice(dto);
         if (await _devices.ExistsByIpPortAsync(dto.Ip.Trim(), dto.Port, null, ct))
             throw new ArgumentException("Bu IP:port ünvanı ilə cihaz artıq mövcuddur.");
-        if (await _floors.GetByIdAsync(dto.FloorId, ct) is null)
-            throw new ArgumentException("Mərtəbə tapılmadı.");
+        var floor = await _floors.GetByIdAsync(dto.FloorId, ct)
+                    ?? throw new ArgumentException("Mərtəbə tapılmadı.");
 
+        var direction = ParseDirection(dto.Direction);
+        var pointType = ParsePointType(dto.PointType);
         var device = new Device
         {
             Name = dto.Name.Trim(),
@@ -257,8 +486,18 @@ public class SettingsService : ISettingsService
             UseHttps = dto.UseHttps,
             DoorNo = dto.DoorNo,
             FloorId = dto.FloorId,
-            Direction = ParseDirection(dto.Direction),
-            IsActive = true
+            Direction = direction,
+            IsActive = true,
+            // Cihaza uyğun keçid nöqtəsi (1:1) avtomatik yaradılır.
+            AccessPoint = new AccessPoint
+            {
+                Name = dto.Name.Trim(),
+                FloorId = dto.FloorId,
+                CenterId = floor.CenterId,
+                Direction = direction,
+                PointType = pointType,
+                IsActive = true
+            }
         };
         await _devices.AddAsync(device, ct);
         await _uow.SaveChangesAsync(ct);
@@ -273,17 +512,29 @@ public class SettingsService : ISettingsService
         ValidateDevice(dto);
         if (await _devices.ExistsByIpPortAsync(dto.Ip.Trim(), dto.Port, id, ct))
             throw new ArgumentException("Bu IP:port ünvanı ilə başqa cihaz mövcuddur.");
-        if (await _floors.GetByIdAsync(dto.FloorId, ct) is null)
-            throw new ArgumentException("Mərtəbə tapılmadı.");
+        var floor = await _floors.GetByIdAsync(dto.FloorId, ct)
+                    ?? throw new ArgumentException("Mərtəbə tapılmadı.");
 
+        var direction = ParseDirection(dto.Direction);
+        var pointType = ParsePointType(dto.PointType);
         device.Name = dto.Name.Trim();
         device.Ip = dto.Ip.Trim();
         device.Port = dto.Port;
         device.UseHttps = dto.UseHttps;
         device.DoorNo = dto.DoorNo;
         device.FloorId = dto.FloorId;
-        device.Direction = ParseDirection(dto.Direction);
+        device.Direction = direction;
         device.UpdatedAt = DateTime.Now;
+
+        // Bağlı keçid nöqtəsini yenilə (yoxdursa yarat).
+        device.AccessPoint ??= new AccessPoint { FloorId = dto.FloorId, IsActive = true };
+        device.AccessPoint.Name = dto.Name.Trim();
+        device.AccessPoint.FloorId = dto.FloorId;
+        device.AccessPoint.CenterId = floor.CenterId;
+        device.AccessPoint.Direction = direction;
+        device.AccessPoint.PointType = pointType;
+        device.AccessPoint.UpdatedAt = DateTime.Now;
+
         await _uow.SaveChangesAsync(ct);
         await _log.LogAsync("DEVICE_UPDATED", $"{device.Name} ({device.Ip}) cihazı yeniləndi.", "device", device.Id, ct: ct);
     }
@@ -332,4 +583,7 @@ public class SettingsService : ISettingsService
 
     private static DeviceDirection ParseDirection(string? d) =>
         string.Equals(d, "Exit", StringComparison.OrdinalIgnoreCase) ? DeviceDirection.Exit : DeviceDirection.Entry;
+
+    private static PointType ParsePointType(string? p) =>
+        Enum.TryParse<PointType>(p, true, out var pt) ? pt : PointType.Door;
 }

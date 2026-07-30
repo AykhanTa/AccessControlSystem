@@ -12,6 +12,8 @@ public static class SectionMap
     {
         ["Home"] = "dashboard",
         ["Guests"] = "guests",
+        ["Employees"] = "employees",
+        ["AccessEvents"] = "access_events",
         ["Cards"] = "cards",
         ["History"] = "history",
         ["ActivePermits"] = "active_permits",

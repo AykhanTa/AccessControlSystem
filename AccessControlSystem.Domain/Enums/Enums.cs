@@ -42,13 +42,55 @@ public enum VisitStatus
     OnFloor = 5
 }
 
-/// <summary>Cihazın istiqaməti — mərtəbənin girişi yoxsa çıxışı.</summary>
+/// <summary>Cihazın/keçid nöqtəsinin istiqaməti.</summary>
 public enum DeviceDirection
 {
-    /// <summary>Giriş cihazı.</summary>
+    /// <summary>Giriş.</summary>
     Entry = 0,
-    /// <summary>Çıxış cihazı.</summary>
+    /// <summary>Çıxış.</summary>
     Exit = 1
+}
+
+/// <summary>Keçid nöqtəsinin tipi — status məntiqi bundan asılıdır.</summary>
+public enum PointType
+{
+    /// <summary>Binanın əsas girişi → Binadadır.</summary>
+    MainEntrance = 0,
+    /// <summary>Binanın əsas çıxışı → Çıxıb.</summary>
+    MainExit = 1,
+    /// <summary>Mərtəbə girişi → Mərtəbədə.</summary>
+    FloorEntrance = 2,
+    /// <summary>Mərtəbə çıxışı.</summary>
+    FloorExit = 3,
+    /// <summary>Adi qapı.</summary>
+    Door = 4,
+    /// <summary>Turniket (əsas giriş kimi).</summary>
+    Turnstile = 5
+}
+
+/// <summary>İşçinin statusu.</summary>
+public enum EmployeeStatus
+{
+    Active = 0,
+    Inactive = 1,
+    Terminated = 2
+}
+
+/// <summary>İşçinin üz məlumatının cihazlara sinxronizasiya vəziyyəti.</summary>
+public enum FaceStatus
+{
+    None = 0,        // üz yoxdur
+    Pending = 1,     // yüklənib, cihaza göndəriləcək
+    Synced = 2,      // cihazlara yazılıb
+    Failed = 3       // yükləmə uğursuz
+}
+
+/// <summary>İşçinin hazırkı mövqeyi (keçid hadisələrindən).</summary>
+public enum PresenceStatus
+{
+    Out = 0,         // bayırda
+    In = 1,          // binadadır
+    OnFloor = 2      // mərtəbədədir
 }
 
 /// <summary>Bir ziyarətin bir cihaza sinxronizasiya vəziyyəti.</summary>

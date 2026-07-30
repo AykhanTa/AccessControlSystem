@@ -57,6 +57,9 @@ builder.Services.AddHostedService<AccessControlSystem.Services.DeviceEventPoller
 // Ziyarət təmizləmə: gecikmə + çıxmış/vaxtı keçmişləri cihazlardan silmə (grace period).
 builder.Services.AddHostedService<AccessControlSystem.Services.VisitMaintenanceService>();
 
+// İşçini cihazlara yazan + üz yükləyən servis.
+builder.Services.AddScoped<AccessControlSystem.Services.EmployeeSyncService>();
+
 var app = builder.Build();
 
 // ---- Verilənlər bazasını yarat/miqrasiya et və seed et ----
@@ -67,7 +70,12 @@ using (var scope = app.Services.CreateScope())
     await DbSeeder.SeedAsync(db);
     var hasher = scope.ServiceProvider.GetRequiredService<AccessControlSystem.Application.Interfaces.Services.IPasswordHasher>();
     await DbSeeder.SeedIdentityAsync(db, hasher);
+    await DbSeeder.SeedCentersAsync(db);
     await DbSeeder.SeedDevicesAsync(db);
+    await DbSeeder.SeedAccessPointsAsync(db);
+    await DbSeeder.SeedOrganizationAsync(db);
+    await DbSeeder.SeedEmployeesSectionAsync(db);
+    await DbSeeder.SeedAccessEventsSectionAsync(db);
 }
 
 if (!app.Environment.IsDevelopment())

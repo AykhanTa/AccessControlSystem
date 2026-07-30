@@ -93,6 +93,59 @@ public interface IPurposeRepository
     Task AddAsync(Purpose purpose, CancellationToken ct = default);
 }
 
+public interface IEmployeeRepository
+{
+    Task<List<Employee>> GetAllAsync(CancellationToken ct = default);
+    Task<Employee?> GetByIdAsync(long id, CancellationToken ct = default);
+    Task<bool> ExistsByEmployeeNoAsync(string employeeNo, long? excludeId = null, CancellationToken ct = default);
+    /// <summary>AccessNumber üzrə aktiv işçi (keçid hadisə emalı üçün).</summary>
+    Task<Employee?> GetActiveByAccessNumberAsync(string accessNumber, CancellationToken ct = default);
+    /// <summary>Canlı UI üçün — id + mövqe + son görünmə.</summary>
+    Task<List<(long Id, Domain.Enums.PresenceStatus Presence, DateTime? LastSeen)>> GetPresencePairsAsync(CancellationToken ct = default);
+    Task<int> CountAsync(CancellationToken ct = default);
+    Task AddAsync(Employee employee, CancellationToken ct = default);
+    void Remove(Employee employee);
+}
+
+public interface ICompanyRepository
+{
+    Task<List<Company>> GetAllAsync(CancellationToken ct = default);
+    Task<List<Company>> GetActiveAsync(CancellationToken ct = default);
+    Task<Company?> GetByIdAsync(long id, CancellationToken ct = default);
+    Task<int> DepartmentCountAsync(long companyId, CancellationToken ct = default);
+    Task<bool> HasDependentsAsync(long companyId, CancellationToken ct = default);
+    Task AddAsync(Company company, CancellationToken ct = default);
+    void Remove(Company company);
+}
+
+public interface IDepartmentRepository
+{
+    Task<List<Department>> GetAllWithCompanyAsync(CancellationToken ct = default);
+    Task<List<Department>> GetActiveByCompanyAsync(long companyId, CancellationToken ct = default);
+    Task<Department?> GetByIdAsync(long id, CancellationToken ct = default);
+    Task AddAsync(Department department, CancellationToken ct = default);
+    void Remove(Department department);
+}
+
+public interface IPositionRepository
+{
+    Task<List<Position>> GetAllWithCompanyAsync(CancellationToken ct = default);
+    Task<Position?> GetByIdAsync(long id, CancellationToken ct = default);
+    Task AddAsync(Position position, CancellationToken ct = default);
+    void Remove(Position position);
+}
+
+public interface ICenterRepository
+{
+    Task<List<Center>> GetAllAsync(CancellationToken ct = default);
+    Task<List<Center>> GetActiveAsync(CancellationToken ct = default);
+    Task<Center?> GetByIdAsync(long id, CancellationToken ct = default);
+    Task<bool> ExistsByCodeAsync(string code, long? excludeId = null, CancellationToken ct = default);
+    Task<int> FloorCountAsync(long centerId, CancellationToken ct = default);
+    Task AddAsync(Center center, CancellationToken ct = default);
+    void Remove(Center center);
+}
+
 public interface IFloorRepository
 {
     Task<List<Floor>> GetActiveAsync(CancellationToken ct = default);
@@ -111,6 +164,10 @@ public interface IAccessEventRepository
     Task AddAsync(AccessEvent ev, CancellationToken ct = default);
     /// <summary>Son N hadisə (Device daxil) — diaqnostika üçün.</summary>
     Task<List<AccessEvent>> GetRecentAsync(int take, CancellationToken ct = default);
+    /// <summary>Son N hadisə tam detalları ilə (Visit.Guest, Employee, Device.AccessPoint) — keçid hadisələri UI.</summary>
+    Task<List<AccessEvent>> GetRecentDetailedAsync(int take, CancellationToken ct = default);
+    /// <summary>Verilmiş günün [dayStart, dayStart+1) BÜTÜN hadisələri, tam detallarla, ən yenidən köhnəyə.</summary>
+    Task<List<AccessEvent>> GetByDayDetailedAsync(DateTime dayStart, CancellationToken ct = default);
 }
 
 public interface IDeviceRepository

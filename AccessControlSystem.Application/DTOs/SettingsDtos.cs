@@ -34,12 +34,72 @@ public class PurposeItemDto
     public bool IsActive { get; set; }
 }
 
+public class CenterItemDto
+{
+    public long Id { get; set; }
+    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string? City { get; set; }
+    public bool IsActive { get; set; }
+    public int FloorCount { get; set; }
+}
+
+public class CenterInputDto
+{
+    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string? Address { get; set; }
+    public string? City { get; set; }
+}
+
 public class FloorItemDto
 {
     public long Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     public int DeviceCount { get; set; }
+    public long? CenterId { get; set; }
+    public string? CenterName { get; set; }
+}
+
+// ---------- Təşkilati struktur ----------
+
+public class CompanyItemDto
+{
+    public long Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? TaxNumber { get; set; }
+    public string? Phone { get; set; }
+    public bool IsActive { get; set; }
+    public int DepartmentCount { get; set; }
+}
+
+public class CompanyInputDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string? TaxNumber { get; set; }
+    public string? ContactPerson { get; set; }
+    public string? Phone { get; set; }
+    public string? Email { get; set; }
+}
+
+public class DepartmentItemDto
+{
+    public long Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public long CompanyId { get; set; }
+    public string CompanyName { get; set; } = string.Empty;
+    public string? ParentName { get; set; }
+    public bool IsActive { get; set; }
+}
+
+public class PositionItemDto
+{
+    public long Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public long CompanyId { get; set; }
+    public string CompanyName { get; set; } = string.Empty;
+    public bool IsActive { get; set; }
 }
 
 public class DeviceItemDto
@@ -53,6 +113,7 @@ public class DeviceItemDto
     public long FloorId { get; set; }
     public string FloorName { get; set; } = string.Empty;
     public string Direction { get; set; } = "Entry";   // "Entry" | "Exit"
+    public string PointType { get; set; } = "Door";    // keçid nöqtəsinin tipi
     public bool IsActive { get; set; }
 }
 
@@ -65,4 +126,5 @@ public class DeviceInputDto
     public int DoorNo { get; set; } = 1;
     public long FloorId { get; set; }
     public string Direction { get; set; } = "Entry";   // "Entry" | "Exit"
+    public string PointType { get; set; } = "Door";    // MainEntrance/FloorEntrance/Door/Turnstile...
 }

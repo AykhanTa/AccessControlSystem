@@ -69,6 +69,32 @@ public class AreaRepository : IAreaRepository
     public void Remove(Area area) => _db.Areas.Remove(area);
 }
 
+public class CenterRepository : ICenterRepository
+{
+    private readonly AppDbContext _db;
+    public CenterRepository(AppDbContext db) => _db = db;
+
+    public Task<List<Center>> GetAllAsync(CancellationToken ct = default) =>
+        _db.Centers.OrderBy(c => c.Name).ToListAsync(ct);
+
+    public Task<List<Center>> GetActiveAsync(CancellationToken ct = default) =>
+        _db.Centers.Where(c => c.IsActive).OrderBy(c => c.Name).ToListAsync(ct);
+
+    public Task<Center?> GetByIdAsync(long id, CancellationToken ct = default) =>
+        _db.Centers.FirstOrDefaultAsync(c => c.Id == id, ct);
+
+    public Task<bool> ExistsByCodeAsync(string code, long? excludeId = null, CancellationToken ct = default) =>
+        _db.Centers.AnyAsync(c => c.Code == code && (excludeId == null || c.Id != excludeId), ct);
+
+    public Task<int> FloorCountAsync(long centerId, CancellationToken ct = default) =>
+        _db.Floors.CountAsync(f => f.CenterId == centerId, ct);
+
+    public async Task AddAsync(Center center, CancellationToken ct = default) =>
+        await _db.Centers.AddAsync(center, ct);
+
+    public void Remove(Center center) => _db.Centers.Remove(center);
+}
+
 public class FloorRepository : IFloorRepository
 {
     private readonly AppDbContext _db;
@@ -78,7 +104,7 @@ public class FloorRepository : IFloorRepository
         _db.Floors.Where(f => f.IsActive).OrderBy(f => f.Name).ToListAsync(ct);
 
     public Task<List<Floor>> GetAllAsync(CancellationToken ct = default) =>
-        _db.Floors.OrderBy(f => f.Name).ToListAsync(ct);
+        _db.Floors.Include(f => f.Center).OrderBy(f => f.Name).ToListAsync(ct);
 
     public Task<List<Floor>> GetByIdsAsync(IEnumerable<long> ids, CancellationToken ct = default) =>
         _db.Floors.Where(f => ids.Contains(f.Id)).ToListAsync(ct);
@@ -112,16 +138,18 @@ public class DeviceRepository : IDeviceRepository
             .ToListAsync(ct);
 
     public Task<Device?> GetByIpAsync(string ip, CancellationToken ct = default) =>
-        _db.Devices.Include(d => d.Floor).FirstOrDefaultAsync(d => d.Ip == ip, ct);
+        _db.Devices.Include(d => d.Floor).Include(d => d.AccessPoint)
+            .FirstOrDefaultAsync(d => d.Ip == ip, ct);
 
     public Task<List<Device>> GetAllActiveAsync(CancellationToken ct = default) =>
         _db.Devices.Where(d => d.IsActive).ToListAsync(ct);
 
     public Task<List<Device>> GetAllWithFloorAsync(CancellationToken ct = default) =>
-        _db.Devices.Include(d => d.Floor).OrderBy(d => d.Floor.Name).ThenBy(d => d.Name).ToListAsync(ct);
+        _db.Devices.Include(d => d.Floor).Include(d => d.AccessPoint)
+            .OrderBy(d => d.Floor.Name).ThenBy(d => d.Name).ToListAsync(ct);
 
     public Task<Device?> GetByIdAsync(long id, CancellationToken ct = default) =>
-        _db.Devices.FirstOrDefaultAsync(d => d.Id == id, ct);
+        _db.Devices.Include(d => d.AccessPoint).FirstOrDefaultAsync(d => d.Id == id, ct);
 
     public Task<bool> ExistsByIpPortAsync(string ip, int port, long? excludeId = null, CancellationToken ct = default) =>
         _db.Devices.AnyAsync(d => d.Ip == ip && d.Port == port && (excludeId == null || d.Id != excludeId), ct);
@@ -159,6 +187,25 @@ public class AccessEventRepository : IAccessEventRepository
     public Task<List<AccessEvent>> GetRecentAsync(int take, CancellationToken ct = default) =>
         _db.AccessEvents.Include(e => e.Device)
             .OrderByDescending(e => e.Id).Take(take).ToListAsync(ct);
+
+    public Task<List<AccessEvent>> GetRecentDetailedAsync(int take, CancellationToken ct = default) =>
+        _db.AccessEvents
+            .Include(e => e.Visit).ThenInclude(v => v!.Guest)
+            .Include(e => e.Employee)
+            .Include(e => e.Device).ThenInclude(d => d!.AccessPoint)
+            .OrderByDescending(e => e.Id).Take(take).ToListAsync(ct);
+
+    public Task<List<AccessEvent>> GetByDayDetailedAsync(DateTime dayStart, CancellationToken ct = default)
+    {
+        var dayEnd = dayStart.Date.AddDays(1);
+        return _db.AccessEvents
+            .Include(e => e.Visit).ThenInclude(v => v!.Guest)
+            .Include(e => e.Employee)
+            .Include(e => e.Device).ThenInclude(d => d!.AccessPoint)
+            .Where(e => e.OccurredAt >= dayStart.Date && e.OccurredAt < dayEnd)
+            .OrderByDescending(e => e.OccurredAt).ThenByDescending(e => e.Id)
+            .ToListAsync(ct);
+    }
 }
 
 public class PurposeRepository : IPurposeRepository
