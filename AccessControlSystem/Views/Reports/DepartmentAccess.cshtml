@@ -1,0 +1,92 @@
+@using AccessControlSystem.Application.DTOs
+@{
+    ViewData["Title"] = "Şöbə üzrə hesabat";
+    ViewData["Heading"] = "Şöbə üzrə giriş-çıxış";
+    ViewData["Active"] = "reports";
+    var departments = ViewBag.Departments as List<DepartmentItemDto> ?? new List<DepartmentItemDto>();
+    var deptId = ViewBag.DeptId as long?;
+    var from = ViewBag.From as string ?? "";
+    var to = ViewBag.To as string ?? "";
+}
+
+<style>
+  .dept-group{margin-bottom:22px}
+  .dept-group h3{margin:0 0 8px;font-size:16px;display:flex;align-items:center;gap:10px}
+  .dept-group h3 .muted{font-weight:400;font-size:13px;color:var(--muted)}
+  .rep-toolbar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:16px}
+  .rep-toolbar .field{margin:0}
+  .print-only{display:none}
+  @@media print {
+    .no-print{display:none !important}
+    .print-only{display:block}
+    .panel{box-shadow:none;border:none}
+    /* Çapda üfüqi scroll/çərçivə görünməsin — cədvəl tam açılsın */
+    .table-wrap{overflow:visible !important}
+    table{font-size:12px}
+    a[href]:after{content:""}
+  }
+</style>
+
+<div class="page-head">
+  <div><p>İşçilərin şöbələr üzrə giriş-çıxış hesabatı — tarix aralığı seçib çap edin.</p></div>
+  <button class="btn btn-ghost no-print" type="button" onclick="window.print()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Hesabatı çap et
+  </button>
+</div>
+
+<div class="no-print" style="display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--border,#e5e7eb)">
+  <a href="/Reports" class="btn">İllik (Qonaqlar)</a>
+  <a href="/Reports/DepartmentAccess" class="btn btn-primary" style="border-radius:8px 8px 0 0">Şöbə üzrə giriş-çıxış</a>
+</div>
+
+<form id="repForm" class="panel no-print" style="padding:16px" onsubmit="return false">
+  <div class="rep-toolbar">
+    <div class="field">
+      <label>Şöbə</label>
+      <select id="fDept" class="input">
+        <option value="">Bütün şöbələr</option>
+        @foreach (var d in departments)
+        {
+          <option value="@d.Id" selected="@(deptId == d.Id)">@d.Name (@d.CompanyName)</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label>Başlanğıc tarix</label>
+      <input type="date" id="fFrom" class="input" value="@from" />
+    </div>
+    <div class="field">
+      <label>Son tarix</label>
+      <input type="date" id="fTo" class="input" value="@to" />
+    </div>
+    <button class="btn btn-primary" type="submit">Hesabatı göstər</button>
+  </div>
+</form>
+
+<section class="panel" style="padding:16px">
+  <div id="reportBody">
+    <div class="empty-state" style="padding:32px;text-align:center;color:var(--muted)">Yüklənir…</div>
+  </div>
+</section>
+
+@section Scripts {
+<script>
+  const $ = id => document.getElementById(id);
+  async function loadReport(){
+    const body = $('reportBody');
+    body.innerHTML = '<div class="empty-state" style="padding:32px;text-align:center;color:var(--muted)">Yüklənir…</div>';
+    const qs = new URLSearchParams({ deptId: $('fDept').value, from: $('fFrom').value, to: $('fTo').value });
+    try {
+      const res = await fetch('/Reports/DepartmentAccessBody?' + qs.toString(),
+                              { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+      body.innerHTML = res.ok ? await res.text()
+        : '<div class="empty-state" style="padding:32px;text-align:center;color:var(--muted)">Xəta baş verdi.</div>';
+    } catch(e){
+      body.innerHTML = '<div class="empty-state" style="padding:32px;text-align:center;color:var(--muted)">Şəbəkə xətası.</div>';
+    }
+  }
+  $('repForm').addEventListener('submit', loadReport);
+  loadReport();
+</script>
+}

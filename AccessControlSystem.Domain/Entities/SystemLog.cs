@@ -11,5 +11,7 @@ public class SystemLog
     public long? EntityId { get; set; }
     public string Description { get; set; } = string.Empty;
     public string? IpAddress { get; set; }
+    /// <summary>Əməliyyatı edən istifadəçinin şirkəti (təcrid). null = qlobal/sistem.</summary>
+    public long? CompanyId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 }

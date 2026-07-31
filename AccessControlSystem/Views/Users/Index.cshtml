@@ -29,6 +29,15 @@
           @foreach (var r in Model.Roles) { <option value="@r.Id">@r.Name</option> }
         </select>
       </div>
+      @if ((ViewData["IsGlobalAdmin"] as bool? ?? false))
+      {
+        <div class="select">
+          <select name="companyId">
+            <option value="">Şirkət (qlobal)</option>
+            @foreach (var c in Model.Companies) { <option value="@c.Id">@c.Name</option> }
+          </select>
+        </div>
+      }
       <button class="btn btn-primary" type="submit">Əlavə et</button>
     </form>
   }
@@ -40,6 +49,7 @@
           <th>İstifadəçi</th>
           <th>Email</th>
           <th>Rol</th>
+          <th>Şirkət</th>
           <th>Status</th>
           <th class="ta-right">Əməliyyat</th>
         </tr>
@@ -59,6 +69,7 @@
             </td>
             <td class="cell-sub">@u.Email</td>
             <td class="cell-sub">@u.RoleName</td>
+            <td class="cell-sub">@(u.IsGlobalAdmin ? "— (qlobal)" : (u.CompanyName ?? "—"))</td>
             <td>
               @if (u.Status == "active")
               {

@@ -14,15 +14,17 @@ public class UserService : IUserService
     private readonly IPasswordHasher _hasher;
     private readonly IUnitOfWork _uow;
     private readonly ISystemLogWriter _log;
+    private readonly ICurrentTenant _tenant;
 
     public UserService(IUserRepository users, IRoleRepository roles, IPasswordHasher hasher,
-                       IUnitOfWork uow, ISystemLogWriter log)
+                       IUnitOfWork uow, ISystemLogWriter log, ICurrentTenant tenant)
     {
         _users = users;
         _roles = roles;
         _hasher = hasher;
         _uow = uow;
         _log = log;
+        _tenant = tenant;
     }
 
     public async Task<List<UserDto>> GetAllAsync(CancellationToken ct = default)
@@ -41,6 +43,9 @@ public class UserService : IUserService
         var role = await _roles.GetByIdWithPermissionsAsync(dto.RoleId, ct)
                    ?? throw new ArgumentException("Rol seçin.");
 
+        // Şirkət istifadəçisi yalnız öz şirkətinə hesab yarada bilər; qlobal admin formdan seçir.
+        var companyId = _tenant.IsGlobalAdmin ? dto.CompanyId : _tenant.CompanyId;
+
         var user = new AppUser
         {
             FirstName = dto.FirstName.Trim(),
@@ -48,6 +53,7 @@ public class UserService : IUserService
             Email = dto.Email.Trim(),
             PasswordHash = _hasher.Hash(dto.Password),
             RoleId = role.Id,
+            CompanyId = companyId,
             Status = UserStatus.Active,
             IsProtected = false
         };
@@ -127,6 +133,8 @@ public class UserService : IUserService
         RoleName = u.Role?.Name ?? string.Empty,
         Status = u.Status == UserStatus.Active ? "active" : "inactive",
         IsProtected = u.IsProtected,
-        IsGlobalAdmin = u.IsProtected && (u.Role?.IsSystem ?? false)
+        IsGlobalAdmin = u.IsProtected && (u.Role?.IsSystem ?? false),
+        CompanyId = u.CompanyId,
+        CompanyName = u.Company?.Name
     };
 }

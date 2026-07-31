@@ -19,6 +19,9 @@ public class Device : BaseEntity
     public long FloorId { get; set; }
     public Floor Floor { get; set; } = null!;
 
+    /// <summary>Sahibi olan şirkət (çoxkiracılı təcrid).</summary>
+    public long? CompanyId { get; set; }
+
     public DeviceDirection Direction { get; set; } = DeviceDirection.Entry;
     public bool IsActive { get; set; } = true;
 

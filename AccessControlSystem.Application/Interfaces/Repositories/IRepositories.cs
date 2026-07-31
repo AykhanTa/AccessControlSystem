@@ -90,7 +90,9 @@ public interface IPurposeRepository
     Task<Purpose?> GetByIdAsync(long id, CancellationToken ct = default);
     Task<List<Purpose>> GetByIdsAsync(IEnumerable<long> ids, CancellationToken ct = default);
     Task<bool> ExistsByNameAsync(string name, CancellationToken ct = default);
+    Task<int> UsageCountAsync(long purposeId, CancellationToken ct = default);
     Task AddAsync(Purpose purpose, CancellationToken ct = default);
+    void Remove(Purpose purpose);
 }
 
 public interface IEmployeeRepository
@@ -168,6 +170,8 @@ public interface IAccessEventRepository
     Task<List<AccessEvent>> GetRecentDetailedAsync(int take, CancellationToken ct = default);
     /// <summary>Verilmiş günün [dayStart, dayStart+1) BÜTÜN hadisələri, tam detallarla, ən yenidən köhnəyə.</summary>
     Task<List<AccessEvent>> GetByDayDetailedAsync(DateTime dayStart, CancellationToken ct = default);
+    /// <summary>Aralıqdakı icazə verilmiş İŞÇİ hadisələri (Employee+Department+Position, Device+AccessPoint) — şöbə hesabatı.</summary>
+    Task<List<AccessEvent>> GetEmployeeEventsAsync(DateTime from, DateTime to, CancellationToken ct = default);
 }
 
 public interface IDeviceRepository

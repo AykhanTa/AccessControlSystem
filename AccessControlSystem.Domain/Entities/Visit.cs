@@ -32,6 +32,9 @@ public class Visit : BaseEntity
     public string? Note { get; set; }
     public long? CreatedBy { get; set; }           // ziyarəti qeydə alan istifadəçi
 
+    /// <summary>Aid olduğu şirkət (çoxkiracılı təcrid — qonaq həmin şirkətə gəlir).</summary>
+    public long? CompanyId { get; set; }
+
     public ICollection<VisitArea> VisitAreas { get; set; } = new List<VisitArea>();
     public ICollection<VisitPurpose> VisitPurposes { get; set; } = new List<VisitPurpose>();
     public ICollection<VisitFloor> VisitFloors { get; set; } = new List<VisitFloor>();

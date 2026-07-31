@@ -12,12 +12,14 @@ public class SystemLogWriter : ISystemLogWriter
     private readonly ISystemLogRepository _repo;
     private readonly IUnitOfWork _uow;
     private readonly ICurrentUserService _currentUser;
+    private readonly ICurrentTenant _tenant;
 
-    public SystemLogWriter(ISystemLogRepository repo, IUnitOfWork uow, ICurrentUserService currentUser)
+    public SystemLogWriter(ISystemLogRepository repo, IUnitOfWork uow, ICurrentUserService currentUser, ICurrentTenant tenant)
     {
         _repo = repo;
         _uow = uow;
         _currentUser = currentUser;
+        _tenant = tenant;
     }
 
     public async Task LogAsync(string action, string description, string? entityType = null, long? entityId = null,
@@ -34,6 +36,7 @@ public class SystemLogWriter : ISystemLogWriter
                 UserId = actorUserId ?? _currentUser.UserId,
                 UserName = !string.IsNullOrWhiteSpace(actorName) ? actorName! : _currentUser.UserName,
                 IpAddress = _currentUser.IpAddress,
+                CompanyId = _tenant.CompanyId,   // qlobal/sistem → null (yalnız qlobal admin görür)
                 CreatedAt = DateTime.Now
             };
             await _repo.AddAsync(log, ct);

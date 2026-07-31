@@ -6,6 +6,7 @@
     var canAdd = ViewData["CanAdd"] as bool? ?? false;
     var canEdit = ViewData["CanEdit"] as bool? ?? false;
     var canDelete = ViewData["CanDelete"] as bool? ?? false;
+    var isGlobalAdmin = ViewData["IsGlobalAdmin"] as bool? ?? false;   // Mərkəz/Şirkət yalnız qlobal admin
 }
 
 <div class="page-head">
@@ -17,12 +18,18 @@
 <!-- Mərkəzlər (binalar) -->
 <section class="panel">
   <div class="param-head"><h3>Mərkəzlər (binalar)</h3></div>
-  @if (canAdd)
+  @if (canAdd && isGlobalAdmin)
   {
     <form asp-action="AddCenter" method="post" class="device-form device-add">
       <div class="fld sm"><label>Kod</label><input name="code" type="text" placeholder="HQ" required /></div>
       <div class="fld grow"><label>Ad</label><input name="name" type="text" placeholder="Baş Ofis" required /></div>
       <div class="fld"><label>Şəhər</label><input name="city" type="text" placeholder="Bakı" /></div>
+      <div class="fld"><label>Şirkət</label>
+        <select name="companyId" required>
+          <option value="">Seçin</option>
+          @foreach (var co in Model.Companies) { <option value="@co.Id">@co.Name</option> }
+        </select>
+      </div>
       <div class="fld end"><button class="btn btn-primary" type="submit">Əlavə et</button></div>
     </form>
   }
@@ -35,14 +42,14 @@
           <span>@(string.IsNullOrEmpty(c.City) ? "—" : c.City) · @c.FloorCount mərtəbə · <span class="@(c.IsActive ? "st-on" : "st-off")">@(c.IsActive ? "Aktiv" : "Deaktiv")</span></span>
         </div>
         <div class="host-actions">
-          @if (canEdit)
+          @if (canEdit && isGlobalAdmin)
           {
             <form asp-action="ToggleCenter" method="post" style="display:inline">
               <input type="hidden" name="id" value="@c.Id" />
               <button class="btn-sm outline" type="submit">@(c.IsActive ? "Deaktiv et" : "Aktiv et")</button>
             </form>
           }
-          @if (canDelete)
+          @if (canDelete && isGlobalAdmin)
           {
             <form asp-action="DeleteCenter" method="post" style="display:inline"
                   onsubmit="return confirm('&quot;@c.Name&quot; mərkəzi silinsin?');">
@@ -60,7 +67,9 @@
   </div>
 </section>
 
-<!-- Şirkətlər -->
+<!-- Şirkətlər (yalnız qlobal admin idarə edir) -->
+@if (isGlobalAdmin)
+{
 <section class="panel">
   <div class="param-head"><h3>Şirkətlər</h3></div>
   @if (canAdd)
@@ -102,6 +111,7 @@
     @if (Model.Companies.Count == 0) { <p class="hint" style="padding:14px 22px">Hələ şirkət əlavə edilməyib.</p> }
   </div>
 </section>
+}
 
 <div class="param-grid">
   <!-- Şöbələr -->
@@ -269,13 +279,23 @@
             <b>@p.Name</b>
             <span class="@(p.IsActive ? "st-on" : "st-off")">@(p.IsActive ? "Aktiv" : "Deaktiv")</span>
           </div>
-          @if (canEdit)
-          {
-            <form asp-action="TogglePurpose" method="post">
-              <input type="hidden" name="id" value="@p.Id" />
-              <button class="btn-sm outline" type="submit">@(p.IsActive ? "Deaktiv et" : "Aktiv et")</button>
-            </form>
-          }
+          <div class="host-actions">
+            @if (canEdit)
+            {
+              <form asp-action="TogglePurpose" method="post" style="display:inline">
+                <input type="hidden" name="id" value="@p.Id" />
+                <button class="btn-sm outline" type="submit">@(p.IsActive ? "Deaktiv et" : "Aktiv et")</button>
+              </form>
+            }
+            @if (canDelete)
+            {
+              <form asp-action="DeletePurpose" method="post" style="display:inline"
+                    onsubmit="return confirm('&quot;@p.Name&quot; məqsədi silinsin?');">
+                <input type="hidden" name="id" value="@p.Id" />
+                <button class="btn-sm danger" type="submit">Sil</button>
+              </form>
+            }
+          </div>
         </div>
       }
     </div>

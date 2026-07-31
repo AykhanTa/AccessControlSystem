@@ -29,7 +29,10 @@ public class EmployeeRepository : IEmployeeRepository
         _db.Employees.AnyAsync(e => e.EmployeeNo == employeeNo && (excludeId == null || e.Id != excludeId), ct);
 
     public Task<Employee?> GetActiveByAccessNumberAsync(string accessNumber, CancellationToken ct = default) =>
-        _db.Employees.FirstOrDefaultAsync(e => e.AccessNumber == accessNumber && e.Status == EmployeeStatus.Active, ct);
+        // Cihaz employeeNoString-i ya AccessNumber ("9"+Id) ya da Tabel nömrəsi (EmployeeNo) ola bilər —
+        // istifadəçi Tabel nömrəsini cihazdakı ID ilə eyni etdikdə (məs. 26) hər ikisini yoxlayırıq.
+        _db.Employees.FirstOrDefaultAsync(
+            e => (e.AccessNumber == accessNumber || e.EmployeeNo == accessNumber) && e.Status == EmployeeStatus.Active, ct);
 
     public async Task<List<(long Id, PresenceStatus Presence, DateTime? LastSeen)>> GetPresencePairsAsync(CancellationToken ct = default)
     {

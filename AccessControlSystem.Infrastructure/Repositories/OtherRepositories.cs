@@ -206,6 +206,16 @@ public class AccessEventRepository : IAccessEventRepository
             .OrderByDescending(e => e.OccurredAt).ThenByDescending(e => e.Id)
             .ToListAsync(ct);
     }
+
+    public Task<List<AccessEvent>> GetEmployeeEventsAsync(DateTime from, DateTime to, CancellationToken ct = default) =>
+        _db.AccessEvents
+            .Include(e => e.Employee).ThenInclude(emp => emp!.Department)
+            .Include(e => e.Employee).ThenInclude(emp => emp!.Company)
+            .Include(e => e.Employee).ThenInclude(emp => emp!.Position)
+            .Include(e => e.Device).ThenInclude(d => d!.AccessPoint)
+            .Where(e => e.EmployeeId != null && e.Granted && e.OccurredAt >= from && e.OccurredAt < to)
+            .OrderBy(e => e.OccurredAt)
+            .ToListAsync(ct);
 }
 
 public class PurposeRepository : IPurposeRepository
@@ -228,6 +238,11 @@ public class PurposeRepository : IPurposeRepository
     public Task<bool> ExistsByNameAsync(string name, CancellationToken ct = default) =>
         _db.Purposes.AnyAsync(p => p.Name == name, ct);
 
+    public Task<int> UsageCountAsync(long purposeId, CancellationToken ct = default) =>
+        _db.VisitPurposes.CountAsync(vp => vp.PurposeId == purposeId, ct);
+
     public async Task AddAsync(Purpose purpose, CancellationToken ct = default) =>
         await _db.Purposes.AddAsync(purpose, ct);
+
+    public void Remove(Purpose purpose) => _db.Purposes.Remove(purpose);
 }

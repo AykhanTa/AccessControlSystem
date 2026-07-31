@@ -10,11 +10,13 @@ public class UsersController : Controller
 {
     private readonly IUserService _users;
     private readonly IRoleService _roles;
+    private readonly ISettingsService _settings;
 
-    public UsersController(IUserService users, IRoleService roles)
+    public UsersController(IUserService users, IRoleService roles, ISettingsService settings)
     {
         _users = users;
         _roles = roles;
+        _settings = settings;
     }
 
     public async Task<IActionResult> Index()
@@ -22,7 +24,8 @@ public class UsersController : Controller
         var model = new UsersViewModel
         {
             Users = await _users.GetAllAsync(),
-            Roles = await _roles.GetRoleOptionsAsync()
+            Roles = await _roles.GetRoleOptionsAsync(),
+            Companies = await _settings.GetCompaniesAsync()   // query filter: şirkət istifadəçisi yalnız özününü görür
         };
         return View(model);
     }
@@ -30,11 +33,11 @@ public class UsersController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [RequirePermission("users", PermType.Add)]
-    public async Task<IActionResult> Create(string firstName, string lastName, string email, string password, long roleId)
+    public async Task<IActionResult> Create(string firstName, string lastName, string email, string password, long roleId, long? companyId)
     {
         await Guard(() => _users.CreateAsync(new UserCreateDto
         {
-            FirstName = firstName, LastName = lastName, Email = email, Password = password, RoleId = roleId
+            FirstName = firstName, LastName = lastName, Email = email, Password = password, RoleId = roleId, CompanyId = companyId
         }), "İstifadəçi əlavə edildi.");
         return RedirectToAction(nameof(Index));
     }

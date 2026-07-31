@@ -88,6 +88,7 @@ public class UsersViewModel
 {
     public List<UserDto> Users { get; set; } = new();
     public List<LookupDto> Roles { get; set; } = new();
+    public List<CompanyItemDto> Companies { get; set; } = new();
 }
 
 /// <summary>Rollar səhifəsi view modeli.</summary>

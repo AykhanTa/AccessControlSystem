@@ -1,4 +1,5 @@
 using AccessControlSystem.Application.Interfaces.Repositories;
+using AccessControlSystem.Application.Interfaces.Services;
 using AccessControlSystem.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,7 +7,10 @@ namespace AccessControlSystem.Infrastructure.Persistence;
 
 public class AppDbContext : DbContext, IUnitOfWork
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    private readonly ICurrentTenant _tenant;
+
+    public AppDbContext(DbContextOptions<AppDbContext> options, ICurrentTenant tenant) : base(options)
+        => _tenant = tenant;
 
     public DbSet<Guest> Guests => Set<Guest>();
     public DbSet<Host> Hosts => Set<Host>();
@@ -38,6 +42,23 @@ public class AppDbContext : DbContext, IUnitOfWork
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        // ---- Çoxkiracılı təcrid (global query filter) ----
+        // Qlobal admin və ya HTTP-siz sistem konteksti → filtr tətbiq olunmur (hər şeyi görür).
+        // Şirkət istifadəçisi → yalnız öz şirkətinin datası.
+        modelBuilder.Entity<Company>().HasQueryFilter(e => _tenant.IsGlobalAdmin || e.Id == _tenant.CompanyId);
+        modelBuilder.Entity<AppUser>().HasQueryFilter(e => _tenant.IsGlobalAdmin || e.CompanyId == _tenant.CompanyId);
+        modelBuilder.Entity<Employee>().HasQueryFilter(e => _tenant.IsGlobalAdmin || e.CompanyId == _tenant.CompanyId);
+        modelBuilder.Entity<Department>().HasQueryFilter(e => _tenant.IsGlobalAdmin || e.CompanyId == _tenant.CompanyId);
+        modelBuilder.Entity<Position>().HasQueryFilter(e => _tenant.IsGlobalAdmin || e.CompanyId == _tenant.CompanyId);
+        modelBuilder.Entity<Center>().HasQueryFilter(e => _tenant.IsGlobalAdmin || e.CompanyId == _tenant.CompanyId);
+        modelBuilder.Entity<Floor>().HasQueryFilter(e => _tenant.IsGlobalAdmin || e.CompanyId == _tenant.CompanyId);
+        modelBuilder.Entity<AccessPoint>().HasQueryFilter(e => _tenant.IsGlobalAdmin || e.CompanyId == _tenant.CompanyId);
+        modelBuilder.Entity<Device>().HasQueryFilter(e => _tenant.IsGlobalAdmin || e.CompanyId == _tenant.CompanyId);
+        // Qonaq domeni + audit loqları (şirkətə görə təcrid).
+        modelBuilder.Entity<Host>().HasQueryFilter(e => _tenant.IsGlobalAdmin || e.CompanyId == _tenant.CompanyId);
+        modelBuilder.Entity<Visit>().HasQueryFilter(e => _tenant.IsGlobalAdmin || e.CompanyId == _tenant.CompanyId);
+        modelBuilder.Entity<SystemLog>().HasQueryFilter(e => _tenant.IsGlobalAdmin || e.CompanyId == _tenant.CompanyId);
     }
 
     // IUnitOfWork.SaveChangesAsync — DbContext-in daxili implementasiyası ilə təmin olunur.

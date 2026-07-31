@@ -49,6 +49,8 @@ public class AccountController : Controller
             new("RoleId", u.RoleId.ToString()),
             new("IsGlobalAdmin", u.IsGlobalAdmin ? "true" : "false"),
         };
+        if (u.CompanyId is { } cid)
+            claims.Add(new Claim("CompanyId", cid.ToString()));
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
             new ClaimsPrincipal(identity),

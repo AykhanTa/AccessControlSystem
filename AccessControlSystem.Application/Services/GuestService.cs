@@ -19,12 +19,13 @@ public class GuestService : IGuestService
     private readonly IVisitAccessService _access;
     private readonly IUnitOfWork _uow;
     private readonly ISystemLogWriter _log;
+    private readonly ICurrentTenant _tenant;
 
     public GuestService(
         IVisitRepository visits, IGuestRepository guests, IHostRepository hosts,
         ICardRepository cards, IAreaRepository areas, IFloorRepository floors,
         IPurposeRepository purposes, IVisitAccessService access,
-        IUnitOfWork uow, ISystemLogWriter log)
+        IUnitOfWork uow, ISystemLogWriter log, ICurrentTenant tenant)
     {
         _visits = visits;
         _guests = guests;
@@ -36,6 +37,7 @@ public class GuestService : IGuestService
         _access = access;
         _uow = uow;
         _log = log;
+        _tenant = tenant;
     }
 
     public async Task<List<VisitRowDto>> GetRegistryAsync(CancellationToken ct = default)
@@ -105,7 +107,8 @@ public class GuestService : IGuestService
             ArrivalAt = dto.ArrivalAt,
             ExpectedExitAt = dto.ExpectedExitAt,
             Status = VisitStatus.Planned,      // əvvəlcədən qeydiyyat — hələ binada deyil
-            Note = dto.Note?.Trim()
+            Note = dto.Note?.Trim(),
+            CompanyId = _tenant.CompanyId      // qonaq qeyd edən istifadəçinin şirkətinə bağlanır
         };
 
         // QR növündə nömrə + token dərhal generasiya olunur (QR əvvəlcədən çap/göndərilə bilər).

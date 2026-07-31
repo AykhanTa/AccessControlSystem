@@ -12,6 +12,9 @@ public class Floor : BaseEntity
     public long? CenterId { get; set; }                 // hansı mərkəzə aiddir
     public Center? Center { get; set; }
 
+    /// <summary>Sahibi olan şirkət (çoxkiracılı təcrid).</summary>
+    public long? CompanyId { get; set; }
+
     public ICollection<Device> Devices { get; set; } = new List<Device>();
     public ICollection<VisitFloor> VisitFloors { get; set; } = new List<VisitFloor>();
 }

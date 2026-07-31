@@ -392,5 +392,7 @@ public class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
         b.HasIndex(x => x.Email).IsUnique();
         b.HasOne(x => x.Role).WithMany(r => r.Users)
             .HasForeignKey(x => x.RoleId).OnDelete(DeleteBehavior.Restrict);
+        b.HasOne(x => x.Company).WithMany()
+            .HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Restrict);
     }
 }

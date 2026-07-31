@@ -20,11 +20,12 @@ public class SettingsService : ISettingsService
     private readonly IPositionRepository _positions;
     private readonly IUnitOfWork _uow;
     private readonly ISystemLogWriter _log;
+    private readonly ICurrentTenant _tenant;
 
     public SettingsService(IHostRepository hosts, IAreaRepository areas, IPurposeRepository purposes,
                            ICenterRepository centers, IFloorRepository floors, IDeviceRepository devices,
                            ICompanyRepository companies, IDepartmentRepository departments, IPositionRepository positions,
-                           IUnitOfWork uow, ISystemLogWriter log)
+                           IUnitOfWork uow, ISystemLogWriter log, ICurrentTenant tenant)
     {
         _hosts = hosts;
         _areas = areas;
@@ -37,7 +38,13 @@ public class SettingsService : ISettingsService
         _positions = positions;
         _uow = uow;
         _log = log;
+        _tenant = tenant;
     }
+
+    /// <summary>Yeni obyekt üçün sahib şirkəti təyin edir: şirkət istifadəçisi → öz şirkəti;
+    /// qlobal admin → formdakı seçim (verilməyibsə null = qlobal).</summary>
+    private long? OwnerCompanyId(long? formCompanyId = null) =>
+        _tenant.IsGlobalAdmin ? formCompanyId : _tenant.CompanyId;
 
     // ---------- Şirkətlər ----------
 
@@ -56,6 +63,8 @@ public class SettingsService : ISettingsService
 
     public async Task<long> AddCompanyAsync(CompanyInputDto dto, CancellationToken ct = default)
     {
+        if (!_tenant.IsGlobalAdmin)
+            throw new InvalidOperationException("Şirkət yalnız qlobal admin tərəfindən əlavə edilə bilər.");
         var name = (dto.Name ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Şirkət adını daxil edin.");
@@ -102,6 +111,7 @@ public class SettingsService : ISettingsService
 
     public async Task<long> AddDepartmentAsync(string name, long companyId, long? parentId, CancellationToken ct = default)
     {
+        companyId = OwnerCompanyId(companyId) ?? companyId;   // şirkət istifadəçisi → öz şirkəti
         name = (name ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Şöbə adını daxil edin.");
@@ -150,6 +160,7 @@ public class SettingsService : ISettingsService
 
     public async Task<long> AddPositionAsync(string name, long companyId, CancellationToken ct = default)
     {
+        companyId = OwnerCompanyId(companyId) ?? companyId;   // şirkət istifadəçisi → öz şirkəti
         name = (name ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Vəzifə adını daxil edin.");
@@ -205,13 +216,15 @@ public class SettingsService : ISettingsService
 
     public async Task<long> AddCenterAsync(CenterInputDto dto, CancellationToken ct = default)
     {
+        if (!_tenant.IsGlobalAdmin)
+            throw new InvalidOperationException("Mərkəz yalnız qlobal admin tərəfindən əlavə edilə bilər.");
         var code = (dto.Code ?? string.Empty).Trim();
         var name = (dto.Name ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Mərkəz kodu və adı daxil edin.");
         if (await _centers.ExistsByCodeAsync(code, null, ct))
             throw new ArgumentException("Bu kodla mərkəz artıq mövcuddur.");
-        var center = new Center { Code = code, Name = name, Address = dto.Address?.Trim(), City = dto.City?.Trim(), IsActive = true };
+        var center = new Center { Code = code, Name = name, Address = dto.Address?.Trim(), City = dto.City?.Trim(), IsActive = true, CompanyId = OwnerCompanyId(dto.CompanyId) };
         await _centers.AddAsync(center, ct);
         await _uow.SaveChangesAsync(ct);
         await _log.LogAsync("CENTER_CREATED", $"{center.Name} mərkəzi əlavə edildi.", "center", center.Id, ct: ct);
@@ -273,7 +286,8 @@ public class SettingsService : ISettingsService
             Email = dto.Email?.Trim(),
             Phone = dto.Phone?.Trim(),
             Department = dto.Department?.Trim(),
-            IsActive = true
+            IsActive = true,
+            CompanyId = OwnerCompanyId()
         };
         await _hosts.AddAsync(host, ct);
         await _uow.SaveChangesAsync(ct);
@@ -401,6 +415,17 @@ public class SettingsService : ISettingsService
             $"{purpose.Name} məqsədi {(purpose.IsActive ? "aktiv" : "deaktiv")} edildi.", "purpose", purpose.Id, ct: ct);
     }
 
+    public async Task DeletePurposeAsync(long id, CancellationToken ct = default)
+    {
+        var purpose = await _purposes.GetByIdAsync(id, ct)
+                      ?? throw new KeyNotFoundException("Məqsəd tapılmadı.");
+        if (await _purposes.UsageCountAsync(id, ct) > 0)
+            throw new InvalidOperationException("Bu məqsəd ziyarətlərdə istifadə olunub — silinə bilməz (deaktiv edin).");
+        _purposes.Remove(purpose);
+        await _uow.SaveChangesAsync(ct);
+        await _log.LogAsync("PURPOSE_DELETED", $"{purpose.Name} məqsədi silindi.", "purpose", id, ct: ct);
+    }
+
     // ---------- Mərtəbələr ----------
 
     public async Task<List<FloorItemDto>> GetFloorsAsync(CancellationToken ct = default)
@@ -424,7 +449,7 @@ public class SettingsService : ISettingsService
             throw new ArgumentException("Mərtəbə adını daxil edin.");
         if (await _floors.ExistsByNameAsync(name, null, ct))
             throw new ArgumentException("Bu mərtəbə artıq mövcuddur.");
-        var floor = new Floor { Name = name, CenterId = centerId, IsActive = true };
+        var floor = new Floor { Name = name, CenterId = centerId, IsActive = true, CompanyId = OwnerCompanyId() };
         await _floors.AddAsync(floor, ct);
         await _uow.SaveChangesAsync(ct);
         await _log.LogAsync("FLOOR_CREATED", $"{floor.Name} mərtəbəsi əlavə edildi.", "floor", floor.Id, ct: ct);
@@ -478,6 +503,7 @@ public class SettingsService : ISettingsService
 
         var direction = ParseDirection(dto.Direction);
         var pointType = ParsePointType(dto.PointType);
+        var owner = OwnerCompanyId() ?? floor.CompanyId;   // cihaz mərtəbənin şirkətini miras alır
         var device = new Device
         {
             Name = dto.Name.Trim(),
@@ -488,6 +514,7 @@ public class SettingsService : ISettingsService
             FloorId = dto.FloorId,
             Direction = direction,
             IsActive = true,
+            CompanyId = owner,
             // Cihaza uyğun keçid nöqtəsi (1:1) avtomatik yaradılır.
             AccessPoint = new AccessPoint
             {
@@ -496,7 +523,8 @@ public class SettingsService : ISettingsService
                 CenterId = floor.CenterId,
                 Direction = direction,
                 PointType = pointType,
-                IsActive = true
+                IsActive = true,
+                CompanyId = owner
             }
         };
         await _devices.AddAsync(device, ct);
@@ -531,6 +559,7 @@ public class SettingsService : ISettingsService
         device.AccessPoint.Name = dto.Name.Trim();
         device.AccessPoint.FloorId = dto.FloorId;
         device.AccessPoint.CenterId = floor.CenterId;
+        device.AccessPoint.CompanyId = device.CompanyId;
         device.AccessPoint.Direction = direction;
         device.AccessPoint.PointType = pointType;
         device.AccessPoint.UpdatedAt = DateTime.Now;

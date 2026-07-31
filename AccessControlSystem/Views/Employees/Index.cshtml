@@ -31,12 +31,30 @@
     };
 }
 
+<style>
+  .emp-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+  .emp-toolbar .input{height:40px;padding:0 12px;border-radius:10px}
+  .emp-toolbar #fDept{width:170px}
+  .emp-toolbar #fEmpSearch{width:230px;max-width:52vw}
+  .emp-toolbar .btn{height:40px;white-space:nowrap}
+</style>
+
 <div class="page-head">
   <div><p>Daimi işçilər — şirkət/şöbə/vəzifə, üz və icazəli mərtəbələr.</p></div>
-  @if (canAdd)
-  {
-    <button class="btn btn-primary" id="btnNewEmp" type="button">+ Yeni işçi</button>
-  }
+  <div class="emp-toolbar">
+    <select id="fDept" class="input" title="Şöbəyə görə süz">
+      <option value="">Bütün şöbələr</option>
+      @foreach (var d in Model.Departments)
+      {
+        <option value="@d.Name">@d.Name</option>
+      }
+    </select>
+    <input type="text" id="fEmpSearch" class="input" placeholder="Ad / tabel axtar…" />
+    @if (canAdd)
+    {
+      <button class="btn btn-primary" id="btnNewEmp" type="button">+ Yeni işçi</button>
+    }
+  </div>
 </div>
 
 <section class="panel">
@@ -54,7 +72,7 @@
           var st = St(e.Status);
           var fs = Fs(e.FaceStatus);
           var pr = Pr(e.Presence);
-          <tr data-empid="@e.Id">
+          <tr data-empid="@e.Id" data-dept="@e.Department" data-search="@(((e.Name ?? "") + " " + (e.EmployeeNo ?? "")).ToLower())">
             <td>
               <div class="who-cell">
                 @ViewHelpers.Avatar(e.Photo, e.Name)
@@ -176,6 +194,23 @@
 @section Scripts {
   <script>
     var EMPLOYEES = @Html.Raw(Json.Serialize(Model.Employees));
+
+    // Şöbə + ad/tabel filtri (client-side)
+    (function () {
+      var dept = document.getElementById('fDept');
+      var search = document.getElementById('fEmpSearch');
+      function applyEmpFilter() {
+        var d = (dept?.value || '');
+        var q = (search?.value || '').trim().toLowerCase();
+        document.querySelectorAll('#empRows tr[data-empid]').forEach(function (tr) {
+          var okDept = !d || tr.getAttribute('data-dept') === d;
+          var okSearch = !q || (tr.getAttribute('data-search') || '').indexOf(q) !== -1;
+          tr.style.display = (okDept && okSearch) ? '' : 'none';
+        });
+      }
+      dept?.addEventListener('change', applyEmpFilter);
+      search?.addEventListener('input', applyEmpFilter);
+    })();
 
     function openEmp(edit, e) {
       var form = document.getElementById('empForm');

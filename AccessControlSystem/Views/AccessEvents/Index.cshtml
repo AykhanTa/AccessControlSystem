@@ -30,23 +30,24 @@
     <div class="field">
       <label>Cihaz</label>
       <select id="fDevice" class="input">
-        @foreach (var d in devices)
+        <option value="0">Bütün cihazlar</option>
+        @for (var idx = 0; idx < devices.Count; idx++)
         {
-          <option value="@d.Id">@d.Name (@d.Ip)</option>
+          <option value="@devices[idx].Id" selected="@(idx == 0)">@devices[idx].Name (@devices[idx].Ip)</option>
         }
       </select>
     </div>
     <div class="field">
       <label>Başlanğıc vaxt</label>
-      <input type="datetime-local" id="fStart" step="1" class="input" value="@defStart" />
+      <input type="datetime-local" id="fStart" step="1" lang="en-GB" class="input" value="@defStart" />
     </div>
     <div class="field">
       <label>Son vaxt</label>
-      <input type="datetime-local" id="fEnd" step="1" class="input" value="@defEnd" />
+      <input type="datetime-local" id="fEnd" step="1" lang="en-GB" class="input" value="@defEnd" />
     </div>
     <div class="field">
       <label>İşçi İD</label>
-      <input type="text" id="fEmp" class="input" placeholder="məs. 90000001" />
+      <input type="text" id="fEmp" class="input" placeholder="məs. 26" value="@(ViewBag.EmpId as string ?? "")" />
     </div>
     <div class="field">
       <label>Ad</label>

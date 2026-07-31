@@ -12,6 +12,9 @@ public class Host : BaseEntity
     public string? Department { get; set; }     // Şöbə/vəzifə
     public bool IsActive { get; set; } = true;
 
+    /// <summary>Aid olduğu şirkət (çoxkiracılı təcrid).</summary>
+    public long? CompanyId { get; set; }
+
     public ICollection<Visit> Visits { get; set; } = new List<Visit>();
 
     public string FullName => $"{FirstName} {LastName}".Trim();

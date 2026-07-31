@@ -48,7 +48,8 @@ public class AuthService : IAuthService
             Email = user.Email,
             RoleId = user.RoleId,
             RoleName = user.Role?.Name ?? string.Empty,
-            IsGlobalAdmin = user.IsProtected && (user.Role?.IsSystem ?? false)
+            IsGlobalAdmin = user.IsProtected && (user.Role?.IsSystem ?? false),
+            CompanyId = user.CompanyId
         });
     }
 

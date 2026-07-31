@@ -148,3 +148,4 @@ C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\obj\De
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\obj\Debug\net8.0\AccessControlSystem.RazorAssemblyInfo.cache
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\obj\Debug\net8.0\AccessControlSystem.RazorAssemblyInfo.cs
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\obj\Debug\net8.0\AccessControlSystem.sourcelink.json
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

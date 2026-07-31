@@ -14,6 +14,10 @@ public class AppUser : BaseEntity
     public long RoleId { get; set; }
     public Role Role { get; set; } = null!;
 
+    /// <summary>Aid olduğu şirkət. null = qlobal admin (bütün şirkətləri görür/idarə edir).</summary>
+    public long? CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     public UserStatus Status { get; set; } = UserStatus.Active;
     /// <summary>1 = Global administrator (silinə/redaktə edilə bilməz).</summary>
     public bool IsProtected { get; set; }

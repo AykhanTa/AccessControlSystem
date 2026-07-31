@@ -1,0 +1,63 @@
+@model AccessControlSystem.Application.DTOs.DeptAccessReportDto
+@{
+    var from = ViewBag.From as string ?? "";
+    var to = ViewBag.To as string ?? "";
+}
+
+<!-- Çap başlığı -->
+<div class="print-only" style="margin-bottom:12px">
+  <h2 style="margin:0">Şöbə üzrə giriş-çıxış hesabatı</h2>
+  <div class="muted" style="color:#555">@Model.Scope · @Model.FromLabel — @Model.ToLabel</div>
+</div>
+
+<div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px;font-size:13px;color:var(--muted)">
+  <span><b style="color:var(--text,#111)">@Model.Scope</b></span>
+  <span>Aralıq: @Model.FromLabel — @Model.ToLabel</span>
+  <span>İşçi: <b style="color:var(--text,#111)">@Model.TotalEmployees</b></span>
+  <span>Hadisə: <b style="color:var(--text,#111)">@Model.TotalEvents</b></span>
+</div>
+
+@if (!Model.Groups.Any())
+{
+  <div class="empty-state" style="padding:24px;text-align:center;color:var(--muted)">İşçi tapılmadı.</div>
+}
+
+@foreach (var g in Model.Groups)
+{
+  <div class="dept-group">
+    <h3>@g.Department <span class="muted">@g.Company · @g.Employees.Count işçi</span></h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>İşçi İD</th><th>Ad Soyad</th><th>Vəzifə</th>
+            <th>İlk giriş</th><th>Son çıxış</th>
+            <th>Giriş</th><th>Çıxış</th><th>Cəmi</th><th class="no-print"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var e in g.Employees)
+          {
+            var detailUrl = $"/AccessEvents?empId={Uri.EscapeDataString(e.EmployeeNo)}&start={from}T00:00:00&end={to}T23:59:59";
+            <tr>
+              <td class="cell-sub">@e.EmployeeNo</td>
+              <td><b>@e.FullName</b></td>
+              <td class="cell-sub">@(e.Position ?? "—")</td>
+              <td class="cell-sub">@(e.FirstIn ?? "—")</td>
+              <td class="cell-sub">@(e.LastOut ?? "—")</td>
+              <td><span class="chip @(e.EntryCount > 0 ? "in" : "")">@e.EntryCount</span></td>
+              <td><span class="chip @(e.ExitCount > 0 ? "out" : "")">@e.ExitCount</span></td>
+              <td class="cell-sub"><b>@e.TotalEvents</b></td>
+              <td class="no-print">
+                @if (e.TotalEvents > 0)
+                {
+                  <a href="@detailUrl" class="btn btn-sm" title="Şəkilli keçidlər">Detallar</a>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}

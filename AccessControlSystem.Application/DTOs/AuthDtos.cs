@@ -8,6 +8,8 @@ public class AuthUserDto
     public long RoleId { get; set; }
     public string RoleName { get; set; } = string.Empty;
     public bool IsGlobalAdmin { get; set; }
+    /// <summary>Aid olduğu şirkət (qlobal admin üçün null).</summary>
+    public long? CompanyId { get; set; }
 }
 
 /// <summary>Bir bölmə üçün cari istifadəçinin icazələri.</summary>

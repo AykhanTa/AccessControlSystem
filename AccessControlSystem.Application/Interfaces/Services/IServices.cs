@@ -65,6 +65,8 @@ public interface IReportService
     Task<List<int>> GetYearsAsync(CancellationToken ct = default);
     /// <summary>Verilmiş il üzrə hesabat göstəriciləri.</summary>
     Task<ReportDto> GetReportAsync(int year, CancellationToken ct = default);
+    /// <summary>Şöbə üzrə işçi giriş-çıxış hesabatı (departmentId null → bütün şöbələr).</summary>
+    Task<DeptAccessReportDto> GetDepartmentAccessAsync(long? departmentId, DateTime from, DateTime to, CancellationToken ct = default);
 }
 
 public interface IUserService
@@ -126,6 +128,7 @@ public interface ISettingsService
     Task<List<PurposeItemDto>> GetPurposesAsync(CancellationToken ct = default);
     Task<long> AddPurposeAsync(string name, CancellationToken ct = default);
     Task TogglePurposeAsync(long id, CancellationToken ct = default);
+    Task DeletePurposeAsync(long id, CancellationToken ct = default);
 
     // Şirkətlər
     Task<List<CompanyItemDto>> GetCompaniesAsync(CancellationToken ct = default);

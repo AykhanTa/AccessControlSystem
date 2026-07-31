@@ -14,5 +14,8 @@ public class Center : BaseEntity
     public string? TimeZone { get; set; }                 // məs. "CST-4:00:00" (Bakı UTC+4)
     public bool IsActive { get; set; } = true;
 
+    /// <summary>Sahibi olan şirkət (çoxkiracılı təcrid). null = qlobal/təyin edilməyib.</summary>
+    public long? CompanyId { get; set; }
+
     public ICollection<Floor> Floors { get; set; } = new List<Floor>();
 }

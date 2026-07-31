@@ -13,15 +13,17 @@ public class EmployeeService : IEmployeeService
     private readonly IFloorRepository _floors;
     private readonly IUnitOfWork _uow;
     private readonly ISystemLogWriter _log;
+    private readonly ICurrentTenant _tenant;
 
     public EmployeeService(IEmployeeRepository employees, ICompanyRepository companies,
-        IFloorRepository floors, IUnitOfWork uow, ISystemLogWriter log)
+        IFloorRepository floors, IUnitOfWork uow, ISystemLogWriter log, ICurrentTenant tenant)
     {
         _employees = employees;
         _companies = companies;
         _floors = floors;
         _uow = uow;
         _log = log;
+        _tenant = tenant;
     }
 
     public async Task<List<EmployeeRowDto>> GetAllAsync(CancellationToken ct = default) =>
@@ -63,6 +65,10 @@ public class EmployeeService : IEmployeeService
 
     public async Task<long> CreateAsync(EmployeeCreateDto dto, CancellationToken ct = default)
     {
+        // Şirkət istifadəçisi yalnız öz şirkətinə işçi əlavə edə bilər (formdakı seçim iqnor edilir).
+        if (!_tenant.IsGlobalAdmin && _tenant.CompanyId is { } cid)
+            dto.CompanyId = cid;
+
         Validate(dto);
         if (await _companies.GetByIdAsync(dto.CompanyId, ct) is null)
             throw new ArgumentException("Şirkət seçilməlidir.");
@@ -104,6 +110,8 @@ public class EmployeeService : IEmployeeService
     {
         var employee = await _employees.GetByIdAsync(id, ct)
                        ?? throw new KeyNotFoundException("İşçi tapılmadı.");
+        if (!_tenant.IsGlobalAdmin && _tenant.CompanyId is { } cid)
+            dto.CompanyId = cid;   // şirkət istifadəçisi işçini başqa şirkətə keçirə bilməz
         Validate(dto);
         if (await _companies.GetByIdAsync(dto.CompanyId, ct) is null)
             throw new ArgumentException("Şirkət seçilməlidir.");

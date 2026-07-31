@@ -35,6 +35,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<AccessControlSystem.Application.Interfaces.Services.ICurrentUserService,
                            AccessControlSystem.Services.CurrentUserService>();
+builder.Services.AddScoped<AccessControlSystem.Application.Interfaces.Services.ICurrentTenant,
+                           AccessControlSystem.Services.HttpCurrentTenant>();
 builder.Services.AddScoped<PermissionFilter>();
 builder.Services.AddControllersWithViews(options =>
 {
@@ -76,6 +78,7 @@ using (var scope = app.Services.CreateScope())
     await DbSeeder.SeedOrganizationAsync(db);
     await DbSeeder.SeedEmployeesSectionAsync(db);
     await DbSeeder.SeedAccessEventsSectionAsync(db);
+    await DbSeeder.SeedTenantBackfillAsync(db);
 }
 
 if (!app.Environment.IsDevelopment())

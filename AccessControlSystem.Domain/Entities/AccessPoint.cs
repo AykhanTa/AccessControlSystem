@@ -13,6 +13,9 @@ public class AccessPoint : BaseEntity
     public long? CenterId { get; set; }
     public Center? Center { get; set; }
 
+    /// <summary>Sahibi olan şirkət (çoxkiracılı təcrid).</summary>
+    public long? CompanyId { get; set; }
+
     public long FloorId { get; set; }
     public Floor Floor { get; set; } = null!;
 

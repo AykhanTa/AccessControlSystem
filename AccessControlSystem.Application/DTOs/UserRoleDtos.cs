@@ -14,6 +14,8 @@ public class UserDto
     public string Status { get; set; } = "active";   // "active" | "inactive"
     public bool IsProtected { get; set; }
     public bool IsGlobalAdmin { get; set; }           // qorunan + Administrator rolu
+    public long? CompanyId { get; set; }
+    public string? CompanyName { get; set; }
 }
 
 public class UserCreateDto
@@ -23,6 +25,8 @@ public class UserCreateDto
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
     public long RoleId { get; set; }
+    /// <summary>Aid olacağı şirkət (yalnız qlobal admin seçir; şirkət istifadəçisində öz şirkəti tətbiq olunur).</summary>
+    public long? CompanyId { get; set; }
 }
 
 public class UserUpdateDto

@@ -67,6 +67,10 @@ public class SettingsController : Controller
     public Task<IActionResult> TogglePurpose(long id) =>
         Guard(() => _settings.TogglePurposeAsync(id), "Məqsədin statusu dəyişdirildi.");
 
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Delete)]
+    public Task<IActionResult> DeletePurpose(long id) =>
+        Guard(() => _settings.DeletePurposeAsync(id), "Məqsəd silindi.");
+
     // ---- Şirkətlər ----
     [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Add)]
     public Task<IActionResult> AddCompany(string name, string? taxNumber, string? contactPerson, string? phone, string? email) =>

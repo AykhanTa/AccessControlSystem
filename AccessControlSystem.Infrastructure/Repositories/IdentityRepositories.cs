@@ -75,7 +75,7 @@ public class UserRepository : IUserRepository
     public UserRepository(AppDbContext db) => _db = db;
 
     public Task<List<AppUser>> GetAllWithRoleAsync(CancellationToken ct = default) =>
-        _db.Users.Include(u => u.Role).OrderByDescending(u => u.IsProtected).ThenBy(u => u.Id).ToListAsync(ct);
+        _db.Users.Include(u => u.Role).Include(u => u.Company).OrderByDescending(u => u.IsProtected).ThenBy(u => u.Id).ToListAsync(ct);
 
     public Task<AppUser?> GetByIdAsync(long id, CancellationToken ct = default) =>
         _db.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id, ct);

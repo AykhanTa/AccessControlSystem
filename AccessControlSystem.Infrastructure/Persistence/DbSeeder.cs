@@ -261,6 +261,34 @@ public static class DbSeeder
         }
     }
 
+    /// <summary>
+    /// Çoxkiracılığa keçid: CompanyId-si boş olan mövcud strukturu (mərkəz/mərtəbə/cihaz/keçid nöqtəsi)
+    /// və qeyri-qlobal istifadəçiləri default (ilk) şirkətə bağlayır. Bir dəfə tətbiq olunur.
+    /// </summary>
+    public static async Task SeedTenantBackfillAsync(AppDbContext db)
+    {
+        var company = await db.Companies.OrderBy(c => c.Id).FirstOrDefaultAsync();
+        if (company is null) return;
+        // Bir dəfəlik: hər hansı istifadəçiyə artıq şirkət təyin olunubsa (çoxkiracılığa keçilib),
+        // təkrar süpürmə etmə — yoxsa qlobal adminin yeni (null) loqları da default şirkətə düşər.
+        if (await db.Users.AnyAsync(u => u.CompanyId != null)) return;
+        var cid = company.Id;
+        var changed = false;
+
+        foreach (var c in await db.Centers.Where(x => x.CompanyId == null).ToListAsync()) { c.CompanyId = cid; changed = true; }
+        foreach (var f in await db.Floors.Where(x => x.CompanyId == null).ToListAsync()) { f.CompanyId = cid; changed = true; }
+        foreach (var d in await db.Devices.Where(x => x.CompanyId == null).ToListAsync()) { d.CompanyId = cid; changed = true; }
+        foreach (var a in await db.AccessPoints.Where(x => x.CompanyId == null).ToListAsync()) { a.CompanyId = cid; changed = true; }
+        // Qonaq domeni + audit loqları — mövcud data default şirkətə (yoxsa şirkət useri görməz).
+        foreach (var h in await db.Hosts.Where(x => x.CompanyId == null).ToListAsync()) { h.CompanyId = cid; changed = true; }
+        foreach (var v in await db.Visits.Where(x => x.CompanyId == null).ToListAsync()) { v.CompanyId = cid; changed = true; }
+        foreach (var s in await db.SystemLogs.Where(x => x.CompanyId == null).ToListAsync()) { s.CompanyId = cid; changed = true; }
+        // Qeyri-qlobal (qorunmayan) istifadəçilər default şirkətə; qlobal admin (IsProtected) null qalır.
+        foreach (var u in await db.Users.Where(x => x.CompanyId == null && !x.IsProtected).ToListAsync()) { u.CompanyId = cid; changed = true; }
+
+        if (changed) await db.SaveChangesAsync();
+    }
+
     /// <summary>"Keçid hadisələri" bölməsini (Section) və Administrator roluna icazəsini bir dəfə əlavə edir.</summary>
     public static async Task SeedAccessEventsSectionAsync(AppDbContext db)
     {
