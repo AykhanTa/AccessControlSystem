@@ -34,6 +34,14 @@ public class Employee : BaseEntity
     /// <summary>Cihaza yazılan vahid nömrə (employeeNo=cardNo). Enroll zamanı təyin olunur.</summary>
     public string? AccessNumber { get; set; }
 
+    /// <summary>Cihazlardakı əlavə istifadəçi ID-ləri (alias) — "cihazId:nömrə" (məs. "2:54,3:29").
+    /// İşçinin müxtəlif cihazlarda fərqli ID-si olduqda keçidlərin doğru uyğunlaşması üçün (override).</summary>
+    public string? DeviceNumbers { get; set; }
+
+    /// <summary>Hikvision cihazlarında göründüyü ad (məs. "Alijavad Sadikhzada"). Keçidləri
+    /// dəqiq uyğunlaşdırmaq üçün ƏSAS açar — cihaz hər hadisə ilə bu adı göndərir.</summary>
+    public string? DeviceName { get; set; }
+
     /// <summary>Hazırkı mövqe — keçid hadisələrindən yenilənir.</summary>
     public PresenceStatus CurrentPresence { get; set; } = PresenceStatus.Out;
     public DateTime? LastSeenAt { get; set; }

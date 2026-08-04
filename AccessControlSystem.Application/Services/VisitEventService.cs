@@ -81,6 +81,9 @@ public class VisitEventService : IVisitEventService
             {
                 visit.Status = newStatus;
                 visit.UpdatedAt = DateTime.Now;
+                // İlk dəfə binaya daxil olma anı (faktiki giriş vaxtı) — planlaşdırılan gəlişdən fərqli.
+                if (visit.ActualEntryAt is null && newStatus is VisitStatus.In or VisitStatus.OnFloor)
+                    visit.ActualEntryAt = DateTime.Now;
                 if (newStatus == VisitStatus.Out)
                 {
                     visit.ActualExitAt = DateTime.Now;
@@ -110,22 +113,8 @@ public class VisitEventService : IVisitEventService
             Raw = ev.Raw is { Length: > 4000 } ? ev.Raw[..4000] : ev.Raw
         }, ct);
 
-        if (device is not null && ev.Granted)
-        {
-            emp.LastSeenAt = ev.OccurredAt;
-            var direction = device.AccessPoint?.Direction ?? device.Direction;
-            var pointType = device.AccessPoint?.PointType;
-            var newPresence = NextPresence(emp.CurrentPresence, direction, pointType);
-            if (newPresence != emp.CurrentPresence)
-            {
-                emp.CurrentPresence = newPresence;
-                emp.UpdatedAt = DateTime.Now;
-                var dir = direction == DeviceDirection.Entry ? "giriş" : "çıxış";
-                await _log.LogAsync("EMPLOYEE_ACCESS",
-                    $"{emp.FullName} — {device.AccessPoint?.Name ?? device.Floor?.Name} {dir} → {PresenceLabel(newPresence)}.",
-                    "employee", emp.Id, ct: ct);
-            }
-        }
+        // QEYD: işçi presence-i ARTIQ burada yenilənmir — DeviceEventPoller.ReconcilePresenceAsync
+        // (bugün-əsaslı, ad-dəqiq uyğunlaşma) yeganə mənbədir. Burada yalnız AccessEvent (tarixçə) yazılır.
         await _uow.SaveChangesAsync(ct);
     }
 

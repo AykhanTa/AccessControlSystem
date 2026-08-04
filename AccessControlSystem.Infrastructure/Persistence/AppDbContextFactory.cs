@@ -26,6 +26,7 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     private sealed class GlobalTenant : ICurrentTenant
     {
         public bool IsGlobalAdmin => true;
+        public bool CanSeeAllCompanies => true;
         public long? CompanyId => null;
     }
 }

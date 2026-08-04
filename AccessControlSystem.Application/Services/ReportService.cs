@@ -29,26 +29,32 @@ public class ReportService : IReportService
         _opt = opt;
     }
 
-    public async Task<DeptAccessReportDto> GetDepartmentAccessAsync(long? departmentId, DateTime from, DateTime to,
-        CancellationToken ct = default)
+    public async Task<DeptAccessReportDto> GetDepartmentAccessAsync(long? companyId, long? departmentId,
+        DateTime from, DateTime to, CancellationToken ct = default)
     {
-        var employees = await _employees.GetAllAsync(ct);
+        // BÜTÜN işçilər — uyğunlaşma üçün (hadisə hansı işçiyə aiddir); göstərilən dəst sonra süzülür.
+        var allEmployees = await _employees.GetAllAsync(ct);
+        var matcher = new EmployeeMatcher(allEmployees);
+
+        // Keçidləri BİRBAŞA cihaz(lar)ın jurnalından xam çək (cihaz, nömrə, ad, vaxt, istiqamət).
+        var raws = await FetchRawScansAsync(new DateTimeOffset(from), new DateTimeOffset(to), ct);
+
+        var scansByEmp = new Dictionary<long, List<Scan>>();
+        foreach (var r in raws)
+        {
+            var empId = matcher.Resolve(r.deviceId, r.number, r.name);
+            if (empId is null) continue;
+            if (!scansByEmp.TryGetValue(empId.Value, out var l)) scansByEmp[empId.Value] = l = new();
+            l.Add(new Scan(r.time, r.isExit));
+        }
+
+        var employees = allEmployees;
+        if (companyId is { } cmp)
+            employees = employees.Where(e => e.CompanyId == cmp).ToList();
         if (departmentId is { } did)
             employees = employees.Where(e => e.DepartmentId == did).ToList();
 
-        // Keçidlər BİRBAŞA cihaz(lar)ın öz jurnalından — employeeNoString cihaz ID-si (Tabel nömrəsi) ilə uyğunlaşır.
-        var scans = await FetchDeviceScansAsync(new DateTimeOffset(from), new DateTimeOffset(to), ct);
-
-        List<Scan> ScansFor(Employee e)
-        {
-            var list = new List<Scan>();
-            if (!string.IsNullOrWhiteSpace(e.EmployeeNo) && scans.TryGetValue(e.EmployeeNo.Trim(), out var byNo))
-                list.AddRange(byNo);
-            if (!string.IsNullOrWhiteSpace(e.AccessNumber) && e.AccessNumber != e.EmployeeNo
-                && scans.TryGetValue(e.AccessNumber.Trim(), out var byAcc))
-                list.AddRange(byAcc);
-            return list;
-        }
+        List<Scan> ScansFor(Employee e) => scansByEmp.TryGetValue(e.Id, out var s) ? s : new();
 
         var groups = employees
             .GroupBy(e => new
@@ -72,39 +78,40 @@ public class ReportService : IReportService
         {
             FromLabel = from.ToString("dd.MM.yyyy HH:mm"),
             ToLabel = to.ToString("dd.MM.yyyy HH:mm"),
-            Scope = departmentId is null ? "Bütün şöbələr"
-                    : groups.FirstOrDefault()?.Department ?? "Şöbə",
+            Scope = BuildScope(companyId, departmentId, employees),
             TotalEmployees = employees.Count,
             TotalEvents = groups.Sum(g => g.Employees.Sum(e => e.TotalEvents)),
             Groups = groups
         };
     }
 
-    private readonly record struct Scan(DateTime Time, bool IsExit);
-
-    /// <summary>Bütün aktiv cihazların jurnalını aralıq üçün çəkir, employeeNoString → keçidlər xəritəsi qaytarır.</summary>
-    private async Task<Dictionary<string, List<Scan>>> FetchDeviceScansAsync(
-        DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
+    /// <summary>Hesabatın əhatə etiketini qurur (müəssisə · şöbə).</summary>
+    private static string BuildScope(long? companyId, long? departmentId, List<Employee> employees)
     {
-        var devices = (await _devices.GetAllWithFloorAsync(ct)).Where(x => x.IsActive).ToList();
-
-        // Hər cihazı PARALEL sorğula (sıra ilə deyil) — çoxlu cihazda gözləmə vaxtını kəskin azaldır.
-        var perDevice = await Task.WhenAll(devices.Select(d => FetchOneDeviceAsync(d, from, to, ct)));
-
-        var map = new Dictionary<string, List<Scan>>(StringComparer.OrdinalIgnoreCase);
-        foreach (var list in perDevice)
-            foreach (var (key, scan) in list)
-            {
-                if (!map.TryGetValue(key, out var l)) map[key] = l = new();
-                l.Add(scan);
-            }
-        return map;
+        var company = companyId is null ? "Bütün müəssisələr"
+            : employees.FirstOrDefault()?.Company?.Name ?? "Müəssisə";
+        var dept = departmentId is null ? "bütün şöbələr"
+            : employees.FirstOrDefault()?.Department?.Name ?? "şöbə";
+        return $"{company} · {dept}";
     }
 
-    private async Task<List<(string key, Scan scan)>> FetchOneDeviceAsync(
+    private readonly record struct Scan(DateTime Time, bool IsExit);
+
+    private readonly record struct RawScan(long deviceId, string number, string? name, DateTime time, bool isExit);
+
+    /// <summary>Bütün aktiv cihazların jurnalını aralıq üçün XAM çəkir (uyğunlaşma sonra edilir).</summary>
+    private async Task<List<RawScan>> FetchRawScansAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
+    {
+        var devices = (await _devices.GetAllWithFloorAsync(ct)).Where(x => x.IsActive).ToList();
+        // Hər cihazı PARALEL sorğula (sıra ilə deyil) — çoxlu cihazda gözləmə vaxtını kəskin azaldır.
+        var perDevice = await Task.WhenAll(devices.Select(d => FetchOneDeviceRawAsync(d, from, to, ct)));
+        return perDevice.SelectMany(x => x).ToList();
+    }
+
+    private async Task<List<RawScan>> FetchOneDeviceRawAsync(
         Device d, DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
     {
-        var result = new List<(string, Scan)>();
+        var result = new List<RawScan>();
         var target = new HikDevice(d.Ip, _opt.Username, _opt.Password,
             d.Port == 0 ? _opt.Port : d.Port, d.UseHttps);
         var isExit = (d.AccessPoint?.Direction ?? d.Direction) == DeviceDirection.Exit;
@@ -122,7 +129,7 @@ public class ReportService : IReportService
                 if (string.IsNullOrWhiteSpace(e.EmployeeNo)) continue;   // yalnız şəxsli auth (qapı/login yox)
                 if (e.Minor is not (1 or 75)) continue;                 // kart/QR = 1, üz = 75
                 if (e.Time is not { } t) continue;
-                result.Add((e.EmployeeNo!.Trim(), new Scan(t.LocalDateTime, isExit)));
+                result.Add(new RawScan(d.Id, e.EmployeeNo!.Trim(), e.Name, t.LocalDateTime, isExit));
             }
 
             position += res.Items.Count;

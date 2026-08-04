@@ -8,7 +8,8 @@ public class VisitRowDto
     public string Doc { get; set; } = string.Empty;
     public string? Photo { get; set; }
     public string Host { get; set; } = string.Empty;
-    public string Arrival { get; set; } = string.Empty;   // "9 iyl 2026, 16:00"
+    public string Arrival { get; set; } = string.Empty;   // planlaşdırılan gəliş
+    public string? Entry { get; set; }                    // faktiki binaya giriş vaxtı (varsa)
     public string? Exit { get; set; }
     public string Area { get; set; } = string.Empty;      // vergüllə birləşdirilmiş (köhnə)
     public string Floor { get; set; } = string.Empty;     // icazəli mərtəbələr (yeni)
@@ -17,6 +18,8 @@ public class VisitRowDto
     public string PassType { get; set; } = "card";        // "card" | "qr"
     public string? CardNo { get; set; }
     public string? AccessNumber { get; set; }             // QR/kart üçün cihaz nömrəsi
+    public long? CompanyId { get; set; }                  // gəldiyi müəssisə (təhlükəsizlik nəzarəti üçün)
+    public string? Company { get; set; }                  // müəssisə adı (controller-də həll olunur)
 }
 
 /// <summary>Yeni qonaq + ziyarət qeydiyyatı üçün gələn məlumat.</summary>
@@ -32,6 +35,8 @@ public class GuestCreateDto
     public string? DocumentPath { get; set; }
 
     public long HostId { get; set; }
+    /// <summary>Qonağın gəldiyi şirkət (qlobal admin seçir; şirkət istifadəçisində öz şirkəti tətbiq olunur).</summary>
+    public long? CompanyId { get; set; }
     public DateTime ArrivalAt { get; set; }
     public DateTime? ExpectedExitAt { get; set; }
     public string PassType { get; set; } = "card";   // "card" | "qr"

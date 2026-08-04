@@ -102,6 +102,8 @@ public interface IEmployeeRepository
     Task<bool> ExistsByEmployeeNoAsync(string employeeNo, long? excludeId = null, CancellationToken ct = default);
     /// <summary>AccessNumber üzrə aktiv işçi (keçid hadisə emalı üçün).</summary>
     Task<Employee?> GetActiveByAccessNumberAsync(string accessNumber, CancellationToken ct = default);
+    /// <summary>Bütün işçilərin təyin olunmuş AccessNumber-ləri (qlobal — cihaz ID təkrarı olmasın; filtr bypass).</summary>
+    Task<List<string>> GetAllAccessNumbersAsync(CancellationToken ct = default);
     /// <summary>Canlı UI üçün — id + mövqe + son görünmə.</summary>
     Task<List<(long Id, Domain.Enums.PresenceStatus Presence, DateTime? LastSeen)>> GetPresencePairsAsync(CancellationToken ct = default);
     Task<int> CountAsync(CancellationToken ct = default);

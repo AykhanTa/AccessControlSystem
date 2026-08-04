@@ -23,7 +23,7 @@ public class LookupService : ILookupService
     }
 
     public async Task<List<LookupDto>> GetHostsAsync(CancellationToken ct = default) =>
-        (await _hosts.GetActiveAsync(ct)).Select(h => new LookupDto { Id = h.Id, Name = h.FullName }).ToList();
+        (await _hosts.GetActiveAsync(ct)).Select(h => new LookupDto { Id = h.Id, Name = h.FullName, CompanyId = h.CompanyId }).ToList();
 
     public async Task<List<LookupDto>> GetAreasAsync(CancellationToken ct = default) =>
         (await _areas.GetActiveAsync(ct)).Select(a => new LookupDto { Id = a.Id, Name = a.Name }).ToList();

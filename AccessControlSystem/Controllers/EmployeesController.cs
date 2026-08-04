@@ -35,7 +35,8 @@ public class EmployeesController : Controller
             Companies = await _settings.GetCompaniesAsync(),
             Departments = await _settings.GetDepartmentsAsync(),
             Positions = await _settings.GetPositionsAsync(),
-            Floors = await _lookups.GetFloorsAsync()
+            Floors = await _lookups.GetFloorsAsync(),
+            Devices = await _settings.GetDevicesAsync()
         };
         return View(model);
     }
@@ -116,6 +117,8 @@ public class EmployeesController : Controller
         DepartmentId = f.DepartmentId,
         PositionId = f.PositionId,
         EmploymentStartAt = f.EmploymentStartAt,
+        DeviceNumbers = f.DeviceNumbers,
+        DeviceName = f.DeviceName,
         FloorIds = f.FloorIds ?? new()
     };
 

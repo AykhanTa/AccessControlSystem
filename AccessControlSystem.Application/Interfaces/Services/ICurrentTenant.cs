@@ -7,6 +7,9 @@ namespace AccessControlSystem.Application.Interfaces.Services;
 /// </summary>
 public interface ICurrentTenant
 {
+    /// <summary>Yazma səlahiyyəti üçün — yalnız qorunan qlobal admin (şirkət/mərkəz yaradır və s.).</summary>
     bool IsGlobalAdmin { get; }
+    /// <summary>OXU görünüşü üçün — qlobal admin VƏ YA təhlükəsizlik məsulu (bütün müəssisələri görür).</summary>
+    bool CanSeeAllCompanies { get; }
     long? CompanyId { get; }
 }

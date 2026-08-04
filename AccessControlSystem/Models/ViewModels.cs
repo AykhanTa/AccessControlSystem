@@ -18,6 +18,7 @@ public class GuestsViewModel
     public List<LookupDto> Floors { get; set; } = new();
     public List<LookupDto> Purposes { get; set; } = new();
     public List<LookupDto> FreeCards { get; set; } = new();
+    public List<CompanyItemDto> Companies { get; set; } = new();
 }
 
 /// <summary>İşçilər səhifəsi view modeli.</summary>
@@ -28,6 +29,7 @@ public class EmployeesViewModel
     public List<DepartmentItemDto> Departments { get; set; } = new();
     public List<PositionItemDto> Positions { get; set; } = new();
     public List<LookupDto> Floors { get; set; } = new();
+    public List<DeviceItemDto> Devices { get; set; } = new();
 }
 
 /// <summary>İşçi əlavə/redaktə formu (binding üçün).</summary>
@@ -47,6 +49,8 @@ public class EmployeeFormModel
     public long? DepartmentId { get; set; }
     public long? PositionId { get; set; }
     public DateTime? EmploymentStartAt { get; set; }
+    public string? DeviceNumbers { get; set; }
+    public string? DeviceName { get; set; }
     public List<long> FloorIds { get; set; } = new();
 
     public IFormFile? Photo { get; set; }
@@ -65,6 +69,7 @@ public class ActivePermitsViewModel
     public List<LookupDto> Hosts { get; set; } = new();
     public List<LookupDto> Areas { get; set; } = new();
     public List<LookupDto> Purposes { get; set; } = new();
+    public List<CompanyItemDto> Companies { get; set; } = new();
 }
 
 /// <summary>Giriş-çıxış tarixçəsi səhifəsi view modeli.</summary>
@@ -73,6 +78,7 @@ public class HistoryViewModel
     public List<VisitRowDto> Items { get; set; } = new();
     public DateTime? From { get; set; }
     public DateTime? To { get; set; }
+    public List<CompanyItemDto> Companies { get; set; } = new();
 }
 
 /// <summary>Hesabatlar səhifəsi view modeli.</summary>
@@ -84,6 +90,14 @@ public class ReportsViewModel
 }
 
 /// <summary>İstifadəçilər səhifəsi view modeli.</summary>
+/// <summary>Təhlükəsizlik nəzarət lövhəsi — hazırda içəridə olan işçi + qonaqlar (bütün müəssisələr).</summary>
+public class SecurityDashboardViewModel
+{
+    public List<EmployeeRowDto> Employees { get; set; } = new();   // binada/mərtəbədə
+    public List<VisitRowDto> Guests { get; set; } = new();         // aktiv qonaqlar
+    public List<CompanyItemDto> Companies { get; set; } = new();
+}
+
 public class UsersViewModel
 {
     public List<UserDto> Users { get; set; } = new();
@@ -143,6 +157,7 @@ public class GuestFormModel
     public string? Email { get; set; }
 
     public long HostId { get; set; }
+    public long? CompanyId { get; set; }
     public DateTime ArrivalDate { get; set; }
     public string ArrivalTime { get; set; } = "09:00";
     public DateTime? ExitDate { get; set; }

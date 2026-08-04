@@ -1,3 +1,4 @@
+using AccessControlSystem.Application.Common;
 using AccessControlSystem.Application.DTOs;
 using AccessControlSystem.Application.Interfaces.Repositories;
 using AccessControlSystem.Application.Interfaces.Services;
@@ -52,6 +53,8 @@ public class EmployeeService : IEmployeeService
             DepartmentId = e.DepartmentId,
             PositionId = e.PositionId,
             EmploymentStartAt = e.EmploymentStartAt?.ToString("yyyy-MM-dd"),
+            DeviceNumbers = e.DeviceNumbers,
+            DeviceName = e.DeviceName,
             FloorIds = e.EmployeeFloors.Select(f => f.FloorId).ToList()
         }).ToList();
 
@@ -77,7 +80,7 @@ public class EmployeeService : IEmployeeService
             ? await GenerateEmployeeNoAsync(ct)
             : dto.EmployeeNo.Trim();
         if (await _employees.ExistsByEmployeeNoAsync(employeeNo, null, ct))
-            throw new ArgumentException("Bu tabel nömrəsi artıq mövcuddur.");
+            throw new ArgumentException("Bu İşçi İD-si artıq mövcuddur.");
 
         var employee = new Employee
         {
@@ -94,6 +97,8 @@ public class EmployeeService : IEmployeeService
             DepartmentId = dto.DepartmentId,
             PositionId = dto.PositionId,
             EmploymentStartAt = dto.EmploymentStartAt,
+            DeviceNumbers = NormalizeDeviceNumbers(dto.DeviceNumbers),
+            DeviceName = string.IsNullOrWhiteSpace(dto.DeviceName) ? null : dto.DeviceName.Trim(),
             Status = EmployeeStatus.Active,
             FaceStatus = FaceStatus.None
         };
@@ -118,7 +123,7 @@ public class EmployeeService : IEmployeeService
         if (!string.IsNullOrWhiteSpace(dto.EmployeeNo))
         {
             if (await _employees.ExistsByEmployeeNoAsync(dto.EmployeeNo.Trim(), id, ct))
-                throw new ArgumentException("Bu tabel nömrəsi artıq mövcuddur.");
+                throw new ArgumentException("Bu İşçi İD-si artıq mövcuddur.");
             employee.EmployeeNo = dto.EmployeeNo.Trim();
         }
 
@@ -134,6 +139,8 @@ public class EmployeeService : IEmployeeService
         employee.DepartmentId = dto.DepartmentId;
         employee.PositionId = dto.PositionId;
         employee.EmploymentStartAt = dto.EmploymentStartAt;
+        employee.DeviceNumbers = NormalizeDeviceNumbers(dto.DeviceNumbers);
+        employee.DeviceName = string.IsNullOrWhiteSpace(dto.DeviceName) ? null : dto.DeviceName.Trim();
         employee.UpdatedAt = DateTime.Now;
 
         // İcazəli mərtəbələri yenilə
@@ -174,6 +181,10 @@ public class EmployeeService : IEmployeeService
         if (dto.CompanyId <= 0)
             throw new ArgumentException("Şirkət seçilməlidir.");
     }
+
+    /// <summary>Cihaz alias sətrini təmizləyir ("cihazId:nömrə,..." — formu JS qurur; boşdursa null).</summary>
+    private static string? NormalizeDeviceNumbers(string? input) =>
+        string.IsNullOrWhiteSpace(input) ? null : input.Trim();
 
     private async Task<string> GenerateEmployeeNoAsync(CancellationToken ct)
     {

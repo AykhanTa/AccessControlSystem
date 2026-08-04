@@ -6,7 +6,8 @@
     var canAdd = ViewData["CanAdd"] as bool? ?? false;
     var canEdit = ViewData["CanEdit"] as bool? ?? false;
     var canDelete = ViewData["CanDelete"] as bool? ?? false;
-    var isGlobalAdmin = ViewData["IsGlobalAdmin"] as bool? ?? false;   // Mərkəz/Şirkət yalnız qlobal admin
+    var isGlobalAdmin = ViewData["IsGlobalAdmin"] as bool? ?? false;   // Şirkət yalnız qlobal admin
+    var canManageGlobal = ViewData["CanManageGlobal"] as bool? ?? false;   // Mərkəz/Məqsəd: qlobal admin + təhlükəsizlik admini
 }
 
 <div class="page-head">
@@ -18,7 +19,7 @@
 <!-- Mərkəzlər (binalar) -->
 <section class="panel">
   <div class="param-head"><h3>Mərkəzlər (binalar)</h3></div>
-  @if (canAdd && isGlobalAdmin)
+  @if (canAdd && canManageGlobal)
   {
     <form asp-action="AddCenter" method="post" class="device-form device-add">
       <div class="fld sm"><label>Kod</label><input name="code" type="text" placeholder="HQ" required /></div>
@@ -42,14 +43,14 @@
           <span>@(string.IsNullOrEmpty(c.City) ? "—" : c.City) · @c.FloorCount mərtəbə · <span class="@(c.IsActive ? "st-on" : "st-off")">@(c.IsActive ? "Aktiv" : "Deaktiv")</span></span>
         </div>
         <div class="host-actions">
-          @if (canEdit && isGlobalAdmin)
+          @if (canEdit && canManageGlobal)
           {
             <form asp-action="ToggleCenter" method="post" style="display:inline">
               <input type="hidden" name="id" value="@c.Id" />
               <button class="btn-sm outline" type="submit">@(c.IsActive ? "Deaktiv et" : "Aktiv et")</button>
             </form>
           }
-          @if (canDelete && isGlobalAdmin)
+          @if (canDelete && canManageGlobal)
           {
             <form asp-action="DeleteCenter" method="post" style="display:inline"
                   onsubmit="return confirm('&quot;@c.Name&quot; mərkəzi silinsin?');">
@@ -122,18 +123,36 @@
       <form asp-action="AddDepartment" method="post" class="device-form device-add">
         <div class="fld grow"><label>Şöbə adı</label><input name="name" type="text" placeholder="Mühasibatlıq" required /></div>
         <div class="fld md"><label>Şirkət</label>
-          <select name="companyId" required>
+          <select name="companyId" id="dptCompany" required>
             @foreach (var c in Model.Companies) { <option value="@c.Id">@c.Name</option> }
           </select>
         </div>
-        <div class="fld md"><label>Ana şöbə</label>
-          <select name="parentId">
-            <option value="">— Yoxdur —</option>
-            @foreach (var d in Model.Departments) { <option value="@d.Id">@d.Name</option> }
+        @* <div class="fld md"><label>Ana şöbə</label>
+          <select name="parentId" id="dptParent">
+            <option value="" data-company="">— Yoxdur —</option>
+            @foreach (var d in Model.Departments) { <option value="@d.Id" data-company="@d.CompanyId">@d.Name</option> }
           </select>
         </div>
+        *@
         <div class="fld end"><button class="btn btn-primary" type="submit">Əlavə et</button></div>
       </form>
+      <script>
+        (function () {
+          var comp = document.getElementById('dptCompany'), par = document.getElementById('dptParent');
+          if (!comp || !par) return;
+          function sync() {
+            var cid = comp.value;
+            Array.from(par.options).forEach(function (o) {
+              var oc = o.getAttribute('data-company') || '';
+              var show = (oc === '' || oc === cid);
+              o.hidden = !show; o.disabled = !show;
+              if (!show && o.selected) par.value = '';
+            });
+          }
+          comp.addEventListener('change', sync);
+          sync();
+        })();
+      </script>
     }
     <div>
       @foreach (var d in Model.Departments)
@@ -264,7 +283,7 @@
   <!-- Gəliş məqsədləri -->
   <section class="panel">
     <div class="param-head"><h3>Gəliş məqsədləri</h3></div>
-    @if (canAdd)
+    @if (canAdd && canManageGlobal)
     {
       <form asp-action="AddPurpose" method="post" class="param-add">
         <input name="name" type="text" placeholder="Yeni məqsəd" required />
@@ -280,14 +299,14 @@
             <span class="@(p.IsActive ? "st-on" : "st-off")">@(p.IsActive ? "Aktiv" : "Deaktiv")</span>
           </div>
           <div class="host-actions">
-            @if (canEdit)
+            @if (canEdit && canManageGlobal)
             {
               <form asp-action="TogglePurpose" method="post" style="display:inline">
                 <input type="hidden" name="id" value="@p.Id" />
                 <button class="btn-sm outline" type="submit">@(p.IsActive ? "Deaktiv et" : "Aktiv et")</button>
               </form>
             }
-            @if (canDelete)
+            @if (canDelete && canManageGlobal)
             {
               <form asp-action="DeletePurpose" method="post" style="display:inline"
                     onsubmit="return confirm('&quot;@p.Name&quot; məqsədi silinsin?');">

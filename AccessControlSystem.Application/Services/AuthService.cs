@@ -49,6 +49,7 @@ public class AuthService : IAuthService
             RoleId = user.RoleId,
             RoleName = user.Role?.Name ?? string.Empty,
             IsGlobalAdmin = user.IsProtected && (user.Role?.IsSystem ?? false),
+            SeesAllCompanies = (user.IsProtected && (user.Role?.IsSystem ?? false)) || (user.Role?.IsSecurity ?? false),
             CompanyId = user.CompanyId
         });
     }

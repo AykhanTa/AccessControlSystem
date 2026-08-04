@@ -31,9 +31,11 @@ public class ReportsController : Controller
     }
 
     /// <summary>Şöbə üzrə hesabat — səhifə qabığı (yalnız form). Ağır sorğu AJAX ilə gəlir → ani açılır.</summary>
-    public async Task<IActionResult> DepartmentAccess(long? deptId, string? from, string? to)
+    public async Task<IActionResult> DepartmentAccess(long? companyId, long? deptId, string? from, string? to)
     {
+        ViewBag.Companies = await _settings.GetCompaniesAsync();
         ViewBag.Departments = await _settings.GetDepartmentsAsync();
+        ViewBag.CompanyId = companyId;
         ViewBag.DeptId = deptId;
         ViewBag.From = string.IsNullOrWhiteSpace(from) ? DateTime.Today.ToString("yyyy-MM-dd") : from;
         ViewBag.To = string.IsNullOrWhiteSpace(to) ? DateTime.Today.ToString("yyyy-MM-dd") : to;
@@ -42,12 +44,12 @@ public class ReportsController : Controller
 
     /// <summary>Hesabatın gövdəsi (AJAX partial) — cihaz(lar)dan data çəkir.</summary>
     [HttpGet]
-    public async Task<IActionResult> DepartmentAccessBody(long? deptId, DateTime? from, DateTime? to)
+    public async Task<IActionResult> DepartmentAccessBody(long? companyId, long? deptId, DateTime? from, DateTime? to)
     {
         var fStart = (from ?? DateTime.Today).Date;
         var tEnd = (to ?? DateTime.Today).Date.AddDays(1).AddSeconds(-1);
         ViewBag.From = fStart.ToString("yyyy-MM-dd");
         ViewBag.To = tEnd.ToString("yyyy-MM-dd");
-        return PartialView("_DepartmentAccessBody", await _reports.GetDepartmentAccessAsync(deptId, fStart, tEnd));
+        return PartialView("_DepartmentAccessBody", await _reports.GetDepartmentAccessAsync(companyId, deptId, fStart, tEnd));
     }
 }

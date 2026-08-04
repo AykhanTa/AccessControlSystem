@@ -48,6 +48,7 @@ public class AccountController : Controller
             new(ClaimTypes.Role, u.RoleName),
             new("RoleId", u.RoleId.ToString()),
             new("IsGlobalAdmin", u.IsGlobalAdmin ? "true" : "false"),
+            new("SeesAllCompanies", u.SeesAllCompanies ? "true" : "false"),
         };
         if (u.CompanyId is { } cid)
             claims.Add(new Claim("CompanyId", cid.ToString()));

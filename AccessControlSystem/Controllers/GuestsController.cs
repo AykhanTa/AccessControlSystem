@@ -10,15 +10,17 @@ public class GuestsController : Controller
 {
     private readonly IGuestService _guests;
     private readonly ILookupService _lookups;
+    private readonly ISettingsService _settings;
     private readonly IWebHostEnvironment _env;
 
     private static readonly string[] AllowedExtensions =
         { ".jpg", ".jpeg", ".png", ".webp", ".gif", ".pdf" };
 
-    public GuestsController(IGuestService guests, ILookupService lookups, IWebHostEnvironment env)
+    public GuestsController(IGuestService guests, ILookupService lookups, ISettingsService settings, IWebHostEnvironment env)
     {
         _guests = guests;
         _lookups = lookups;
+        _settings = settings;
         _env = env;
     }
 
@@ -51,6 +53,7 @@ public class GuestsController : Controller
                 PhotoPath = await SaveFileAsync(form.Photo, "guests"),
                 DocumentPath = await SaveFileAsync(form.Document, "documents"),
                 HostId = form.HostId,
+                CompanyId = form.CompanyId,
                 ArrivalAt = arrivalAt,
                 ExpectedExitAt = exitAt,
                 PassType = form.PassType,
@@ -117,7 +120,8 @@ public class GuestsController : Controller
         Areas = await _lookups.GetAreasAsync(),
         Floors = await _lookups.GetFloorsAsync(),
         Purposes = await _lookups.GetPurposesAsync(),
-        FreeCards = await _lookups.GetFreeCardsAsync()
+        FreeCards = await _lookups.GetFreeCardsAsync(),
+        Companies = await _settings.GetCompaniesAsync()   // query filter: şirkət istifadəçisi yalnız özününü görür
     };
 
     private static DateTime? CombineDateTime(DateTime date, string? time)

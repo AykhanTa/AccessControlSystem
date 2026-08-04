@@ -49,11 +49,21 @@ public class EmployeeSyncService
         if (devices.Count == 0)
             return "İcazəli mərtəbələrdə aktiv cihaz yoxdur.";
 
-        // Cihaz üçün NUMERİK nömrə (Hikvision employeeNo tire/hərfi rədd edə bilər).
-        // Sabit: "9" + Id — real işçilərlə (1-100) toqquşmasın. Bir dəfə təyin olunur.
+        // Cihaz üçün QISA NUMERİK nömrə, 150-dən başlayan növbəti BOŞ (qlobal unikal).
+        // Cihazlarda 1–150 mövcud istifadəçilərə ayrılıb; bizim yazdıqlarımız 150-dən yuxarı.
+        const int startFrom = 150;
         var number = emp.AccessNumber;
-        if (string.IsNullOrWhiteSpace(number) || !number.All(char.IsDigit))
-            number = $"9{emp.Id:D7}";
+        var keep = !string.IsNullOrWhiteSpace(number) && number.All(char.IsDigit)
+                   && int.TryParse(number, out var cur) && cur >= startFrom && cur < 90000000;
+        if (!keep)
+        {
+            var used = new HashSet<int>();
+            foreach (var n in await _employees.GetAllAccessNumbersAsync(ct))
+                if (int.TryParse(n, out var v)) used.Add(v);
+            var next = startFrom;
+            while (used.Contains(next)) next++;
+            number = next.ToString();
+        }
         emp.AccessNumber = number;
 
         var begin = emp.EmploymentStartAt ?? DateTime.Now;

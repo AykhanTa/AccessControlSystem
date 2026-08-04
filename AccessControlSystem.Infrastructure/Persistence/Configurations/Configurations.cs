@@ -92,6 +92,8 @@ public class VisitConfiguration : IEntityTypeConfiguration<Visit>
             .HasForeignKey(x => x.HostId).OnDelete(DeleteBehavior.Restrict);
         b.HasOne(x => x.Card).WithMany(c => c.Visits)
             .HasForeignKey(x => x.CardId).OnDelete(DeleteBehavior.SetNull);
+        b.HasOne(x => x.Company).WithMany()
+            .HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.NoAction);
 
         b.HasIndex(x => x.QrToken).IsUnique().HasFilter("[QrToken] IS NOT NULL");
         b.HasIndex(x => x.AccessNumber).HasFilter("[AccessNumber] IS NOT NULL");
@@ -235,6 +237,8 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
         b.Property(x => x.Email).HasMaxLength(160);
         b.Property(x => x.PhotoPath).HasMaxLength(255);
         b.Property(x => x.AccessNumber).HasMaxLength(20);
+        b.Property(x => x.DeviceNumbers).HasMaxLength(200);
+        b.Property(x => x.DeviceName).HasMaxLength(120);
         b.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
         b.Property(x => x.FaceStatus).HasConversion<string>().HasMaxLength(20);
         b.Property(x => x.CurrentPresence).HasConversion<string>().HasMaxLength(10);

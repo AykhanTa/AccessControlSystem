@@ -26,6 +26,7 @@ public class Visit : BaseEntity
     public DateTime ArrivalAt { get; set; }        // gəliş tarixi/vaxtı (planlaşdırılmış)
     public DateTime? ExpectedExitAt { get; set; }  // çıxış (proqnoz)
     public DateTime? CheckedInAt { get; set; }     // nəzarətçi kart təyin etdiyi an
+    public DateTime? ActualEntryAt { get; set; }   // faktiki binaya giriş anı (ilk oxutma)
     public DateTime? ActualExitAt { get; set; }    // faktiki çıxış
 
     public VisitStatus Status { get; set; } = VisitStatus.Planned;
@@ -34,6 +35,7 @@ public class Visit : BaseEntity
 
     /// <summary>Aid olduğu şirkət (çoxkiracılı təcrid — qonaq həmin şirkətə gəlir).</summary>
     public long? CompanyId { get; set; }
+    public Company? Company { get; set; }
 
     public ICollection<VisitArea> VisitAreas { get; set; } = new List<VisitArea>();
     public ICollection<VisitPurpose> VisitPurposes { get; set; } = new List<VisitPurpose>();

@@ -108,7 +108,8 @@ public class GuestService : IGuestService
             ExpectedExitAt = dto.ExpectedExitAt,
             Status = VisitStatus.Planned,      // əvvəlcədən qeydiyyat — hələ binada deyil
             Note = dto.Note?.Trim(),
-            CompanyId = _tenant.CompanyId      // qonaq qeyd edən istifadəçinin şirkətinə bağlanır
+            // Qlobal admin formda şirkəti seçir; şirkət istifadəçisində öz şirkəti tətbiq olunur.
+            CompanyId = _tenant.IsGlobalAdmin ? dto.CompanyId : _tenant.CompanyId
         };
 
         // QR növündə nömrə + token dərhal generasiya olunur (QR əvvəlcədən çap/göndərilə bilər).

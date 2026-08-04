@@ -14,6 +14,7 @@ public static class SectionMap
         ["Guests"] = "guests",
         ["Employees"] = "employees",
         ["AccessEvents"] = "access_events",
+        ["Security"] = "security",
         ["Cards"] = "cards",
         ["History"] = "history",
         ["ActivePermits"] = "active_permits",
@@ -49,6 +50,8 @@ public class PermissionFilter : IAsyncActionFilter
         {
             var isGlobalAdmin = user.FindFirst("IsGlobalAdmin")?.Value == "true";
             controller.ViewData["IsGlobalAdmin"] = isGlobalAdmin;
+            // Qlobal admin VƏ YA təhlükəsizlik idarəsi admini — mərkəz/məqsəd kimi ümumi strukturu idarə edə bilər.
+            controller.ViewData["CanManageGlobal"] = isGlobalAdmin || user.FindFirst("SeesAllCompanies")?.Value == "true";
 
             if (isGlobalAdmin)
             {

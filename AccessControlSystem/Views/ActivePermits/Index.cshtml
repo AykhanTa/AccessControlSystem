@@ -41,6 +41,15 @@
         <option value="in">Binadadır</option>
       </select>
     </div>
+    @if (Model.Companies.Count > 1)
+    {
+      <div class="select">
+        <select id="fCompany">
+          <option value="">Bütün müəssisələr</option>
+          @foreach (var c in Model.Companies) { <option value="@c.Name">@c.Name</option> }
+        </select>
+      </div>
+    }
     <div class="select">
       <select id="fHost">
         <option value="">Bütün qəbul edənlər</option>
@@ -65,25 +74,26 @@
     <table>
       <thead>
         <tr>
-          <th>Ad Soyad</th><th>Qəbul edən</th><th>Gəliş vaxtı</th>
+          <th>Ad Soyad</th><th>Müəssisə</th><th>Qəbul edən</th><th>Gəliş vaxtı</th>
           <th>Ərazi</th><th>Məqsəd</th><th>Status</th><th>Əməliyyatlar</th>
         </tr>
       </thead>
       <tbody id="registryRows">
         @if (!Model.Permits.Any())
         {
-          <tr><td colspan="7" style="text-align:center;color:#9aa4b3;padding:20px">Hazırda binada aktiv icazəli qonaq yoxdur.</td></tr>
+          <tr><td colspan="8" style="text-align:center;color:#9aa4b3;padding:20px">Hazırda binada aktiv icazəli qonaq yoxdur.</td></tr>
         }
         @foreach (var g in Model.Permits)
         {
           <tr data-search="@((g.Name + " " + g.Doc).ToLower())"
-              data-status="@g.Status" data-host="@g.Host" data-area="@g.Area" data-purpose="@g.Purpose">
+              data-status="@g.Status" data-host="@g.Host" data-area="@g.Area" data-purpose="@g.Purpose" data-company="@g.Company">
             <td>
               <div class="who-cell">
                 @ViewHelpers.Avatar(g.Photo, g.Name)
                 <div class="g-name"><b>@g.Name</b><span>@g.Doc</span></div>
               </div>
             </td>
+            <td class="cell-sub">@(g.Company ?? "—")</td>
             <td class="cell-sub">@g.Host</td>
             <td class="cell-sub">@g.Arrival</td>
             <td class="cell-sub cell-multi">@g.Area</td>

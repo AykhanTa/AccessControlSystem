@@ -21,13 +21,13 @@
         "synced" => ("Üz sinxron", "in"),
         "pending" => ("Üz gözləyir", "checkedin"),
         "failed" => ("Üz xəta", "late"),
-        _ => ("Üz yox", "out")
+        _ => ("Üz", "out")
     };
     (string, string) Pr(string s) => s switch
     {
         "in" => ("Binadadır", "in"),
         "onfloor" => ("Mərtəbədə", "onfloor"),
-        _ => ("Bayırda", "out")
+        _ => ("Çıxış etdi", "out")
     };
 }
 
@@ -49,7 +49,7 @@
         <option value="@d.Name">@d.Name</option>
       }
     </select>
-    <input type="text" id="fEmpSearch" class="input" placeholder="Ad / tabel axtar…" />
+    <input type="text" id="fEmpSearch" class="input" placeholder="Ad / İD axtar…" />
     @if (canAdd)
     {
       <button class="btn btn-primary" id="btnNewEmp" type="button">+ Yeni işçi</button>
@@ -120,6 +120,20 @@
       </tbody>
     </table>
   </div>
+  <div id="empNoMatch" class="hint" style="display:none;padding:22px;text-align:center">Filtrə uyğun işçi tapılmadı.</div>
+  <div id="empPager" style="display:none;justify-content:space-between;align-items:center;padding:12px 16px;border-top:1px solid var(--border,#e5e7eb);flex-wrap:wrap;gap:10px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="hint" id="empCount" style="color:var(--muted)"></span>
+      <select id="empPageSize" class="input" style="width:auto;height:34px">
+        <option value="15">15</option><option value="30">30</option><option value="50">50</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button class="btn btn-sm" type="button" id="empPrev">‹</button>
+      <span id="empPageLbl" style="font-size:13px;min-width:80px;text-align:center"></span>
+      <button class="btn btn-sm" type="button" id="empNext">›</button>
+    </div>
+  </div>
 </section>
 
 <!-- ============ İŞÇİ MODALI ============ -->
@@ -143,7 +157,7 @@
       </div>
       <div class="form-col">
         <div class="col-title">Təşkilat və əlaqə</div>
-        <div class="field"><label>Tabel nömrəsi</label><input name="EmployeeNo" id="eNo" type="text" placeholder="Boş olsa avtomatik" /></div>
+        <div class="field"><label>İşçi İD</label><input name="EmployeeNo" id="eNo" type="text" placeholder="Boş olsa avtomatik" /></div>
         <div class="field">
           <label>Şirkət <span class="req">*</span></label>
           <select name="CompanyId" id="eCompany" required>
@@ -153,15 +167,15 @@
         <div class="field">
           <label>Şöbə</label>
           <select name="DepartmentId" id="eDept">
-            <option value="">— Yoxdur —</option>
-            @foreach (var d in Model.Departments) { <option value="@d.Id">@d.Name (@d.CompanyName)</option> }
+            <option value="" data-company="">— Yoxdur —</option>
+            @foreach (var d in Model.Departments) { <option value="@d.Id" data-company="@d.CompanyId">@d.Name</option> }
           </select>
         </div>
         <div class="field">
           <label>Vəzifə</label>
           <select name="PositionId" id="ePos">
-            <option value="">— Yoxdur —</option>
-            @foreach (var p in Model.Positions) { <option value="@p.Id">@p.Name (@p.CompanyName)</option> }
+            <option value="" data-company="">— Yoxdur —</option>
+            @foreach (var p in Model.Positions) { <option value="@p.Id" data-company="@p.CompanyId">@p.Name</option> }
           </select>
         </div>
         <div class="field"><label>Telefon</label><input name="Phone" id="ePhone" type="text" /></div>
@@ -195,22 +209,80 @@
   <script>
     var EMPLOYEES = @Html.Raw(Json.Serialize(Model.Employees));
 
-    // Şöbə + ad/tabel filtri (client-side)
+    // Şöbə + ad/tabel filtri + client-side pagination
     (function () {
       var dept = document.getElementById('fDept');
       var search = document.getElementById('fEmpSearch');
-      function applyEmpFilter() {
+      var pager = document.getElementById('empPager');
+      var noMatch = document.getElementById('empNoMatch');
+      var empPage = 1;
+      var empPageSize = 15;
+
+      function matchedRows() {
         var d = (dept?.value || '');
         var q = (search?.value || '').trim().toLowerCase();
-        document.querySelectorAll('#empRows tr[data-empid]').forEach(function (tr) {
-          var okDept = !d || tr.getAttribute('data-dept') === d;
-          var okSearch = !q || (tr.getAttribute('data-search') || '').indexOf(q) !== -1;
-          tr.style.display = (okDept && okSearch) ? '' : 'none';
-        });
+        return Array.prototype.filter.call(
+          document.querySelectorAll('#empRows tr[data-empid]'),
+          function (tr) {
+            var okDept = !d || tr.getAttribute('data-dept') === d;
+            var okSearch = !q || (tr.getAttribute('data-search') || '').indexOf(q) !== -1;
+            return okDept && okSearch;
+          });
       }
-      dept?.addEventListener('change', applyEmpFilter);
-      search?.addEventListener('input', applyEmpFilter);
+
+      function render() {
+        var all = document.querySelectorAll('#empRows tr[data-empid]');
+        Array.prototype.forEach.call(all, function (tr) { tr.style.display = 'none'; });
+
+        var matches = matchedRows();
+        var total = matches.length;
+        var totalPages = Math.max(1, Math.ceil(total / empPageSize));
+        if (empPage > totalPages) empPage = totalPages;
+        if (empPage < 1) empPage = 1;
+
+        var start = (empPage - 1) * empPageSize;
+        matches.slice(start, start + empPageSize).forEach(function (tr) { tr.style.display = ''; });
+
+        if (noMatch) noMatch.style.display = (total === 0 && all.length > 0) ? 'block' : 'none';
+        if (pager) {
+          pager.style.display = total > empPageSize ? 'flex' : (total > 0 ? 'flex' : 'none');
+          document.getElementById('empCount').textContent = total + ' işçi';
+          document.getElementById('empPageLbl').textContent = empPage + ' / ' + totalPages;
+          document.getElementById('empPrev').disabled = empPage <= 1;
+          document.getElementById('empNext').disabled = empPage >= totalPages;
+        }
+      }
+
+      function reset() { empPage = 1; render(); }
+
+      dept?.addEventListener('change', reset);
+      search?.addEventListener('input', reset);
+      document.getElementById('empPageSize')?.addEventListener('change', function () {
+        empPageSize = parseInt(this.value, 10) || 15; reset();
+      });
+      document.getElementById('empPrev')?.addEventListener('click', function () { empPage--; render(); });
+      document.getElementById('empNext')?.addEventListener('click', function () { empPage++; render(); });
+
+      render();
     })();
+
+    // Seçilmiş şirkətə görə Şöbə/Vəzifə seçimlərini süz (kaskad).
+    function filterEmpOrg() {
+      var g = id => document.getElementById(id);
+      var cid = g('eCompany').value;
+      ['eDept', 'ePos'].forEach(function (selId) {
+        var sel = g(selId);
+        var hideSelected = false;
+        Array.from(sel.options).forEach(function (o) {
+          var oc = o.getAttribute('data-company') || '';
+          var show = (oc === '' || oc === cid);
+          o.hidden = !show;
+          o.disabled = !show;
+          if (!show && o.selected) hideSelected = true;
+        });
+        if (hideSelected) sel.value = '';
+      });
+    }
 
     function openEmp(edit, e) {
       var form = document.getElementById('empForm');
@@ -232,6 +304,7 @@
         g('ePhone').value = e.phone || '';
         g('eEmail').value = e.email || '';
         g('eCompany').value = e.companyId || '';
+        filterEmpOrg();                       // şöbə/vəzifəni şirkətə görə süz
         g('eDept').value = e.departmentId || '';
         g('ePos').value = e.positionId || '';
         if (e.employmentStartAt) g('eStart').value = e.employmentStartAt;
@@ -241,6 +314,7 @@
         });
       } else {
         g('empId').value = 0;
+        filterEmpOrg();                       // yeni işçi — default şirkətə görə süz
       }
       document.getElementById('empModal').classList.add('open');
       document.body.style.overflow = 'hidden';
@@ -251,6 +325,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('eCompany')?.addEventListener('change', filterEmpOrg);
       document.getElementById('btnNewEmp')?.addEventListener('click', function () { openEmp(false); });
       document.getElementById('empClose')?.addEventListener('click', closeEmp);
       document.getElementById('empCancel')?.addEventListener('click', closeEmp);
@@ -270,7 +345,7 @@
     var PRES = {
       in:      { label: 'Binadadır', cls: 'in' },
       onfloor: { label: 'Mərtəbədə', cls: 'onfloor' },
-      out:     { label: 'Bayırda',   cls: 'out' }
+      out:     { label: 'Çıxış etdi', cls: 'out' }
     };
     async function pollPresence() {
       try {

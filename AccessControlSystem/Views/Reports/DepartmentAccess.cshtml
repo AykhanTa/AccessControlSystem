@@ -3,7 +3,9 @@
     ViewData["Title"] = "Şöbə üzrə hesabat";
     ViewData["Heading"] = "Şöbə üzrə giriş-çıxış";
     ViewData["Active"] = "reports";
+    var companies = ViewBag.Companies as List<CompanyItemDto> ?? new List<CompanyItemDto>();
     var departments = ViewBag.Departments as List<DepartmentItemDto> ?? new List<DepartmentItemDto>();
+    var companyId = ViewBag.CompanyId as long?;
     var deptId = ViewBag.DeptId as long?;
     var from = ViewBag.From as string ?? "";
     var to = ViewBag.To as string ?? "";
@@ -43,12 +45,22 @@
 <form id="repForm" class="panel no-print" style="padding:16px" onsubmit="return false">
   <div class="rep-toolbar">
     <div class="field">
+      <label>Müəssisə</label>
+      <select id="fCompany" class="input">
+        <option value="">Bütün müəssisələr</option>
+        @foreach (var c in companies)
+        {
+          <option value="@c.Id" selected="@(companyId == c.Id)">@c.Name</option>
+        }
+      </select>
+    </div>
+    <div class="field">
       <label>Şöbə</label>
       <select id="fDept" class="input">
-        <option value="">Bütün şöbələr</option>
+        <option value="" data-company="">Bütün şöbələr</option>
         @foreach (var d in departments)
         {
-          <option value="@d.Id" selected="@(deptId == d.Id)">@d.Name (@d.CompanyName)</option>
+          <option value="@d.Id" data-company="@d.CompanyId" selected="@(deptId == d.Id)">@d.Name (@d.CompanyName)</option>
         }
       </select>
     </div>
@@ -73,10 +85,24 @@
 @section Scripts {
 <script>
   const $ = id => document.getElementById(id);
+
+  // Seçilmiş müəssisəyə görə şöbə seçimlərini süz (kaskad).
+  function syncDept(){
+    const cid = $('fCompany').value;
+    Array.prototype.forEach.call($('fDept').options, function (o) {
+      const oc = o.getAttribute('data-company') || '';
+      const show = (oc === '' || oc === cid);
+      o.hidden = !show; o.disabled = !show;
+      if (!show && o.selected) $('fDept').value = '';
+    });
+  }
+
   async function loadReport(){
     const body = $('reportBody');
     body.innerHTML = '<div class="empty-state" style="padding:32px;text-align:center;color:var(--muted)">Yüklənir…</div>';
-    const qs = new URLSearchParams({ deptId: $('fDept').value, from: $('fFrom').value, to: $('fTo').value });
+    const qs = new URLSearchParams({
+      companyId: $('fCompany').value, deptId: $('fDept').value, from: $('fFrom').value, to: $('fTo').value
+    });
     try {
       const res = await fetch('/Reports/DepartmentAccessBody?' + qs.toString(),
                               { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
@@ -86,7 +112,10 @@
       body.innerHTML = '<div class="empty-state" style="padding:32px;text-align:center;color:var(--muted)">Şəbəkə xətası.</div>';
     }
   }
+
+  $('fCompany').addEventListener('change', function(){ syncDept(); loadReport(); });
   $('repForm').addEventListener('submit', loadReport);
+  syncDept();
   loadReport();
 </script>
 }

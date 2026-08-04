@@ -31,6 +31,7 @@ public static class DomainMappings
             Photo = v.Guest.PhotoPath,
             Host = v.Host.FullName,
             Arrival = AzDate.Format(v.ArrivalAt) ?? string.Empty,
+            Entry = AzDate.Format(v.ActualEntryAt),
             Exit = AzDate.Format(v.ActualExitAt ?? v.ExpectedExitAt),
             Area = string.Join(", ", v.VisitAreas.Select(a => a.Area.Name)),
             Floor = v.VisitFloors.Count > 0
@@ -40,7 +41,9 @@ public static class DomainMappings
             Status = v.Status.ToKey(),
             PassType = v.PassType.ToKey(),
             CardNo = v.Card?.CardNo,
-            AccessNumber = v.AccessNumber
+            AccessNumber = v.AccessNumber,
+            CompanyId = v.CompanyId,
+            Company = v.Company?.Name
         };
     }
 

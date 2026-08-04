@@ -568,6 +568,14 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
                     b.Property<long?>("DepartmentId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("DeviceName")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("DeviceNumbers")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("DocumentNo")
                         .HasMaxLength(40)
                         .HasColumnType("nvarchar(40)");
@@ -888,6 +896,9 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<bool>("IsSecurity")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsSystem")
                         .HasColumnType("bit");
 
@@ -1036,6 +1047,9 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<DateTime?>("ActualEntryAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("ActualExitAt")
                         .HasColumnType("datetime2");
 
@@ -1095,6 +1109,8 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
                     b.HasIndex("ArrivalAt");
 
                     b.HasIndex("CardId");
+
+                    b.HasIndex("CompanyId");
 
                     b.HasIndex("GuestId");
 
@@ -1360,6 +1376,11 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
                         .HasForeignKey("CardId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("AccessControlSystem.Domain.Entities.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("AccessControlSystem.Domain.Entities.Guest", "Guest")
                         .WithMany("Visits")
                         .HasForeignKey("GuestId")
@@ -1373,6 +1394,8 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Card");
+
+                    b.Navigation("Company");
 
                     b.Navigation("Guest");
 

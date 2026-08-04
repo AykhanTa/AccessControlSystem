@@ -13,6 +13,7 @@ function applyFilters() {
   const host    = document.getElementById('fHost').value;
   const area    = document.getElementById('fArea').value;
   const purpose = document.getElementById('fPurpose').value;
+  const company = document.getElementById('fCompany')?.value || '';
 
   let count = 0;
   document.querySelectorAll('#registryRows tr').forEach(tr => {
@@ -22,7 +23,8 @@ function applyFilters() {
     const matchH = !host    || d.host === host;
     const matchA = !area    || (d.area || '').includes(area);
     const matchP = !purpose || (d.purpose || '').includes(purpose);
-    const show = matchQ && matchS && matchH && matchA && matchP;
+    const matchC = !company || d.company === company;
+    const show = matchQ && matchS && matchH && matchA && matchP && matchC;
     tr.style.display = show ? '' : 'none';
     if (show) count++;
   });
@@ -134,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const arrDate = document.getElementById('inArrivalDate');
   if (arrDate) { arrDate.addEventListener('change', syncExitDate); syncExitDate(); }
 
-  ['regSearch','fStatus','fHost','fArea','fPurpose'].forEach(id => {
+  ['regSearch','fStatus','fHost','fArea','fPurpose','fCompany'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', applyFilters);
   });

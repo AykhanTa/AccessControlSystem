@@ -216,8 +216,8 @@ public class SettingsService : ISettingsService
 
     public async Task<long> AddCenterAsync(CenterInputDto dto, CancellationToken ct = default)
     {
-        if (!_tenant.IsGlobalAdmin)
-            throw new InvalidOperationException("Mərkəz yalnız qlobal admin tərəfindən əlavə edilə bilər.");
+        if (!_tenant.CanSeeAllCompanies)
+            throw new InvalidOperationException("Mərkəz yalnız qlobal admin və ya təhlükəsizlik idarəsi admini tərəfindən əlavə edilə bilər.");
         var code = (dto.Code ?? string.Empty).Trim();
         var name = (dto.Name ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(name))
@@ -393,6 +393,8 @@ public class SettingsService : ISettingsService
 
     public async Task<long> AddPurposeAsync(string name, CancellationToken ct = default)
     {
+        if (!_tenant.CanSeeAllCompanies)
+            throw new InvalidOperationException("Gəliş məqsədi yalnız qlobal admin və ya təhlükəsizlik idarəsi admini tərəfindən əlavə edilə bilər.");
         name = (name ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Məqsəd adını daxil edin.");

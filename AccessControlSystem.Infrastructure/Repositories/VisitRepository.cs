@@ -16,6 +16,7 @@ public class VisitRepository : IVisitRepository
             .Include(v => v.Guest)
             .Include(v => v.Host)
             .Include(v => v.Card)
+            .Include(v => v.Company)
             .Include(v => v.VisitAreas).ThenInclude(va => va.Area)
             .Include(v => v.VisitFloors).ThenInclude(vf => vf.Floor)
             .Include(v => v.VisitPurposes).ThenInclude(vp => vp.Purpose);

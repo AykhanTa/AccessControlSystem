@@ -6,12 +6,18 @@
     var devices = ViewBag.Devices as List<Device> ?? new List<Device>();
     var defStart = ViewBag.DefaultStart as string ?? "";
     var defEnd = ViewBag.DefaultEnd as string ?? "";
+    // "yyyy-MM-ddTHH:mm:ss" → tarix + 24-saatlıq vaxt hissələri
+    string DatePart(string s) => s.Length >= 10 ? s[..10] : "";
+    string TimePart(string s, string dflt) => s.Length >= 19 ? s.Substring(11, 8) : dflt;
 }
 
 <style>
   .ev-thumb{width:44px;height:44px;object-fit:cover;border-radius:8px;cursor:pointer;
             border:1px solid var(--border,#e5e7eb);background:#f3f4f6;display:block}
   .ev-thumb:hover{outline:2px solid var(--primary,#2563eb)}
+  .tsel{display:flex;align-items:center;gap:4px;margin-top:6px}
+  .tsel select{flex:1 1 0;min-width:0;box-sizing:border-box;padding:0 4px;height:38px;text-align:center;text-align-last:center}
+  .tsel span{color:var(--muted);font-weight:600}
   #imgLightbox{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;
                align-items:center;justify-content:center;z-index:9999;cursor:zoom-out}
   #imgLightbox img{max-width:90vw;max-height:90vh;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
@@ -39,11 +45,21 @@
     </div>
     <div class="field">
       <label>Başlanğıc vaxt</label>
-      <input type="datetime-local" id="fStart" step="1" lang="en-GB" class="input" value="@defStart" />
+      <input type="date" id="fStartDate" class="input" value="@DatePart(defStart)" />
+      <div class="tsel" data-time="@TimePart(defStart, "00:00:00")">
+        <select id="fStartH" class="input" title="Saat"></select><span>:</span>
+        <select id="fStartM" class="input" title="Dəqiqə"></select><span>:</span>
+        <select id="fStartS" class="input" title="Saniyə"></select>
+      </div>
     </div>
     <div class="field">
       <label>Son vaxt</label>
-      <input type="datetime-local" id="fEnd" step="1" lang="en-GB" class="input" value="@defEnd" />
+      <input type="date" id="fEndDate" class="input" value="@DatePart(defEnd)" />
+      <div class="tsel" data-time="@TimePart(defEnd, "23:59:59")">
+        <select id="fEndH" class="input" title="Saat"></select><span>:</span>
+        <select id="fEndM" class="input" title="Dəqiqə"></select><span>:</span>
+        <select id="fEndS" class="input" title="Saniyə"></select>
+      </div>
     </div>
     <div class="field">
       <label>İşçi İD</label>
@@ -156,14 +172,33 @@
     $('evPager').style.display = rows.length || page > 1 ? 'flex' : 'none';
   }
 
+  // Saat/dəqiqə/saniyə dropdown-larını doldur (24 saatlıq) + data-time-dən ilkin dəyər.
+  function fillSelect(sel, max, val){
+    var html = '';
+    for (var i = 0; i <= max; i++){ var v = String(i).padStart(2,'0'); html += '<option value="'+v+'">'+v+'</option>'; }
+    sel.innerHTML = html;
+    sel.value = val;
+  }
+  function initTime(prefix, dflt){
+    var box = $(prefix + 'H').closest('.tsel');
+    var parts = ((box && box.dataset.time) || dflt).split(':');
+    fillSelect($(prefix+'H'), 23, parts[0] || '00');
+    fillSelect($(prefix+'M'), 59, parts[1] || '00');
+    fillSelect($(prefix+'S'), 59, parts[2] || '00');
+  }
+  function timeVal(prefix){ return $(prefix+'H').value + ':' + $(prefix+'M').value + ':' + $(prefix+'S').value; }
+  function setTime(prefix, t){ var p = t.split(':'); $(prefix+'H').value = p[0]; $(prefix+'M').value = p[1]; $(prefix+'S').value = p[2]; }
+  initTime('fStart', '00:00:00');
+  initTime('fEnd', '23:59:59');
+
   async function search(){
     if (busy) return;
     busy = true;
     $('evInfo').textContent = 'Yüklənir…';
     const qs = new URLSearchParams({
       deviceId: $('fDevice').value || '0',
-      start: $('fStart').value,
-      end: $('fEnd').value,
+      start: $('fStartDate').value + 'T' + timeVal('fStart'),
+      end: $('fEndDate').value + 'T' + timeVal('fEnd'),
       page: page,
       pageSize: $('fPageSize').value,
       empId: $('fEmp').value.trim(),
@@ -187,11 +222,10 @@
   ['fEmp','fName','fCard'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') newSearch(); }));
 
   $('btnToday').addEventListener('click', () => {
-    const d = new Date(); d.setHours(0,0,0,0);
-    const e = new Date(); e.setHours(23,59,59,0);
-    const fmt = x => x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')
-                     +'T'+String(x.getHours()).padStart(2,'0')+':'+String(x.getMinutes()).padStart(2,'0')+':'+String(x.getSeconds()).padStart(2,'0');
-    $('fStart').value = fmt(d); $('fEnd').value = fmt(e);
+    const d = new Date();
+    const today = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    $('fStartDate').value = today; setTime('fStart', '00:00:00');
+    $('fEndDate').value = today; setTime('fEnd', '23:59:59');
     newSearch();
   });
 

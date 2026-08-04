@@ -47,7 +47,7 @@
     <table>
       <thead>
         <tr>
-          <th>Ad Soyad</th><th>Qəbul edən</th><th>Gəliş vaxtı</th>
+          <th>Ad Soyad</th><th>Müəssisə</th><th>Qəbul edən</th><th>Gəliş vaxtı</th>
           <th>Ərazi</th><th>Məqsəd</th><th>Status</th><th>Əməliyyatlar</th>
         </tr>
       </thead>
@@ -61,6 +61,7 @@
                 <div class="g-name"><b>@g.Name</b><span>@g.Doc</span></div>
               </div>
             </td>
+            <td class="cell-sub">@(g.Company ?? "—")</td>
             <td class="cell-sub">@g.Host</td>
             <td class="cell-sub">@g.Arrival</td>
             <td class="cell-sub cell-multi">@g.Area</td>

@@ -262,6 +262,96 @@ public static class DbSeeder
     }
 
     /// <summary>
+    /// DeviceName boş olan işçilər üçün onu keçmiş keçid hadisələrindəki (AccessEvents.PersonName)
+    /// AYDIN DOMİNANT addan avtomatik doldurur (≥75%). Cihazdakı ad əl ilə yazılmadan öyrənilir;
+    /// qarışıq/az data olanlar admin üçün boş qalır.
+    /// </summary>
+    public static async Task SeedEmployeeDeviceNamesAsync(AppDbContext db)
+    {
+        var employees = await db.Employees.Where(e => e.DeviceName == null).ToListAsync();
+        if (employees.Count == 0) return;
+        var empIds = employees.Select(e => e.Id).ToList();
+
+        var rows = await db.AccessEvents
+            .Where(a => a.EmployeeId != null && empIds.Contains(a.EmployeeId.Value)
+                        && a.PersonName != null && a.PersonName != "")
+            .Select(a => new { EmpId = a.EmployeeId!.Value, a.PersonName })
+            .ToListAsync();
+
+        var byEmp = rows.GroupBy(r => r.EmpId).ToDictionary(g => g.Key, g => g.ToList());
+        var changed = false;
+        foreach (var emp in employees)
+        {
+            if (!byEmp.TryGetValue(emp.Id, out var list) || list.Count == 0) continue;
+            var groups = list.GroupBy(r => r.PersonName!)
+                .Select(g => new { Name = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count).ToList();
+            var total = groups.Sum(x => x.Count);
+            if (groups[0].Count * 100 / total >= 75) { emp.DeviceName = groups[0].Name; changed = true; }
+        }
+        if (changed) await db.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// "Təhlükəsizlik" bölməsini + "Təhlükəsizlik məsulu" rolunu (bütün müəssisələri oxu-görünüşü)
+    /// və Administratora bölmə icazəsini bir dəfə əlavə edir. Mövcud bazaya da tətbiq olunur.
+    /// </summary>
+    public static async Task SeedSecuritySectionAsync(AppDbContext db)
+    {
+        // 1. Bölmə
+        var section = await db.Sections.FirstOrDefaultAsync(s => s.Code == "security");
+        if (section is null)
+        {
+            section = new Section { Code = "security", Name = "Təhlükəsizlik", SortOrder = 13 };
+            db.Sections.Add(section);
+            await db.SaveChangesAsync();
+        }
+
+        // Administrator bu bölməyə tam icazə (yoxdursa)
+        var admin = await db.Roles.FirstOrDefaultAsync(r => r.Name == "Administrator");
+        if (admin is not null && !await db.RolePermissions.AnyAsync(rp => rp.RoleId == admin.Id && rp.SectionId == section.Id))
+            db.RolePermissions.Add(new RolePermission
+            {
+                RoleId = admin.Id, SectionId = section.Id, CanView = true, CanAdd = true, CanEdit = true, CanDelete = true
+            });
+
+        // 2. Təhlükəsizlik məsulu rolu (oxu-yönümlü, bütün müəssisələr)
+        if (!await db.Roles.AnyAsync(r => r.IsSecurity))
+        {
+            var role = new Role
+            {
+                Name = "Təhlükəsizlik məsulu",
+                Description = "Bütün müəssisələrin giriş-çıxış nəzarəti (oxu-yönümlü)",
+                IsSystem = false,
+                IsSecurity = true
+            };
+            db.Roles.Add(role);
+            await db.SaveChangesAsync();
+
+            // Yalnız izləmə (view) — monitorinq bölmələri üzrə (mövcud olanlar).
+            var viewCodes = new[] { "dashboard", "security", "access_events", "guests", "history", "active_permits", "reports" };
+            var secSections = await db.Sections.Where(s => viewCodes.Contains(s.Code)).ToListAsync();
+            foreach (var s in secSections)
+                db.RolePermissions.Add(new RolePermission
+                {
+                    RoleId = role.Id, SectionId = s.Id, CanView = true, CanAdd = false, CanEdit = false, CanDelete = false
+                });
+        }
+
+        // Təhlükəsizlik roluna "settings" icazəsi (Mərkəz + Gəliş məqsədi idarəetməsi üçün) — idempotent.
+        var securityRole = await db.Roles.FirstOrDefaultAsync(r => r.IsSecurity);
+        var settingsSection = await db.Sections.FirstOrDefaultAsync(s => s.Code == "settings");
+        if (securityRole is not null && settingsSection is not null
+            && !await db.RolePermissions.AnyAsync(rp => rp.RoleId == securityRole.Id && rp.SectionId == settingsSection.Id))
+            db.RolePermissions.Add(new RolePermission
+            {
+                RoleId = securityRole.Id, SectionId = settingsSection.Id, CanView = true, CanAdd = true, CanEdit = true, CanDelete = true
+            });
+
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>
     /// Çoxkiracılığa keçid: CompanyId-si boş olan mövcud strukturu (mərkəz/mərtəbə/cihaz/keçid nöqtəsi)
     /// və qeyri-qlobal istifadəçiləri default (ilk) şirkətə bağlayır. Bir dəfə tətbiq olunur.
     /// </summary>

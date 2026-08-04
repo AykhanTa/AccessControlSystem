@@ -30,8 +30,23 @@
     </div>
     <input name="from" type="date" value="@from" />
     <input name="to" type="date" value="@to" />
+    @if (Model.Companies.Count > 1)
+    {
+      <select id="fCompany">
+        <option value="">Bütün müəssisələr</option>
+        @foreach (var c in Model.Companies) { <option value="@c.Name">@c.Name</option> }
+      </select>
+    }
     <button class="btn btn-dark" type="submit">Axtar</button>
   </form>
+  <style>
+    .hist-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    .hist-filters .hist-search{flex:1 1 240px;min-width:200px}
+    .hist-filters #fCompany{border:1px solid var(--border);border-radius:10px;padding:9px 13px;
+      font-size:13.5px;color:var(--text);background:#fff;font-family:inherit;outline:none;height:40px}
+    .hist-filters .btn{width:auto;flex:0 0 auto;height:40px;padding:0 22px}
+    .hist-filters input[type="date"]{height:40px}
+  </style>
 
   <div class="hist-count" id="histCount">@Model.Items.Count tarixçə qeydi</div>
   <div class="history-list" id="histRows">
@@ -42,11 +57,12 @@
     @foreach (var h in Model.Items)
     {
       var pass = h.PassType == "qr" ? "QR kod" : (h.CardNo ?? "—");
-      <div class="history-row" data-search="@((h.Name + " " + h.Doc + " " + pass + " " + h.Host + " " + h.Area + " " + h.Purpose).ToLower())">
+      <div class="history-row" data-company="@h.Company"
+           data-search="@((h.Name + " " + h.Doc + " " + pass + " " + h.Host + " " + h.Area + " " + h.Purpose + " " + (h.Company ?? "")).ToLower())">
         <div class="hist-exit-ico">@Html.Raw(LogoutIcon())</div>
         <div class="hist-who">
           @ViewHelpers.Avatar(h.Photo, h.Name)
-          <div class="g-name"><b>@h.Name</b><span>@h.Doc</span></div>
+          <div class="g-name"><b>@h.Name</b><span>@h.Doc@(h.Company != null ? " · " + h.Company : "")</span></div>
         </div>
         <div class="hist-col">
           <div class="hist-main">@h.Host</div>
@@ -67,7 +83,7 @@
           <div class="hist-sub">@h.Purpose</div>
         </div>
         <div class="hist-col ta-right">
-          <div class="hist-main">@h.Arrival</div>
+          <div class="hist-main">Giriş: @(h.Entry ?? h.Arrival)</div>
           <div class="hist-sub">Çıxış: @h.Exit</div>
         </div>
       </div>
@@ -79,19 +95,23 @@
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       var search = document.getElementById('histSearch');
+      var company = document.getElementById('fCompany');
       var count = document.getElementById('histCount');
-      if (search) {
-        search.addEventListener('input', function (e) {
-          var q = e.target.value.trim().toLowerCase();
-          var shown = 0;
-          document.querySelectorAll('#histRows .history-row').forEach(function (row) {
-            var ok = (row.dataset.search || '').includes(q);
-            row.style.display = ok ? '' : 'none';
-            if (ok) shown++;
-          });
-          if (count) count.textContent = shown + ' tarixçə qeydi';
+      function apply() {
+        var q = (search?.value || '').trim().toLowerCase();
+        var comp = company?.value || '';
+        var shown = 0;
+        document.querySelectorAll('#histRows .history-row').forEach(function (row) {
+          var okQ = (row.dataset.search || '').includes(q);
+          var okC = !comp || (row.dataset.company || '') === comp;
+          var ok = okQ && okC;
+          row.style.display = ok ? '' : 'none';
+          if (ok) shown++;
         });
+        if (count) count.textContent = shown + ' tarixçə qeydi';
       }
+      search?.addEventListener('input', apply);
+      company?.addEventListener('change', apply);
       document.getElementById('btnPrintHist')?.addEventListener('click', function () { window.print(); });
     });
   </script>

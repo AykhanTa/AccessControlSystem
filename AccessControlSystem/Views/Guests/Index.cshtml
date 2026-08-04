@@ -54,6 +54,15 @@
         <option value="late">Gecikib</option>
       </select>
     </div>
+    @if (Model.Companies.Count > 1)
+    {
+      <div class="select">
+        <select id="fCompany">
+          <option value="">Bütün müəssisələr</option>
+          @foreach (var c in Model.Companies) { <option value="@c.Name">@c.Name</option> }
+        </select>
+      </div>
+    }
     <div class="select">
       <select id="fHost">
         <option value="">Bütün qəbul edənlər</option>
@@ -78,7 +87,7 @@
     <table>
       <thead>
         <tr>
-          <th>Ad Soyad</th><th>Qəbul edən</th><th>Gəliş vaxtı</th>
+          <th>Ad Soyad</th><th>Müəssisə</th><th>Qəbul edən</th><th>Gəliş vaxtı</th>
           <th>Mərtəbə</th><th>Məqsəd</th><th>Status</th><th>Əməliyyatlar</th>
         </tr>
       </thead>
@@ -88,13 +97,14 @@
           var canCheck = g.Status == "in" || g.Status == "onfloor" || g.Status == "checkedin";  // binadadırsa çıxış
           var canCheckIn = g.Status == "planned";   // planlaşdırılmışa kart ver
           <tr data-vid="@g.Id" data-search="@((g.Name + " " + g.Doc).ToLower())"
-              data-status="@g.Status" data-host="@g.Host" data-area="@g.Floor" data-purpose="@g.Purpose">
+              data-status="@g.Status" data-host="@g.Host" data-area="@g.Floor" data-purpose="@g.Purpose" data-company="@g.Company">
             <td>
               <div class="who-cell">
                 @ViewHelpers.Avatar(g.Photo, g.Name)
                 <div class="g-name"><b>@g.Name</b><span>@g.Doc</span></div>
               </div>
             </td>
+            <td class="cell-sub">@(g.Company ?? "—")</td>
             <td class="cell-sub">@g.Host</td>
             <td class="cell-sub">@g.Arrival</td>
             <td class="cell-sub cell-multi">@g.Floor</td>
@@ -159,11 +169,37 @@
       <div class="form-col">
         <div class="col-title">Giriş məlumatları</div>
         <div class="field">
-          <label>Qəbul edən şəxs <span class="req">*</span></label>
-          <select name="HostId" required>
-            @foreach (var h in Model.Hosts) { <option value="@h.Id">@h.Name</option> }
+          <label>Gəldiyi şirkət <span class="req">*</span></label>
+          <select name="CompanyId" id="gCompany" required>
+            @foreach (var c in Model.Companies) { <option value="@c.Id">@c.Name</option> }
           </select>
         </div>
+        <div class="field">
+          <label>Qəbul edən şəxs <span class="req">*</span></label>
+          <select name="HostId" id="gHost" required>
+            @foreach (var h in Model.Hosts) { <option value="@h.Id" data-company="@h.CompanyId">@h.Name</option> }
+          </select>
+        </div>
+        <script>
+          (function () {
+            var comp = document.getElementById('gCompany'), host = document.getElementById('gHost');
+            if (!comp || !host) return;
+            function sync() {
+              var cid = comp.value, firstShown = null;
+              Array.prototype.forEach.call(host.options, function (o) {
+                var oc = o.getAttribute('data-company') || '';
+                var show = (oc === cid);
+                o.hidden = !show; o.disabled = !show;
+                if (show && firstShown === null) firstShown = o;
+                if (!show && o.selected) o.selected = false;
+              });
+              // Seçili host görünmürsə, ilk uyğun hostu seç.
+              if (host.selectedIndex < 0 && firstShown) firstShown.selected = true;
+            }
+            comp.addEventListener('change', sync);
+            sync();
+          })();
+        </script>
         <div class="field-row">
           <div class="field"><label>Gəliş tarixi <span class="req">*</span></label><input id="inArrivalDate" name="ArrivalDate" type="date" value="@today" min="@today" required /></div>
           <div class="field"><label>Vaxt <span class="req">*</span></label><input class="time24" name="ArrivalTime" type="text" value="09:00" required pattern="([01][0-9]|2[0-3]):[0-5][0-9]" placeholder="SS:DD" maxlength="5" inputmode="numeric" title="24 saatlıq format, məsələn 14:30" /></div>

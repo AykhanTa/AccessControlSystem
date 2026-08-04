@@ -28,6 +28,8 @@ public class EmployeeRowDto
     public long? DepartmentId { get; set; }
     public long? PositionId { get; set; }
     public string? EmploymentStartAt { get; set; }       // yyyy-MM-dd
+    public string? DeviceNumbers { get; set; }           // cihaz alias-ları (cihazId:nömrə)
+    public string? DeviceName { get; set; }              // Hikvision-dakı ad
     public List<long> FloorIds { get; set; } = new();
 }
 
@@ -56,6 +58,8 @@ public class EmployeeCreateDto
     public long? DepartmentId { get; set; }
     public long? PositionId { get; set; }
     public DateTime? EmploymentStartAt { get; set; }
+    public string? DeviceNumbers { get; set; }           // cihaz alias-ları ("cihazId:nömrə")
+    public string? DeviceName { get; set; }              // Hikvision-dakı ad (əsas uyğunlaşma açarı)
 
     public List<long> FloorIds { get; set; } = new();
 }

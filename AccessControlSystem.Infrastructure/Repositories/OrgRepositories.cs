@@ -11,6 +11,12 @@ public class EmployeeRepository : IEmployeeRepository
     private readonly AppDbContext _db;
     public EmployeeRepository(AppDbContext db) => _db = db;
 
+    public Task<List<string>> GetAllAccessNumbersAsync(CancellationToken ct = default) =>
+        _db.Employees.IgnoreQueryFilters()
+            .Where(e => e.AccessNumber != null && e.AccessNumber != "")
+            .Select(e => e.AccessNumber!)
+            .ToListAsync(ct);
+
     public Task<List<Employee>> GetAllAsync(CancellationToken ct = default) =>
         _db.Employees
             .Include(e => e.Company)
@@ -28,11 +34,15 @@ public class EmployeeRepository : IEmployeeRepository
     public Task<bool> ExistsByEmployeeNoAsync(string employeeNo, long? excludeId = null, CancellationToken ct = default) =>
         _db.Employees.AnyAsync(e => e.EmployeeNo == employeeNo && (excludeId == null || e.Id != excludeId), ct);
 
-    public Task<Employee?> GetActiveByAccessNumberAsync(string accessNumber, CancellationToken ct = default) =>
-        // Cihaz employeeNoString-i ya AccessNumber ("9"+Id) ya da Tabel nömrəsi (EmployeeNo) ola bilər —
-        // istifadəçi Tabel nömrəsini cihazdakı ID ilə eyni etdikdə (məs. 26) hər ikisini yoxlayırıq.
-        _db.Employees.FirstOrDefaultAsync(
+    public Task<Employee?> GetActiveByAccessNumberAsync(string accessNumber, CancellationToken ct = default)
+    {
+        accessNumber = accessNumber.Trim();
+        // Yalnız QLOBAL unikal açarlar (AccessNumber "9"+Id, ya da Tabel nömrəsi/EmployeeNo).
+        // Cihaza-bağlı alias-lar (cihazId:nömrə) burada uyğunlaşdırılmır — cihaz konteksti yoxdur;
+        // onları DeviceEventPoller.ReconcilePresenceAsync cihaz-əsaslı emal edir (qarışma olmasın).
+        return _db.Employees.FirstOrDefaultAsync(
             e => (e.AccessNumber == accessNumber || e.EmployeeNo == accessNumber) && e.Status == EmployeeStatus.Active, ct);
+    }
 
     public async Task<List<(long Id, PresenceStatus Presence, DateTime? LastSeen)>> GetPresencePairsAsync(CancellationToken ct = default)
     {

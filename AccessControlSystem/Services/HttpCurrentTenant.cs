@@ -26,6 +26,18 @@ public class HttpCurrentTenant : ICurrentTenant
         }
     }
 
+    public bool CanSeeAllCompanies
+    {
+        get
+        {
+            var u = User;
+            if (u?.Identity?.IsAuthenticated != true) return true;   // background/seed → filtrsiz
+            // Qlobal admin VƏ YA təhlükəsizlik məsulu bütün müəssisələri görür.
+            return u.FindFirst("SeesAllCompanies")?.Value == "true"
+                   || u.FindFirst("IsGlobalAdmin")?.Value == "true";
+        }
+    }
+
     public long? CompanyId =>
         long.TryParse(User?.FindFirst("CompanyId")?.Value, out var id) ? id : null;
 }
