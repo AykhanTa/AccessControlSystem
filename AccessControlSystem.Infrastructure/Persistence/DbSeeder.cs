@@ -241,6 +241,18 @@ public static class DbSeeder
         await db.SaveChangesAsync();
     }
 
+    /// <summary>Default məzuniyyət/ezamiyyət növlərini (qlobal) bir dəfə əlavə edir.</summary>
+    public static async Task SeedLeaveTypesAsync(AppDbContext db)
+    {
+        if (await db.LeaveTypes.IgnoreQueryFilters().AnyAsync()) return;
+        db.LeaveTypes.AddRange(
+            new LeaveType { Name = "İllik məzuniyyət", CountsAsWorked = false, Paid = true, Color = "#8b5cf6", IsActive = true },
+            new LeaveType { Name = "Xəstəlik (bülleten)", CountsAsWorked = false, Paid = true, Color = "#06b6d4", IsActive = true },
+            new LeaveType { Name = "Ödənişsiz məzuniyyət", CountsAsWorked = false, Paid = false, Color = "#94a3b8", IsActive = true },
+            new LeaveType { Name = "Ezamiyyət", CountsAsWorked = true, Paid = true, Color = "#0ea5e9", IsActive = true });
+        await db.SaveChangesAsync();
+    }
+
     /// <summary>"İşçilər" bölməsini (Section) və Administrator roluna icazəsini bir dəfə əlavə edir.</summary>
     public static async Task SeedEmployeesSectionAsync(AppDbContext db)
     {

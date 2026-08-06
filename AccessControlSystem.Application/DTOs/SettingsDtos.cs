@@ -92,6 +92,8 @@ public class DepartmentItemDto
     public long CompanyId { get; set; }
     public string CompanyName { get; set; } = string.Empty;
     public string? ParentName { get; set; }
+    public long? WorkScheduleId { get; set; }
+    public string? WorkScheduleName { get; set; }
     public bool IsActive { get; set; }
 }
 

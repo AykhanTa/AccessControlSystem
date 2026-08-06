@@ -20,8 +20,9 @@ public class EmployeeRepository : IEmployeeRepository
     public Task<List<Employee>> GetAllAsync(CancellationToken ct = default) =>
         _db.Employees
             .Include(e => e.Company)
-            .Include(e => e.Department)
+            .Include(e => e.Department).ThenInclude(d => d!.WorkSchedule)
             .Include(e => e.Position)
+            .Include(e => e.WorkSchedule)
             .Include(e => e.EmployeeFloors).ThenInclude(ef => ef.Floor)
             .OrderBy(e => e.LastName).ThenBy(e => e.FirstName)
             .ToListAsync(ct);
@@ -91,7 +92,7 @@ public class DepartmentRepository : IDepartmentRepository
     public DepartmentRepository(AppDbContext db) => _db = db;
 
     public Task<List<Department>> GetAllWithCompanyAsync(CancellationToken ct = default) =>
-        _db.Departments.Include(d => d.Company).Include(d => d.ParentDepartment)
+        _db.Departments.Include(d => d.Company).Include(d => d.ParentDepartment).Include(d => d.WorkSchedule)
             .OrderBy(d => d.Company.Name).ThenBy(d => d.Name).ToListAsync(ct);
 
     public Task<List<Department>> GetActiveByCompanyAsync(long companyId, CancellationToken ct = default) =>
@@ -122,4 +123,33 @@ public class PositionRepository : IPositionRepository
         await _db.Positions.AddAsync(position, ct);
 
     public void Remove(Position position) => _db.Positions.Remove(position);
+}
+
+public class WorkScheduleRepository : IWorkScheduleRepository
+{
+    private readonly AppDbContext _db;
+    public WorkScheduleRepository(AppDbContext db) => _db = db;
+
+    public Task<List<WorkSchedule>> GetAllWithCompanyAsync(CancellationToken ct = default) =>
+        _db.WorkSchedules.Include(s => s.Company).Where(s => s.OwnerEmployeeId == null)
+            .OrderBy(s => s.Name).ToListAsync(ct);
+
+    public Task<List<WorkSchedule>> GetActiveAsync(CancellationToken ct = default) =>
+        _db.WorkSchedules.Where(s => s.IsActive && s.OwnerEmployeeId == null)
+            .OrderBy(s => s.Name).ToListAsync(ct);
+
+    public Task<WorkSchedule?> GetByIdAsync(long id, CancellationToken ct = default) =>
+        _db.WorkSchedules.FirstOrDefaultAsync(s => s.Id == id, ct);
+
+    public Task<WorkSchedule?> GetPersonalByEmployeeAsync(long employeeId, CancellationToken ct = default) =>
+        _db.WorkSchedules.FirstOrDefaultAsync(s => s.OwnerEmployeeId == employeeId, ct);
+
+    public async Task<int> UsageCountAsync(long id, CancellationToken ct = default) =>
+        await _db.Employees.IgnoreQueryFilters().CountAsync(e => e.WorkScheduleId == id, ct)
+        + await _db.Departments.IgnoreQueryFilters().CountAsync(d => d.WorkScheduleId == id, ct);
+
+    public async Task AddAsync(WorkSchedule schedule, CancellationToken ct = default) =>
+        await _db.WorkSchedules.AddAsync(schedule, ct);
+
+    public void Remove(WorkSchedule schedule) => _db.WorkSchedules.Remove(schedule);
 }

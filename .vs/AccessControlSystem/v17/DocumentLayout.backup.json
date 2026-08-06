@@ -3,12 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem\\views\\settings\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\views\\settings\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem\\views\\employees\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\views\\employees\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem\\views\\attendance\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\views\\attendance\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem\\views\\settings\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\views\\settings\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem\\views\\security\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -22,37 +26,50 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Attendance\\Index.cshtml",
+              "RelativeDocumentMoniker": "AccessControlSystem\\Views\\Attendance\\Index.cshtml",
+              "ToolTip": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Attendance\\Index.cshtml",
+              "RelativeToolTip": "AccessControlSystem\\Views\\Attendance\\Index.cshtml",
+              "ViewState": "AgIAAEcAAAAAAAAAAAAkwFkAAABdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-08-06T06:29:10.183Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Settings\\Index.cshtml",
               "RelativeDocumentMoniker": "AccessControlSystem\\Views\\Settings\\Index.cshtml",
               "ToolTip": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Settings\\Index.cshtml",
               "RelativeToolTip": "AccessControlSystem\\Views\\Settings\\Index.cshtml",
-              "ViewState": "AgIAAGwAAAAAAAAAAAAkwHQAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAN4AAAAAAAAAAAAkwPYAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-08-04T13:38:44.878Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Employees\\Index.cshtml",
               "RelativeDocumentMoniker": "AccessControlSystem\\Views\\Employees\\Index.cshtml",
               "ToolTip": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Employees\\Index.cshtml",
               "RelativeToolTip": "AccessControlSystem\\Views\\Employees\\Index.cshtml",
-              "ViewState": "AgIAAAIAAAAAAAAAAAAkwBcAAAARAAAAAAAAAA==",
+              "ViewState": "AgIAAKMAAAAAAAAAAAAkwL4AAAArAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-08-04T11:09:31.217Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Security\\Index.cshtml",
               "RelativeDocumentMoniker": "AccessControlSystem\\Views\\Security\\Index.cshtml",
@@ -60,8 +77,7 @@
               "RelativeToolTip": "AccessControlSystem\\Views\\Security\\Index.cshtml",
               "ViewState": "AgIAAAkAAAAAAAAAAAAAABgAAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-08-03T08:36:42.407Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-03T08:36:42.407Z"
             }
           ]
         }

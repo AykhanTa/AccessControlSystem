@@ -14,5 +14,9 @@ public class Department : BaseEntity
     public Department? ParentDepartment { get; set; }
     public ICollection<Department> SubDepartments { get; set; } = new List<Department>();
 
+    /// <summary>Şöbənin standart iş cədvəli — işçidə override yoxdursa buradan götürülür.</summary>
+    public long? WorkScheduleId { get; set; }
+    public WorkSchedule? WorkSchedule { get; set; }
+
     public bool IsActive { get; set; } = true;
 }

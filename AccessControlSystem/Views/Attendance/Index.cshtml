@@ -1,0 +1,325 @@
+@using AccessControlSystem.Application.DTOs
+@{
+    ViewData["Title"] = "Davamiyyət";
+    var companies = ViewBag.Companies as List<CompanyItemDto> ?? new List<CompanyItemDto>();
+    var departments = ViewBag.Departments as List<DepartmentItemDto> ?? new List<DepartmentItemDto>();
+    var employees = ViewBag.Employees as List<EmployeeRowDto> ?? new List<EmployeeRowDto>();
+    var today = ViewBag.Today as string ?? DateTime.Today.ToString("yyyy-MM-dd");
+    int curYear = ViewBag.Year is int y ? y : DateTime.Today.Year;
+    int curMonth = ViewBag.Month is int m ? m : DateTime.Today.Month;
+    var monthsAz = new[] { "Yanvar","Fevral","Mart","Aprel","May","İyun","İyul","Avqust","Sentyabr","Oktyabr","Noyabr","Dekabr" };
+    // Şirkət istifadəçisi (qlobal/təhlükəsizlik admini deyil) yalnız öz şirkətini görür → müəssisə filtri gizlənir.
+    var canSeeAllCompanies = ViewData["CanManageGlobal"] as bool? ?? false;
+}
+
+<style>
+  .att-tabs{display:flex;gap:6px;margin-bottom:14px}
+  .att-tabs button{border:1px solid var(--line,#dde1e8);background:#fff;padding:9px 18px;border-radius:9px;cursor:pointer;font-weight:600;font-size:14px;color:var(--ink,#3a4152)}
+  .att-tabs button.on{background:#3b82f6;border-color:#3b82f6;color:#fff}
+  .rep-toolbar{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+  .rep-toolbar .field{margin:0;display:flex;flex-direction:column;gap:5px;flex:1 1 130px;min-width:0}
+  .rep-toolbar label{font-size:12.5px;font-weight:600;color:var(--faint,#6b7280);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rep-toolbar .input{width:100%;box-sizing:border-box;height:40px;padding:0 10px;border:1px solid var(--line,#dde1e8);border-radius:10px;background:#fff;font-size:13.5px}
+  .rep-toolbar .btn{flex:0 0 auto;align-self:end}
+  .att-pager{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}
+  .att-pager .muted{color:var(--muted);font-size:13px;margin-right:auto}
+  .att-pager .btn{height:34px;min-width:38px;padding:0 12px;font-size:15px}
+  .att-pager select{height:34px;padding:0 8px;border:1px solid var(--line,#dde1e8);border-radius:9px;background:#fff;font-size:13px;cursor:pointer}
+  .print-only{display:none}
+  @@media print{
+    @@page{ size: landscape; margin: 8mm; }
+    .no-print{ display:none !important; }
+    /* Çapda BÜTÜN sətirlər görünsün (pager gizlətmiş olsa belə) */
+    #reportBody table tbody tr{ display:table-row !important; }
+    .page-head{ margin-bottom:6px; }
+    .panel{ box-shadow:none !important; border:none !important; padding:0 !important; margin:0 !important; }
+    .table-wrap{ overflow:visible !important; }
+    /* Cədvəl səhifə eninə sığsın, amma mətn İTMƏSİN — söz keçsin (wrap), kəsilməsin */
+    .att-table{ width:100% !important; table-layout:auto; font-size:9px; }
+    .att-table th, .att-table td{ padding:3px 5px !important; white-space:normal !important; word-break:normal; overflow:visible !important; vertical-align:top; }
+    .att-table td:nth-child(3){ min-width:90px; }   /* İşçi adı sığsın */
+    .att-table td:nth-child(4){ min-width:80px; }   /* Şöbə */
+    .att-badge{ padding:1px 5px; font-size:8.5px; white-space:nowrap; }
+    .att-table td.num{ white-space:nowrap !important; }
+    /* Aylıq kart: sabit yox — auto layout, hər sütun məzmununa görə (sütunlar bir-birinə girməsin) */
+    .mc-table{ width:auto !important; table-layout:auto; font-size:7.5px; border-collapse:collapse; }
+    .mc-table th, .mc-table td{ padding:1px 3px !important; border:1px solid #d0d5dd; text-align:center; }
+    .mc-table th.emp, .mc-table td.emp{ position:static !important; min-width:100px; white-space:normal !important; word-break:normal; text-align:left; }
+    .mc-table th.tot, .mc-table td.tot{ padding:1px 6px !important; white-space:nowrap; }
+    .mc-cell{ width:12px; height:12px; line-height:12px; font-size:7.5px; }
+    .mc-legend{ font-size:8px; gap:8px; }
+    .mc-head h3{ font-size:12px; }
+  }
+</style>
+
+<div class="page-head">
+  <div><p>İş cədvəlinə əsasən gecikmə, erkən çıxış, əlavə iş, işlənmiş saat və qayıb. Filtr seçib göstərin, Excel-ə/PDF-ə çıxarın.</p></div>
+  <div class="no-print" style="display:flex;gap:8px">
+    <button class="btn btn-ghost att-dw" type="button" onclick="exportExcel()">Excel</button>
+    <button class="btn btn-ghost" type="button" onclick="window.print()">Çap et (PDF)</button>
+  </div>
+</div>
+
+<div class="att-tabs no-print">
+  <button type="button" id="tabDaily" class="on" onclick="setMode('daily')">Gündəlik</button>
+  <button type="button" id="tabWeekly" onclick="setMode('weekly')">Həftəlik</button>
+  <button type="button" id="tabMonthly" onclick="setMode('monthly')">Aylıq</button>
+</div>
+
+<form id="repForm" class="panel no-print" style="padding:16px" onsubmit="return false">
+  <div class="rep-toolbar">
+    <div class="field" style="@(canSeeAllCompanies ? "" : "display:none")">
+      <label>Müəssisə</label>
+      <select id="fCompany" class="input">
+        @if (canSeeAllCompanies) { <option value="">Bütün müəssisələr</option> }
+        @foreach (var c in companies) { <option value="@c.Id">@c.Name</option> }
+      </select>
+    </div>
+    <div class="field">
+      <label>Şöbə</label>
+      <select id="fDept" class="input">
+        <option value="" data-company="">Bütün şöbələr</option>
+        @foreach (var d in departments) { <option value="@d.Id" data-company="@d.CompanyId">@d.Name (@d.CompanyName)</option> }
+      </select>
+    </div>
+
+    <div class="field">
+      <label>İşçi (istəyə görə)</label>
+      <select id="fEmp" class="input">
+        <option value="" data-company="" data-dept="">Bütün işçilər</option>
+        @foreach (var e in employees) { <option value="@e.Id" data-company="@e.CompanyId" data-dept="@e.DepartmentId">@e.Name (@e.EmployeeNo)</option> }
+      </select>
+    </div>
+    <div class="field att-dw">
+      <label>Görünüş</label>
+      <select id="fView" class="input">
+        <option value="detailed">Detallı (gün-gün)</option>
+        <option value="summary">Yekun (işçi üzrə)</option>
+      </select>
+    </div>
+    <div class="field att-dw" id="kindField">
+      <label>Hesabat növü</label>
+      <select id="fKind" class="input">
+        <option value="">Bütün günlər</option>
+        <option value="late">Gecikənlər</option>
+        <option value="early">Erkən çıxanlar</option>
+        <option value="absent">Gəlməyənlər</option>
+        <option value="incomplete">Anomaliya (natamam)</option>
+        <option value="overtime">Əlavə iş (overtime)</option>
+        <option value="leave">Məzuniyyət</option>
+        <option value="trip">Ezamiyyət</option>
+      </select>
+    </div>
+    <div class="field att-only-daily">
+      <label>Tez seçim</label>
+      <select id="fPreset" class="input" onchange="applyPreset()">
+        <option value="">— Aralıq —</option>
+        <option value="today">Bu gün</option>
+        <option value="yesterday">Dünən</option>
+        <option value="thisweek">Bu həftə</option>
+        <option value="lastweek">Keçən həftə</option>
+        <option value="thismonth">Bu ay</option>
+        <option value="lastmonth">Keçən ay</option>
+        <option value="last3">Son 3 ay</option>
+        <option value="last6">Son 6 ay</option>
+      </select>
+    </div>
+    <div class="field att-only-daily"><label>Başlanğıc</label><input type="date" id="fFrom" class="input" value="@today" /></div>
+    <div class="field att-only-daily"><label>Son</label><input type="date" id="fTo" class="input" value="@today" /></div>
+    <div class="field att-only-weekly" style="display:none"><label>Həftə (gün seç)</label><input type="date" id="fWeek" class="input" value="@today" /></div>
+
+    <div class="field att-only-monthly" style="display:none">
+      <label>İl</label>
+      <select id="fYear" class="input">
+        @for (int yy = curYear; yy >= curYear - 4; yy--) { <option value="@yy" selected="@(yy == curYear)">@yy</option> }
+      </select>
+    </div>
+    <div class="field att-only-monthly" style="display:none">
+      <label>Ay</label>
+      <select id="fMonth" class="input">
+        @for (int mm = 1; mm <= 12; mm++) { <option value="@mm" selected="@(mm == curMonth)">@monthsAz[mm - 1]</option> }
+      </select>
+    </div>
+
+    <button class="btn btn-primary" id="btnShow" type="submit">Göstər</button>
+  </div>
+</form>
+
+<section class="panel" style="padding:16px;margin-top:16px">
+  <div id="reportBody"><div class="empty-state" style="padding:32px;text-align:center;color:var(--muted)">Yüklənir…</div></div>
+  <div id="reportPager" class="no-print"></div>
+</section>
+
+@section Scripts {
+<script>
+  const $ = id => document.getElementById(id);
+  let mode = 'daily';
+  let reqId = 0;   // sorğu nömrəsi — yalnız ən son sorğunun nəticəsi tətbiq olunur
+
+  function setMode(m){
+    mode = m;
+    $('tabDaily').classList.toggle('on', m==='daily');
+    $('tabWeekly').classList.toggle('on', m==='weekly');
+    $('tabMonthly').classList.toggle('on', m==='monthly');
+    document.querySelectorAll('.att-only-daily').forEach(e=>e.style.display = (m==='daily')?'flex':'none');
+    document.querySelectorAll('.att-only-weekly').forEach(e=>e.style.display = (m==='weekly')?'flex':'none');
+    document.querySelectorAll('.att-only-monthly').forEach(e=>e.style.display = (m==='monthly')?'flex':'none');
+    // Hesabat növü + Excel yalnız gündəlik/həftəlikdə (aylıq kartda deyil)
+    document.querySelectorAll('.att-dw').forEach(e=>e.style.display = (m!=='monthly')?'flex':'none');
+    loadReport();
+  }
+
+  // Yerli tarix formatı (UTC sürüşməsi olmasın — toISOString istifadə etmirik).
+  function ymd(d){ var m=d.getMonth()+1, day=d.getDate(); return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(day<10?'0':'')+day; }
+
+  // Tarix presetini fFrom/fTo-ya tətbiq et.
+  function applyPreset(){
+    var p = $('fPreset').value; if(!p) return;
+    var fmt = ymd;
+    var now = new Date(); now.setHours(0,0,0,0);
+    var from = new Date(now), to = new Date(now);
+    var dow = (now.getDay()+6)%7;   // B.e=0
+    // Qeyd: gün əlavəsində "to"-nu HƏMİŞƏ "from"-dan klonlayırıq ki, ay sərhədi düzgün keçsin.
+    var addDays = function(base, n){ var d = new Date(base.getFullYear(), base.getMonth(), base.getDate()); d.setDate(d.getDate()+n); return d; };
+    if(p==='today'){}
+    else if(p==='yesterday'){ from = addDays(now,-1); to = addDays(now,-1); }
+    else if(p==='thisweek'){ from = addDays(now,-dow); to = addDays(from,6); }
+    else if(p==='lastweek'){ from = addDays(now,-dow-7); to = addDays(from,6); }
+    else if(p==='thismonth'){ from = new Date(now.getFullYear(), now.getMonth(), 1); to = new Date(now.getFullYear(), now.getMonth()+1, 0); }
+    else if(p==='lastmonth'){ from = new Date(now.getFullYear(), now.getMonth()-1, 1); to = new Date(now.getFullYear(), now.getMonth(), 0); }
+    else if(p==='last3'){ from = new Date(now.getFullYear(), now.getMonth()-3, now.getDate()); to = new Date(now); }
+    else if(p==='last6'){ from = new Date(now.getFullYear(), now.getMonth()-6, now.getDate()); to = new Date(now); }
+    $('fFrom').value = fmt(from); $('fTo').value = fmt(to);
+    // Avtomatik yükləmir — istifadəçi "Göstər" düyməsinə klik edəndə yüklənir.
+  }
+
+  // Gündəlik/həftəlik üçün effektiv tarix aralığı.
+  function effectiveRange(){
+    if(mode==='weekly'){
+      var d = new Date($('fWeek').value); var dow=(d.getDay()+6)%7;
+      var mon = new Date(d); mon.setDate(d.getDate()-dow); var sun = new Date(mon); sun.setDate(mon.getDate()+6);
+      return { from:ymd(mon), to:ymd(sun) };
+    }
+    return { from:$('fFrom').value, to:$('fTo').value };
+  }
+
+  // Cari filtrlərlə Excel faylı endir (gündəlik/həftəlik; detallı və ya yekun).
+  function exportExcel(){
+    var cid=$('fCompany').value, did=$('fDept').value, eid=$('fEmp').value;
+    var rng = effectiveRange();
+    if($('fView').value==='summary'){
+      var qs = new URLSearchParams({ companyId:cid, deptId:did, employeeId:eid, from:rng.from, to:rng.to, kind:$('fKind').value });
+      window.location = '/Attendance/ExportSummary?' + qs.toString();
+    } else {
+      var qs2 = new URLSearchParams({ companyId:cid, deptId:did, employeeId:eid, from:rng.from, to:rng.to, kind:$('fKind').value });
+      window.location = '/Attendance/ExportDaily?' + qs2.toString();
+    }
+  }
+
+  // Müəssisəyə görə şöbə + işçi seçimlərini süz.
+  function syncCascade(){
+    const cid = $('fCompany').value;
+    Array.prototype.forEach.call($('fDept').options, function(o){
+      if(o.value===''){ o.hidden=false; o.disabled=false; return; }   // "Bütün şöbələr" həmişə görünür
+      const oc = o.getAttribute('data-company') || '';
+      const show = (oc==='' || oc===cid); o.hidden=!show; o.disabled=!show;
+      if(!show && o.selected) $('fDept').value='';
+    });
+    const did = $('fDept').value;
+    Array.prototype.forEach.call($('fEmp').options, function(o){
+      if(o.value===''){ o.hidden=false; o.disabled=false; return; }   // "Bütün işçilər" həmişə görünür
+      const oc = o.getAttribute('data-company') || '', od = o.getAttribute('data-dept') || '';
+      const show = (oc===''||oc===cid) && (did===''||od===did);
+      o.hidden=!show; o.disabled=!show;
+      if(!show && o.selected) $('fEmp').value='';
+    });
+  }
+
+  // Aylıqda "Hesabat növü" gizlənir; gündəlik/həftəlik + yekunda aktivdir
+  // (yekunda seçilən növə uyğun YALNIZ o işçilər göstərilir — məs. gecikənlər).
+  function syncFieldVis(){
+    var kf = $('kindField'), isMonthly = (mode==='monthly');
+    kf.style.display = isMonthly ? 'none' : 'flex';
+    $('fKind').disabled = false;
+    kf.style.opacity = '1';
+  }
+
+  // Yalnız "Göstər" (və ilk yükləmə / tab dəyişimi) çağırır. Köhnə sorğular ləğv olunur.
+  async function loadReport(){
+    syncFieldVis();
+    const my = ++reqId;                    // yalnız ən son sorğunun nəticəsi tətbiq olunur
+    const btn = $('btnShow'); if(btn) btn.disabled = true;
+    const body = $('reportBody');
+    body.innerHTML = '<div class="empty-state" style="padding:32px;text-align:center;color:var(--muted)">Yüklənir…</div>';
+    const cid=$('fCompany').value, did=$('fDept').value, eid=$('fEmp').value, kind=$('fKind').value;
+    const view = $('fView').value;
+    var rng = effectiveRange();   // {from,to} — gündəlik/həftəlik üçün
+    let url, qs;
+    if(mode==='monthly'){
+      qs = new URLSearchParams({ companyId:cid, deptId:did, employeeId:eid, year:$('fYear').value, month:$('fMonth').value });
+      url = '/Attendance/MonthlyBody?';
+    } else if(view==='summary'){
+      qs = new URLSearchParams({ companyId:cid, deptId:did, employeeId:eid, from:rng.from, to:rng.to, kind:kind });
+      url = '/Attendance/SummaryBody?';
+    } else if(mode==='daily'){
+      qs = new URLSearchParams({ companyId:cid, deptId:did, employeeId:eid, from:$('fFrom').value, to:$('fTo').value, kind:kind });
+      url = '/Attendance/DailyBody?';
+    } else {
+      qs = new URLSearchParams({ companyId:cid, deptId:did, employeeId:eid, date:$('fWeek').value, kind:kind });
+      url = '/Attendance/WeeklyBody?';
+    }
+    try {
+      const res = await fetch(url + qs.toString(), { headers:{ 'X-Requested-With':'XMLHttpRequest' } });
+      const html = res.ok ? await res.text()
+        : '<div class="empty-state" style="padding:32px;text-align:center;color:var(--muted)">Xəta baş verdi.</div>';
+      if(my !== reqId) return;             // daha yeni sorğu var — bunu tətbiq etmə
+      body.innerHTML = html;
+      initPager();
+    } catch(e){
+      if(my !== reqId) return;
+      body.innerHTML = '<div class="empty-state" style="padding:32px;text-align:center;color:var(--muted)">Şəbəkə xətası.</div>';
+    } finally {
+      if(my === reqId && btn) btn.disabled = false;
+    }
+  }
+
+  // ---- Client-side səhifələmə (gecikməsiz — yalnız cari səhifə görünür) ----
+  var pager = { rows: [], page: 1, size: 100 };
+  function initPager(){
+    var tbl = $('reportBody').querySelector('table');
+    var tbody = tbl ? tbl.querySelector('tbody') : null;
+    pager.rows = tbody ? Array.prototype.slice.call(tbody.children) : [];
+    pager.page = 1;
+    drawPage();
+  }
+  function drawPage(){
+    var host = $('reportPager'), total = pager.rows.length;
+    var size = (pager.size === 'all') ? (total || 1) : pager.size;
+    var pages = Math.max(1, Math.ceil(total / size));
+    pager.page = Math.min(Math.max(1, pager.page), pages);
+    var start = (pager.page - 1) * size, end = start + size;
+    for (var i = 0; i < total; i++) pager.rows[i].style.display = (i >= start && i < end) ? '' : 'none';
+    if (total <= 50) { host.innerHTML = ''; return; }   // az sətir → pager lazım deyil
+    host.innerHTML =
+      '<div class="att-pager">'
+      + '<span class="muted">Cəmi ' + total + ' sətir · Səhifə ' + pager.page + '/' + pages + '</span>'
+      + '<button class="btn btn-ghost" type="button" ' + (pager.page <= 1 ? 'disabled' : '') + ' onclick="pageGo(-1)">‹ Əvvəlki</button>'
+      + '<button class="btn btn-ghost" type="button" ' + (pager.page >= pages ? 'disabled' : '') + ' onclick="pageGo(1)">Sonrakı ›</button>'
+      + '<select id="pgSize" onchange="pageSize(this.value)"><option value="50">50</option><option value="100">100</option><option value="200">200</option><option value="all">Hamısı</option></select>'
+      + '</div>';
+    var ps = $('pgSize'); if (ps) ps.value = String(pager.size);
+  }
+  function pageGo(d){ pager.page += d; drawPage(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  function pageSize(v){ pager.size = (v === 'all') ? 'all' : parseInt(v, 10); pager.page = 1; drawPage(); }
+
+  // Filtr dəyişikliyi AVTOMATİK yükləmir — yalnız asılı seçimləri süzür / sahə görünüşünü yeniləyir.
+  $('fCompany').addEventListener('change', syncCascade);
+  $('fDept').addEventListener('change', syncCascade);
+  $('fView').addEventListener('change', syncFieldVis);
+  // Yükləmə yalnız "Göstər" düyməsi ilə.
+  $('repForm').addEventListener('submit', loadReport);
+  syncCascade();
+  syncFieldVis();
+  loadReport();   // ilk açılışda bir dəfə yüklə
+</script>
+}

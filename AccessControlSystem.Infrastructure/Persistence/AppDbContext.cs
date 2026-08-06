@@ -32,6 +32,10 @@ public class AppDbContext : DbContext, IUnitOfWork
     public DbSet<Position> Positions => Set<Position>();
     public DbSet<Employee> Employees => Set<Employee>();
     public DbSet<EmployeeFloor> EmployeeFloors => Set<EmployeeFloor>();
+    public DbSet<WorkSchedule> WorkSchedules => Set<WorkSchedule>();
+    public DbSet<LeaveType> LeaveTypes => Set<LeaveType>();
+    public DbSet<LeaveRecord> LeaveRecords => Set<LeaveRecord>();
+    public DbSet<Holiday> Holidays => Set<Holiday>();
     public DbSet<Section> Sections => Set<Section>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
@@ -51,6 +55,11 @@ public class AppDbContext : DbContext, IUnitOfWork
         modelBuilder.Entity<Employee>().HasQueryFilter(e => _tenant.CanSeeAllCompanies || e.CompanyId == _tenant.CompanyId);
         modelBuilder.Entity<Department>().HasQueryFilter(e => _tenant.CanSeeAllCompanies || e.CompanyId == _tenant.CompanyId);
         modelBuilder.Entity<Position>().HasQueryFilter(e => _tenant.CanSeeAllCompanies || e.CompanyId == _tenant.CompanyId);
+        // İş cədvəli: qlobal (CompanyId=null) hamıya görünür; əks halda öz şirkəti.
+        modelBuilder.Entity<WorkSchedule>().HasQueryFilter(e => _tenant.CanSeeAllCompanies || e.CompanyId == null || e.CompanyId == _tenant.CompanyId);
+        modelBuilder.Entity<LeaveType>().HasQueryFilter(e => _tenant.CanSeeAllCompanies || e.CompanyId == null || e.CompanyId == _tenant.CompanyId);
+        modelBuilder.Entity<Holiday>().HasQueryFilter(e => _tenant.CanSeeAllCompanies || e.CompanyId == null || e.CompanyId == _tenant.CompanyId);
+        modelBuilder.Entity<LeaveRecord>().HasQueryFilter(e => _tenant.CanSeeAllCompanies || e.CompanyId == _tenant.CompanyId);
         modelBuilder.Entity<Center>().HasQueryFilter(e => _tenant.CanSeeAllCompanies || e.CompanyId == _tenant.CompanyId);
         modelBuilder.Entity<Floor>().HasQueryFilter(e => _tenant.CanSeeAllCompanies || e.CompanyId == _tenant.CompanyId);
         modelBuilder.Entity<AccessPoint>().HasQueryFilter(e => _tenant.CanSeeAllCompanies || e.CompanyId == _tenant.CompanyId);

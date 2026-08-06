@@ -32,6 +32,13 @@
 }
 
 <style>
+  .ecustom{background:var(--card-2,#f8fafc);border:1px solid var(--line,#e5e7eb);border-radius:10px;padding:12px 14px;margin-top:4px}
+  .ec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+  .ec-grid label,.ec-lbl{display:block;font-size:12px;font-weight:600;color:var(--faint,#6b7280);margin-bottom:4px}
+  .ec-grid input{width:100%;box-sizing:border-box}
+  .ec-lbl{margin-top:12px}
+  .ec-days{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
+  .ec-days label{display:inline-flex;align-items:center;gap:5px;font-weight:500;cursor:pointer;font-size:13px;color:var(--ink,#374151)}
   .emp-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
   .emp-toolbar .input{height:40px;padding:0 12px;border-radius:10px}
   .emp-toolbar #fDept{width:170px}
@@ -178,6 +185,38 @@
             @foreach (var p in Model.Positions) { <option value="@p.Id" data-company="@p.CompanyId">@p.Name</option> }
           </select>
         </div>
+        <div class="field">
+          <label>İş cədvəli</label>
+          <select name="ScheduleChoice" id="eSched" onchange="eSchedToggle()">
+            <option value="">— Şöbəyə uyğun —</option>
+            <option value="custom">Fərdi — günlər/saatlar seç</option>
+            @if (Model.WorkSchedules.Count > 0)
+            {
+              <optgroup label="Hazır cədvəllər">
+                @foreach (var ws in Model.WorkSchedules) { <option value="@ws.Id">@ws.Name</option> }
+              </optgroup>
+            }
+          </select>
+          <span class="hint" id="eSchedHint" style="display:none"></span>
+        </div>
+        <div class="field ecustom" id="eCustomBox" style="display:none">
+          <div class="ec-grid">
+            <div><label>Başlama</label><input name="CustomStart" id="ecStart" type="time" value="09:00" /></div>
+            <div><label>Bitmə</label><input name="CustomEnd" id="ecEnd" type="time" value="18:00" /></div>
+            <div><label>Gecikmə (dəq)</label><input name="CustomGrace" id="ecGrace" type="number" min="0" max="240" value="15" /></div>
+            <div><label>Erkən çıxış (dəq)</label><input name="CustomEarly" id="ecEarly" type="number" min="0" max="240" value="0" /></div>
+          </div>
+          <label class="ec-lbl">İş günləri</label>
+          <div class="ec-days">
+            <label><input type="checkbox" name="SMon" id="ecMon" value="true" checked /> B.e</label>
+            <label><input type="checkbox" name="STue" id="ecTue" value="true" checked /> Ç.a</label>
+            <label><input type="checkbox" name="SWed" id="ecWed" value="true" checked /> Ç</label>
+            <label><input type="checkbox" name="SThu" id="ecThu" value="true" checked /> C.a</label>
+            <label><input type="checkbox" name="SFri" id="ecFri" value="true" checked /> C</label>
+            <label><input type="checkbox" name="SSat" id="ecSat" value="true" /> Ş</label>
+            <label><input type="checkbox" name="SSun" id="ecSun" value="true" /> B</label>
+          </div>
+        </div>
         <div class="field"><label>Telefon</label><input name="Phone" id="ePhone" type="text" /></div>
         <div class="field"><label>Email</label><input name="Email" id="eEmail" type="email" /></div>
       </div>
@@ -307,6 +346,17 @@
         filterEmpOrg();                       // şöbə/vəzifəni şirkətə görə süz
         g('eDept').value = e.departmentId || '';
         g('ePos').value = e.positionId || '';
+        // İş cədvəli rejimi: "" miras | "custom" fərdi | "<id>" paylaşılan
+        g('eSched').value = e.scheduleChoice || '';
+        g('ecStart').value = e.schedStart || '09:00';
+        g('ecEnd').value = e.schedEnd || '18:00';
+        g('ecGrace').value = (e.schedGrace != null ? e.schedGrace : 15);
+        g('ecEarly').value = (e.schedEarly != null ? e.schedEarly : 0);
+        ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(function (d) {
+          g('ec' + d).checked = !!e['s' + d.toLowerCase()];
+        });
+        eSchedToggle();
+        updateSchedHint(e);
         if (e.employmentStartAt) g('eStart').value = e.employmentStartAt;
         (e.floorIds || []).forEach(fid => {
           var opt = g('eFloors').querySelector('option[value="' + fid + '"]');
@@ -315,6 +365,8 @@
       } else {
         g('empId').value = 0;
         filterEmpOrg();                       // yeni işçi — default şirkətə görə süz
+        eSchedToggle();
+        updateSchedHint(null);
       }
       document.getElementById('empModal').classList.add('open');
       document.body.style.overflow = 'hidden';
@@ -322,6 +374,26 @@
     function closeEmp() {
       document.getElementById('empModal').classList.remove('open');
       document.body.style.overflow = '';
+    }
+    // "Fərdi" seçiləndə günlər/saatlar panelini göstər.
+    function eSchedToggle() {
+      var sel = document.getElementById('eSched');
+      var box = document.getElementById('eCustomBox');
+      if (!sel || !box) return;
+      box.style.display = (sel.value === 'custom') ? '' : 'none';
+      updateSchedHint(null);
+    }
+    // Miras rejimində şöbədən gələn effektiv cədvəli göstər.
+    function updateSchedHint(e) {
+      var sel = document.getElementById('eSched');
+      var hint = document.getElementById('eSchedHint');
+      if (!sel || !hint) return;
+      if (sel.value === '' && e && e.scheduleFromDept && e.workScheduleName) {
+        hint.textContent = 'Effektiv (şöbədən): ' + e.workScheduleName;
+        hint.style.display = '';
+      } else {
+        hint.style.display = 'none';
+      }
     }
 
     document.addEventListener('DOMContentLoaded', function () {

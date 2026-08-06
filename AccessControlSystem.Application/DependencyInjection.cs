@@ -17,6 +17,8 @@ public static class DependencyInjection
         services.AddScoped<IActivePermitService, ActivePermitService>();
         services.AddScoped<IHistoryService, HistoryService>();
         services.AddScoped<IReportService, ReportService>();
+        services.AddScoped<IAttendanceService, AttendanceService>();
+        services.AddScoped<ILeaveService, LeaveService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<ISettingsService, SettingsService>();

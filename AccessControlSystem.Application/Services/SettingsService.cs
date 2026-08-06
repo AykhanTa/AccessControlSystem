@@ -18,6 +18,7 @@ public class SettingsService : ISettingsService
     private readonly ICompanyRepository _companies;
     private readonly IDepartmentRepository _departments;
     private readonly IPositionRepository _positions;
+    private readonly IWorkScheduleRepository _schedules;
     private readonly IUnitOfWork _uow;
     private readonly ISystemLogWriter _log;
     private readonly ICurrentTenant _tenant;
@@ -25,6 +26,7 @@ public class SettingsService : ISettingsService
     public SettingsService(IHostRepository hosts, IAreaRepository areas, IPurposeRepository purposes,
                            ICenterRepository centers, IFloorRepository floors, IDeviceRepository devices,
                            ICompanyRepository companies, IDepartmentRepository departments, IPositionRepository positions,
+                           IWorkScheduleRepository schedules,
                            IUnitOfWork uow, ISystemLogWriter log, ICurrentTenant tenant)
     {
         _hosts = hosts;
@@ -36,6 +38,7 @@ public class SettingsService : ISettingsService
         _companies = companies;
         _departments = departments;
         _positions = positions;
+        _schedules = schedules;
         _uow = uow;
         _log = log;
         _tenant = tenant;
@@ -106,7 +109,9 @@ public class SettingsService : ISettingsService
         (await _departments.GetAllWithCompanyAsync(ct)).Select(d => new DepartmentItemDto
         {
             Id = d.Id, Name = d.Name, CompanyId = d.CompanyId, CompanyName = d.Company?.Name ?? "",
-            ParentName = d.ParentDepartment?.Name, IsActive = d.IsActive
+            ParentName = d.ParentDepartment?.Name,
+            WorkScheduleId = d.WorkScheduleId, WorkScheduleName = d.WorkSchedule?.Name,
+            IsActive = d.IsActive
         }).ToList();
 
     public async Task<long> AddDepartmentAsync(string name, long companyId, long? parentId, CancellationToken ct = default)
@@ -148,6 +153,156 @@ public class SettingsService : ISettingsService
             throw new InvalidOperationException("Bu şöbə istifadə olunub (alt şöbə/işçi), silinə bilməz. Deaktiv edin.");
         }
         await _log.LogAsync("DEPARTMENT_DELETED", $"{name} şöbəsi silindi.", "department", id, ct: ct);
+    }
+
+    public async Task SetDepartmentScheduleAsync(long departmentId, long? scheduleId, CancellationToken ct = default)
+    {
+        var dep = await _departments.GetByIdAsync(departmentId, ct) ?? throw new KeyNotFoundException("Şöbə tapılmadı.");
+        if (scheduleId is { } sid && await _schedules.GetByIdAsync(sid, ct) is null)
+            throw new ArgumentException("İş cədvəli tapılmadı.");
+        dep.WorkScheduleId = scheduleId;
+        dep.UpdatedAt = DateTime.Now;
+        await _uow.SaveChangesAsync(ct);
+        await _log.LogAsync("DEPARTMENT_SCHEDULE_SET",
+            $"{dep.Name} şöbəsinin iş cədvəli {(scheduleId is null ? "silindi" : "təyin edildi")}.", "department", dep.Id, ct: ct);
+    }
+
+    // ---------- İş cədvəlləri ----------
+
+    private static readonly string[] DayShort = { "B.e", "Ç.a", "Ç", "C.a", "C", "Ş", "B" };
+
+    public async Task<List<WorkScheduleItemDto>> GetWorkSchedulesAsync(CancellationToken ct = default)
+    {
+        var list = await _schedules.GetAllWithCompanyAsync(ct);
+        var result = new List<WorkScheduleItemDto>();
+        foreach (var s in list)
+            result.Add(new WorkScheduleItemDto
+            {
+                Id = s.Id, Name = s.Name, CompanyId = s.CompanyId,
+                CompanyName = s.Company?.Name ?? "Qlobal",
+                Type = s.Type.ToString(),
+                StartTime = s.StartTime.ToString(@"hh\:mm"),
+                EndTime = s.EndTime.ToString(@"hh\:mm"),
+                GraceMinutes = s.GraceMinutes,
+                EarlyLeaveGraceMinutes = s.EarlyLeaveGraceMinutes,
+                CheckInStart = s.CheckInStart?.ToString(@"hh\:mm"),
+                CheckInEnd = s.CheckInEnd?.ToString(@"hh\:mm"),
+                CheckOutStart = s.CheckOutStart?.ToString(@"hh\:mm"),
+                CheckOutEnd = s.CheckOutEnd?.ToString(@"hh\:mm"),
+                AbsentAfterMinutes = s.AbsentAfterMinutes,
+                MinWorkMinutes = s.MinWorkMinutes,
+                Color = string.IsNullOrWhiteSpace(s.Color) ? "#3b82f6" : s.Color!,
+                DaysLabel = DaysLabel(s),
+                UsageCount = await _schedules.UsageCountAsync(s.Id, ct),
+                IsActive = s.IsActive
+            });
+        return result;
+    }
+
+    public async Task<List<LookupDto>> GetWorkScheduleLookupAsync(CancellationToken ct = default) =>
+        (await _schedules.GetActiveAsync(ct)).Select(s => new LookupDto
+        {
+            Id = s.Id,
+            Name = $"{s.Name} ({s.StartTime:hh\\:mm}–{s.EndTime:hh\\:mm})"
+        }).ToList();
+
+    public async Task<long> AddWorkScheduleAsync(WorkScheduleInputDto dto, CancellationToken ct = default)
+    {
+        var s = BuildSchedule(new WorkSchedule(), dto);
+        s.IsActive = true;
+        await _schedules.AddAsync(s, ct);
+        await _uow.SaveChangesAsync(ct);
+        await _log.LogAsync("WORKSCHEDULE_CREATED", $"{s.Name} iş cədvəli əlavə edildi.", "workschedule", s.Id, ct: ct);
+        return s.Id;
+    }
+
+    public async Task UpdateWorkScheduleAsync(long id, WorkScheduleInputDto dto, CancellationToken ct = default)
+    {
+        var s = await _schedules.GetByIdAsync(id, ct) ?? throw new KeyNotFoundException("İş cədvəli tapılmadı.");
+        BuildSchedule(s, dto);
+        s.UpdatedAt = DateTime.Now;
+        await _uow.SaveChangesAsync(ct);
+        await _log.LogAsync("WORKSCHEDULE_UPDATED", $"{s.Name} iş cədvəli yeniləndi.", "workschedule", s.Id, ct: ct);
+    }
+
+    public async Task ToggleWorkScheduleAsync(long id, CancellationToken ct = default)
+    {
+        var s = await _schedules.GetByIdAsync(id, ct) ?? throw new KeyNotFoundException("İş cədvəli tapılmadı.");
+        s.IsActive = !s.IsActive;
+        s.UpdatedAt = DateTime.Now;
+        await _uow.SaveChangesAsync(ct);
+        await _log.LogAsync("WORKSCHEDULE_STATUS_CHANGED",
+            $"{s.Name} iş cədvəli {(s.IsActive ? "aktiv" : "deaktiv")} edildi.", "workschedule", s.Id, ct: ct);
+    }
+
+    public async Task DeleteWorkScheduleAsync(long id, CancellationToken ct = default)
+    {
+        var s = await _schedules.GetByIdAsync(id, ct) ?? throw new KeyNotFoundException("İş cədvəli tapılmadı.");
+        if (await _schedules.UsageCountAsync(id, ct) > 0)
+            throw new InvalidOperationException("Bu cədvəl şöbə/işçilərə təyin olunub. Əvvəlcə təyinatları dəyişin (və ya deaktiv edin).");
+        var name = s.Name;
+        _schedules.Remove(s);
+        await _uow.SaveChangesAsync(ct);
+        await _log.LogAsync("WORKSCHEDULE_DELETED", $"{name} iş cədvəli silindi.", "workschedule", id, ct: ct);
+    }
+
+    /// <summary>Form DTO-dan entity-ni doldurur (yaratma və yeniləmə üçün ortaq).</summary>
+    private WorkSchedule BuildSchedule(WorkSchedule s, WorkScheduleInputDto dto)
+    {
+        var name = (dto.Name ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("İş cədvəli adını daxil edin.");
+        if (!Enum.TryParse<TimetableType>((dto.Type ?? "Normal").Trim(), true, out var type))
+            type = TimetableType.Normal;
+        var start = ParseTime(dto.StartTime, "başlama");
+        var end = ParseTime(dto.EndTime, "bitmə");
+        if (end <= start)
+            throw new ArgumentException("Bitmə vaxtı başlama vaxtından böyük olmalıdır.");
+        if (dto.GraceMinutes is < 0 or > 240)
+            throw new ArgumentException("İcazəli gecikmə 0–240 dəqiqə aralığında olmalıdır.");
+        if (dto.EarlyLeaveGraceMinutes is < 0 or > 240)
+            throw new ArgumentException("İcazəli erkən çıxış 0–240 dəqiqə aralığında olmalıdır.");
+        if (dto.AbsentAfterMinutes is < 0 or > 1440)
+            throw new ArgumentException("Qayıb həddi 0–1440 dəqiqə aralığında olmalıdır.");
+        if (dto.MinWorkMinutes is < 0 or > 1440)
+            throw new ArgumentException("Minimum iş müddəti 0–1440 dəqiqə aralığında olmalıdır.");
+        if (!(dto.Mon || dto.Tue || dto.Wed || dto.Thu || dto.Fri || dto.Sat || dto.Sun))
+            throw new ArgumentException("Ən azı bir iş günü seçin.");
+
+        s.Name = name;
+        s.CompanyId = OwnerCompanyId(dto.CompanyId);
+        s.Type = type;
+        s.StartTime = start;
+        s.EndTime = end;
+        s.GraceMinutes = dto.GraceMinutes;
+        s.EarlyLeaveGraceMinutes = dto.EarlyLeaveGraceMinutes;
+        s.CheckInStart = ParseTimeOpt(dto.CheckInStart, "giriş başlama");
+        s.CheckInEnd = ParseTimeOpt(dto.CheckInEnd, "giriş bitmə");
+        s.CheckOutStart = ParseTimeOpt(dto.CheckOutStart, "çıxış başlama");
+        s.CheckOutEnd = ParseTimeOpt(dto.CheckOutEnd, "çıxış bitmə");
+        s.AbsentAfterMinutes = dto.AbsentAfterMinutes;
+        s.MinWorkMinutes = dto.MinWorkMinutes;
+        s.Color = string.IsNullOrWhiteSpace(dto.Color) ? "#3b82f6" : dto.Color.Trim();
+        s.Mon = dto.Mon; s.Tue = dto.Tue; s.Wed = dto.Wed; s.Thu = dto.Thu;
+        s.Fri = dto.Fri; s.Sat = dto.Sat; s.Sun = dto.Sun;
+        return s;
+    }
+
+    private static TimeSpan ParseTime(string? value, string label) =>
+        TimeSpan.TryParseExact((value ?? "").Trim(), new[] { @"hh\:mm", @"h\:mm" }, null, out var t)
+            ? t : throw new ArgumentException($"Düzgün {label} vaxtı daxil edin (SS:DD).");
+
+    /// <summary>Opsional vaxt — boşdursa null, doludursa parse (yanlışsa xəta).</summary>
+    private static TimeSpan? ParseTimeOpt(string? value, string label)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        return ParseTime(value, label);
+    }
+
+    private static string DaysLabel(WorkSchedule s)
+    {
+        var flags = new[] { s.Mon, s.Tue, s.Wed, s.Thu, s.Fri, s.Sat, s.Sun };
+        return string.Join(", ", DayShort.Where((_, i) => flags[i]));
     }
 
     // ---------- Vəzifələr ----------

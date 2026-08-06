@@ -63,7 +63,8 @@ public class AccessEventsController : Controller
 
             var target = ToHik(d);
             var position = (page - 1) * pageSize;
-            var res = await _hik.SearchEventPageAsync(target, from, to, position, pageSize, empId, cardNo: card, ct: ct);
+            // Yalnız üz ilə təsdiq (major 5 / minor 75) — cihaz özü süzür (qapı/login hadisələri gəlmir).
+            var res = await _hik.SearchEventPageAsync(target, from, to, position, pageSize, empId, cardNo: card, major: 5, minor: 75, ct: ct);
             if (!res.Ok) { dto.Error = res.Error ?? "Cihaz cavab vermədi."; return Json(dto); }
 
             dto.Total = res.Total;
@@ -94,6 +95,9 @@ public class AccessEventsController : Controller
         var raws = await FetchAllAsync(devices, from, to, 5000, ct, empId, card);
 
         IEnumerable<(HikRawEvent e, Device d)> q = raws;
+        // Yalnız işçinin ÜZ ilə təsdiqlənməsi (minor 75) göstərilir — qapı açıldı/bağlandı,
+        // uzaqdan giriş, sabotaj və s. sistem hadisələri siyahıda görünmür.
+        q = q.Where(x => x.e.Minor == 75);
         if (!string.IsNullOrWhiteSpace(empId))
             q = q.Where(x => string.Equals((x.e.EmployeeNo ?? "").Trim(), empId.Trim(), StringComparison.OrdinalIgnoreCase));
         if (!string.IsNullOrWhiteSpace(card))
@@ -141,7 +145,8 @@ public class AccessEventsController : Controller
             for (var page = 0; page < 200; page++)
             {
                 HikEventRawPage res;
-                try { res = await _hik.SearchEventPageAsync(target, from, to, position, 100, empId, cardNo: card, ct: ct); }
+                // Yalnız üz ilə təsdiq (major 5 / minor 75) — cihaz özü süzür.
+                try { res = await _hik.SearchEventPageAsync(target, from, to, position, 100, empId, cardNo: card, major: 5, minor: 75, ct: ct); }
                 catch { break; }
                 if (!res.Ok || res.Items.Count == 0) break;
                 foreach (var e in res.Items) list.Add((e, d));

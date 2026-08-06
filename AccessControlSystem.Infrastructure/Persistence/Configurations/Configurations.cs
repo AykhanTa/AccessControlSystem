@@ -206,6 +206,25 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Restrict);
         b.HasOne(x => x.ParentDepartment).WithMany(d => d.SubDepartments)
             .HasForeignKey(x => x.ParentDepartmentId).OnDelete(DeleteBehavior.Restrict);
+        b.HasOne(x => x.WorkSchedule).WithMany()
+            .HasForeignKey(x => x.WorkScheduleId).OnDelete(DeleteBehavior.SetNull);
+    }
+}
+
+public class WorkScheduleConfiguration : IEntityTypeConfiguration<WorkSchedule>
+{
+    public void Configure(EntityTypeBuilder<WorkSchedule> b)
+    {
+        b.ToTable("WorkSchedules");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Name).HasMaxLength(120).IsRequired();
+        b.Property(x => x.Type).HasConversion<string>().HasMaxLength(20);
+        b.Property(x => x.Color).HasMaxLength(20);
+        b.HasOne(x => x.Company).WithMany()
+            .HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Restrict);
+        b.HasIndex(x => x.CompanyId);
+        // OwnerEmployeeId — yumşaq istinad (FK constraint yox, cascade dövrünün qarşısını alır).
+        b.HasIndex(x => x.OwnerEmployeeId);
     }
 }
 
@@ -248,6 +267,46 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
         b.HasOne(x => x.Company).WithMany().HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Restrict);
         b.HasOne(x => x.Department).WithMany().HasForeignKey(x => x.DepartmentId).OnDelete(DeleteBehavior.SetNull);
         b.HasOne(x => x.Position).WithMany().HasForeignKey(x => x.PositionId).OnDelete(DeleteBehavior.SetNull);
+        b.HasOne(x => x.WorkSchedule).WithMany().HasForeignKey(x => x.WorkScheduleId).OnDelete(DeleteBehavior.SetNull);
+    }
+}
+
+public class LeaveTypeConfiguration : IEntityTypeConfiguration<LeaveType>
+{
+    public void Configure(EntityTypeBuilder<LeaveType> b)
+    {
+        b.ToTable("LeaveTypes");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Name).HasMaxLength(120).IsRequired();
+        b.Property(x => x.Color).HasMaxLength(20);
+        b.HasOne(x => x.Company).WithMany().HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Restrict);
+        b.HasIndex(x => x.CompanyId);
+    }
+}
+
+public class LeaveRecordConfiguration : IEntityTypeConfiguration<LeaveRecord>
+{
+    public void Configure(EntityTypeBuilder<LeaveRecord> b)
+    {
+        b.ToTable("LeaveRecords");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Reason).HasMaxLength(400);
+        b.HasOne(x => x.Employee).WithMany().HasForeignKey(x => x.EmployeeId).OnDelete(DeleteBehavior.Cascade);
+        b.HasOne(x => x.LeaveType).WithMany().HasForeignKey(x => x.LeaveTypeId).OnDelete(DeleteBehavior.Restrict);
+        b.HasIndex(x => new { x.EmployeeId, x.StartDate, x.EndDate });
+        b.HasIndex(x => x.CompanyId);
+    }
+}
+
+public class HolidayConfiguration : IEntityTypeConfiguration<Holiday>
+{
+    public void Configure(EntityTypeBuilder<Holiday> b)
+    {
+        b.ToTable("Holidays");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Name).HasMaxLength(160).IsRequired();
+        b.HasOne(x => x.Company).WithMany().HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Restrict);
+        b.HasIndex(x => new { x.CompanyId, x.Date });
     }
 }
 

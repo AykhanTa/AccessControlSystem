@@ -23,7 +23,8 @@ public class SettingsController : Controller
             Positions = await _settings.GetPositionsAsync(),
             Centers = await _settings.GetCentersAsync(),
             Floors = await _settings.GetFloorsAsync(),
-            Devices = await _settings.GetDevicesAsync()
+            Devices = await _settings.GetDevicesAsync(),
+            WorkSchedules = await _settings.GetWorkSchedulesAsync()
         };
         return View(model);
     }
@@ -98,6 +99,12 @@ public class SettingsController : Controller
     [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Delete)]
     public Task<IActionResult> DeleteDepartment(long id) =>
         Guard(() => _settings.DeleteDepartmentAsync(id), "Şöbə silindi.");
+
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
+    public Task<IActionResult> SetDepartmentSchedule(long id, long? scheduleId) =>
+        Guard(() => _settings.SetDepartmentScheduleAsync(id, scheduleId), "Şöbənin iş cədvəli yeniləndi.");
+
+    // İş cədvəllərinin idarəsi ayrıca səhifədədir → TimetablesController.
 
     // ---- Vəzifələr ----
     [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Add)]

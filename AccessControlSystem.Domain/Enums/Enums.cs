@@ -93,6 +93,15 @@ public enum PresenceStatus
     OnFloor = 2      // mərtəbədədir
 }
 
+/// <summary>İş cədvəlinin (timetable) tipi.</summary>
+public enum TimetableType
+{
+    /// <summary>Sabit növbə — gecikmə/erkən çıxış plan saatına görə hesablanır.</summary>
+    Normal = 0,
+    /// <summary>Çevik növbə — yalnız ümumi işlənmiş vaxt sayılır (min. iş müddəti).</summary>
+    Flexible = 1
+}
+
 /// <summary>Bir ziyarətin bir cihaza sinxronizasiya vəziyyəti.</summary>
 public enum EnrollmentStatus
 {

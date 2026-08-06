@@ -15,6 +15,10 @@ public class Employee : BaseEntity
     public long? PositionId { get; set; }
     public Position? Position { get; set; }
 
+    /// <summary>İşçiyə fərdi iş cədvəli (override). Boşdursa şöbənin cədvəli tətbiq olunur.</summary>
+    public long? WorkScheduleId { get; set; }
+    public WorkSchedule? WorkSchedule { get; set; }
+
     public string EmployeeNo { get; set; } = string.Empty;   // unikal tabel nömrəsi
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;

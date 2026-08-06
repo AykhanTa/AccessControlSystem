@@ -139,6 +139,51 @@ public interface IPositionRepository
     void Remove(Position position);
 }
 
+public interface IWorkScheduleRepository
+{
+    /// <summary>Yalnız PAYLAŞILAN cədvəllər (fərdi/işçiyə xüsusi olanlar istisna).</summary>
+    Task<List<WorkSchedule>> GetAllWithCompanyAsync(CancellationToken ct = default);
+    /// <summary>Aktiv PAYLAŞILAN cədvəllər (dropdown üçün).</summary>
+    Task<List<WorkSchedule>> GetActiveAsync(CancellationToken ct = default);
+    Task<WorkSchedule?> GetByIdAsync(long id, CancellationToken ct = default);
+    /// <summary>İşçinin fərdi cədvəli (OwnerEmployeeId = empId), yoxdursa null.</summary>
+    Task<WorkSchedule?> GetPersonalByEmployeeAsync(long employeeId, CancellationToken ct = default);
+    /// <summary>Bu cədvələ bağlı işçi + şöbə sayı (silmə üçün asılılıq yoxlaması).</summary>
+    Task<int> UsageCountAsync(long id, CancellationToken ct = default);
+    Task AddAsync(WorkSchedule schedule, CancellationToken ct = default);
+    void Remove(WorkSchedule schedule);
+}
+
+public interface ILeaveTypeRepository
+{
+    Task<List<LeaveType>> GetAllWithCompanyAsync(CancellationToken ct = default);
+    Task<List<LeaveType>> GetActiveAsync(CancellationToken ct = default);
+    Task<LeaveType?> GetByIdAsync(long id, CancellationToken ct = default);
+    Task<int> UsageCountAsync(long id, CancellationToken ct = default);
+    Task AddAsync(LeaveType type, CancellationToken ct = default);
+    void Remove(LeaveType type);
+}
+
+public interface ILeaveRecordRepository
+{
+    /// <summary>Aralıqla kəsişən bütün qeydlər (motor + siyahı üçün; şirkət filtri avtomatik).</summary>
+    Task<List<LeaveRecord>> GetForRangeAsync(DateTime from, DateTime to, CancellationToken ct = default);
+    Task<LeaveRecord?> GetByIdAsync(long id, CancellationToken ct = default);
+    Task AddAsync(LeaveRecord record, CancellationToken ct = default);
+    void Remove(LeaveRecord record);
+}
+
+public interface IHolidayRepository
+{
+    /// <summary>Aralıqdakı bayram günləri (tarixlər; şirkət filtri avtomatik).</summary>
+    Task<List<DateTime>> GetDatesAsync(DateTime from, DateTime to, CancellationToken ct = default);
+    Task<List<Holiday>> GetForRangeAsync(DateTime from, DateTime to, CancellationToken ct = default);
+    Task<Holiday?> GetByIdAsync(long id, CancellationToken ct = default);
+    Task<bool> ExistsAsync(long? companyId, DateTime date, CancellationToken ct = default);
+    Task AddAsync(Holiday holiday, CancellationToken ct = default);
+    void Remove(Holiday holiday);
+}
+
 public interface ICenterRepository
 {
     Task<List<Center>> GetAllAsync(CancellationToken ct = default);

@@ -1,0 +1,63 @@
+@using AccessControlSystem.Application.DTOs
+@model AttendanceSummaryDto
+
+<style>
+  .att-sum{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:14px;font-size:14px}
+  .sm-table{width:100%;border-collapse:collapse;font-size:13.5px}
+  .sm-table th,.sm-table td{padding:9px 12px;border-bottom:1px solid var(--line,#eef0f4);text-align:left;white-space:nowrap}
+  .sm-table th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--faint,#9095a1);font-weight:700}
+  .sm-table td.num,.sm-table th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .sm-table tbody tr:hover{background:#f6f9ff}
+  .sm-pos{color:#1a7f4b;font-weight:600}
+  .sm-neg{color:#c0392b;font-weight:600}
+  .sm-late{color:#b46a09;font-weight:600}
+  .sm-over{color:#0369a1;font-weight:600}
+</style>
+
+<div class="att-sum">
+  <div><span style="color:var(--muted)">Görünüş:</span> <b style="font-size:14px">İşçi üzrə yekun</b></div>
+  <div><span style="color:var(--muted)">Növ:</span> <b style="font-size:14px">@Model.KindLabel</b></div>
+  <div><span style="color:var(--muted)">Əhatə:</span> <b style="font-size:14px">@Model.Scope</b></div>
+  <div><span style="color:var(--muted)">Aralıq:</span> <b style="font-size:14px">@Model.FromLabel – @Model.ToLabel</b></div>
+  <div><span style="color:var(--muted)">İşçi:</span> <b>@Model.TotalEmployees</b></div>
+</div>
+
+@if (Model.Rows.Count == 0)
+{
+  <div class="empty-state" style="padding:28px;text-align:center;color:var(--muted)">Bu filtr üzrə işçi yoxdur.</div>
+}
+else
+{
+  <div class="table-wrap" style="overflow-x:auto">
+    <table class="sm-table">
+      <thead>
+        <tr>
+          <th>İşçi</th><th>Şöbə</th>
+          <th class="num">İş günü</th><th class="num">Gəlmədi</th>
+          <th class="num">Gecikmə (gün)</th><th class="num">Gecikmə (dəq)</th>
+          <th class="num">Erkən (gün)</th><th class="num">Əlavə iş</th><th class="num">İşlənmiş</th>
+          <th class="num">Məzuniyyət</th><th class="num">Ezamiyyət</th><th class="num">Bayram</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var r in Model.Rows)
+        {
+          <tr>
+            <td><b>@r.FullName</b> <span style="color:var(--faint)">@r.EmployeeNo</span></td>
+            <td>@(r.Department ?? "—")</td>
+            <td class="num sm-pos">@r.PresentDays</td>
+            <td class="num @(r.AbsentDays > 0 ? "sm-neg" : "")">@r.AbsentDays</td>
+            <td class="num @(r.LateDays > 0 ? "sm-late" : "")">@r.LateDays</td>
+            <td class="num @(r.LateMin > 0 ? "sm-late" : "")">@(r.LateMin > 0 ? r.LateMin + " d" : "—")</td>
+            <td class="num">@r.EarlyDays</td>
+            <td class="num @(r.OvertimeMin > 0 ? "sm-over" : "")">@(r.OvertimeMin > 0 ? r.OvertimeHm : "—")</td>
+            <td class="num">@(r.WorkedMin > 0 ? r.WorkedHm : "—")</td>
+            <td class="num">@r.LeaveDays</td>
+            <td class="num">@r.TripDays</td>
+            <td class="num">@r.HolidayDays</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

@@ -12,16 +12,19 @@ public class EmployeeService : IEmployeeService
     private readonly IEmployeeRepository _employees;
     private readonly ICompanyRepository _companies;
     private readonly IFloorRepository _floors;
+    private readonly IWorkScheduleRepository _schedules;
     private readonly IUnitOfWork _uow;
     private readonly ISystemLogWriter _log;
     private readonly ICurrentTenant _tenant;
 
     public EmployeeService(IEmployeeRepository employees, ICompanyRepository companies,
-        IFloorRepository floors, IUnitOfWork uow, ISystemLogWriter log, ICurrentTenant tenant)
+        IFloorRepository floors, IWorkScheduleRepository schedules,
+        IUnitOfWork uow, ISystemLogWriter log, ICurrentTenant tenant)
     {
         _employees = employees;
         _companies = companies;
         _floors = floors;
+        _schedules = schedules;
         _uow = uow;
         _log = log;
         _tenant = tenant;
@@ -52,6 +55,24 @@ public class EmployeeService : IEmployeeService
             CompanyId = e.CompanyId,
             DepartmentId = e.DepartmentId,
             PositionId = e.PositionId,
+            WorkScheduleId = e.WorkScheduleId,
+            // Effektiv cədvəl: işçidə varsa o, yoxsa şöbəninki (miras).
+            WorkScheduleName = e.WorkSchedule?.Name ?? e.Department?.WorkSchedule?.Name,
+            ScheduleFromDept = e.WorkScheduleId is null && e.Department?.WorkScheduleId is not null,
+            // Rejim: boş=miras, fərdi (OwnerEmployeeId==işçi), yoxsa paylaşılan id.
+            ScheduleChoice = e.WorkScheduleId is null ? ""
+                : (e.WorkSchedule?.OwnerEmployeeId == e.Id ? "custom" : e.WorkScheduleId.ToString()!),
+            SchedStart = (e.WorkSchedule?.OwnerEmployeeId == e.Id ? e.WorkSchedule!.StartTime : new TimeSpan(9, 0, 0)).ToString(@"hh\:mm"),
+            SchedEnd = (e.WorkSchedule?.OwnerEmployeeId == e.Id ? e.WorkSchedule!.EndTime : new TimeSpan(18, 0, 0)).ToString(@"hh\:mm"),
+            SchedGrace = e.WorkSchedule?.OwnerEmployeeId == e.Id ? e.WorkSchedule!.GraceMinutes : 0,
+            SchedEarly = e.WorkSchedule?.OwnerEmployeeId == e.Id ? e.WorkSchedule!.EarlyLeaveGraceMinutes : 0,
+            SMon = e.WorkSchedule?.OwnerEmployeeId == e.Id ? e.WorkSchedule!.Mon : true,
+            STue = e.WorkSchedule?.OwnerEmployeeId == e.Id ? e.WorkSchedule!.Tue : true,
+            SWed = e.WorkSchedule?.OwnerEmployeeId == e.Id ? e.WorkSchedule!.Wed : true,
+            SThu = e.WorkSchedule?.OwnerEmployeeId == e.Id ? e.WorkSchedule!.Thu : true,
+            SFri = e.WorkSchedule?.OwnerEmployeeId == e.Id ? e.WorkSchedule!.Fri : true,
+            SSat = e.WorkSchedule?.OwnerEmployeeId == e.Id && e.WorkSchedule!.Sat,
+            SSun = e.WorkSchedule?.OwnerEmployeeId == e.Id && e.WorkSchedule!.Sun,
             EmploymentStartAt = e.EmploymentStartAt?.ToString("yyyy-MM-dd"),
             DeviceNumbers = e.DeviceNumbers,
             DeviceName = e.DeviceName,
@@ -106,6 +127,8 @@ public class EmployeeService : IEmployeeService
             employee.EmployeeFloors.Add(new EmployeeFloor { Floor = floor });
 
         await _employees.AddAsync(employee, ct);
+        await _uow.SaveChangesAsync(ct);                 // employee.Id təyin olunur
+        await ApplyScheduleAsync(employee, dto, ct);     // iş cədvəli (miras/fərdi/paylaşılan)
         await _uow.SaveChangesAsync(ct);
         await _log.LogAsync("EMPLOYEE_CREATED", $"{employee.FullName} işçisi əlavə edildi.", "employee", employee.Id, ct: ct);
         return employee.Id;
@@ -148,9 +171,55 @@ public class EmployeeService : IEmployeeService
         foreach (var floor in await _floors.GetByIdsAsync(dto.FloorIds, ct))
             employee.EmployeeFloors.Add(new EmployeeFloor { Floor = floor });
 
+        await ApplyScheduleAsync(employee, dto, ct);     // iş cədvəli (miras/fərdi/paylaşılan)
         await _uow.SaveChangesAsync(ct);
         await _log.LogAsync("EMPLOYEE_UPDATED", $"{employee.FullName} işçisi yeniləndi.", "employee", employee.Id, ct: ct);
     }
+
+    /// <summary>İşçinin iş cədvəli seçimini tətbiq edir: "" = şöbədən miras,
+    /// "custom" = fərdi cədvəl (OwnerEmployeeId), rəqəm = paylaşılan cədvəl id.</summary>
+    private async Task ApplyScheduleAsync(Employee emp, EmployeeCreateDto dto, CancellationToken ct)
+    {
+        var choice = (dto.ScheduleChoice ?? "").Trim();
+        var personal = await _schedules.GetPersonalByEmployeeAsync(emp.Id, ct);
+
+        if (choice == "custom")
+        {
+            var start = ParseHm(dto.CustomStart, "başlama", new TimeSpan(9, 0, 0));
+            var end = ParseHm(dto.CustomEnd, "bitmə", new TimeSpan(18, 0, 0));
+            if (end <= start)
+                throw new ArgumentException("Fərdi cədvəldə bitmə vaxtı başlama vaxtından böyük olmalıdır.");
+            if (!(dto.SMon || dto.STue || dto.SWed || dto.SThu || dto.SFri || dto.SSat || dto.SSun))
+                throw new ArgumentException("Fərdi cədvəl üçün ən azı bir iş günü seçin.");
+
+            var ws = personal ?? new WorkSchedule { OwnerEmployeeId = emp.Id };
+            ws.Name = $"[Fərdi] {emp.FullName}".Trim();
+            ws.CompanyId = emp.CompanyId;
+            ws.Type = TimetableType.Normal;
+            ws.StartTime = start;
+            ws.EndTime = end;
+            ws.GraceMinutes = dto.CustomGrace;
+            ws.EarlyLeaveGraceMinutes = dto.CustomEarly;
+            ws.Mon = dto.SMon; ws.Tue = dto.STue; ws.Wed = dto.SWed; ws.Thu = dto.SThu;
+            ws.Fri = dto.SFri; ws.Sat = dto.SSat; ws.Sun = dto.SSun;
+            ws.IsActive = true;
+            ws.UpdatedAt = DateTime.Now;
+            if (personal == null) await _schedules.AddAsync(ws, ct);
+            await _uow.SaveChangesAsync(ct);        // ws.Id
+            emp.WorkScheduleId = ws.Id;
+        }
+        else
+        {
+            emp.WorkScheduleId = choice != "" && long.TryParse(choice, out var sid) ? sid : (long?)null;
+            await _uow.SaveChangesAsync(ct);        // FK dəyişikliyini fərdi silməzdən əvvəl saxla
+            if (personal != null) _schedules.Remove(personal);   // fərdidən keçildi → köhnəni sil
+        }
+    }
+
+    private static TimeSpan ParseHm(string? value, string label, TimeSpan fallback) =>
+        TimeSpan.TryParseExact((value ?? "").Trim(), new[] { @"hh\:mm", @"h\:mm" }, null, out var t)
+            ? t : (string.IsNullOrWhiteSpace(value) ? fallback
+                   : throw new ArgumentException($"Düzgün {label} vaxtı daxil edin (SS:DD)."));
 
     public async Task ToggleStatusAsync(long id, CancellationToken ct = default)
     {

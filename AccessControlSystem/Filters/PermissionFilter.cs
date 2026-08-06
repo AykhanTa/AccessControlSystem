@@ -13,16 +13,19 @@ public static class SectionMap
         ["Home"] = "dashboard",
         ["Guests"] = "guests",
         ["Employees"] = "employees",
+        ["Leave"] = "employees",       // Məzuniyyət & Bayram — İşçilər icazəsi ilə
         ["AccessEvents"] = "access_events",
         ["Security"] = "security",
         ["Cards"] = "cards",
         ["History"] = "history",
         ["ActivePermits"] = "active_permits",
         ["Reports"] = "reports",
+        ["Attendance"] = "reports",    // Davamiyyət — Hesabatlar icazəsi ilə
         ["Logs"] = "logs",
         ["Users"] = "users",
         ["Roles"] = "roles",
         ["Settings"] = "settings",
+        ["Timetables"] = "settings",   // İş cədvəlləri — Parametrlər icazəsi ilə
     };
 
     public const string PermMapKey = "PermMap";

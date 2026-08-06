@@ -251,9 +251,10 @@ button { font-family: inherit; }
 
 /* Filters */
 .filters {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  display: flex; flex-wrap: wrap; gap: 12px;
   padding: 0 22px 6px;
 }
+.filters .select { flex: 1 1 150px; min-width: 0; }
 .select {
   position: relative;
 }

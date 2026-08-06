@@ -1,0 +1,89 @@
+@using AccessControlSystem.Application.DTOs
+@model AttendanceMonthlyDto
+
+<style>
+  .mc-head{display:flex;gap:22px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .mc-head h3{margin:0;font-size:17px}
+  .mc-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-bottom:12px}
+  .mc-legend span b{display:inline-block;width:16px;height:16px;border-radius:4px;text-align:center;line-height:16px;font-size:11px;margin-right:4px;vertical-align:middle;color:#fff}
+  .mc-table{border-collapse:separate;border-spacing:0;font-size:12.5px;min-width:100%}
+  .mc-table th,.mc-table td{border-bottom:1px solid var(--line,#eef0f4);border-right:1px solid var(--line,#f2f4f7);padding:5px 4px;text-align:center;white-space:nowrap}
+  .mc-table th.emp,.mc-table td.emp{text-align:left;position:sticky;left:0;background:#fff;z-index:1;min-width:180px;border-right:1px solid var(--line,#e5e8ee)}
+  .mc-table thead th{font-size:11px;color:var(--faint,#9095a1);background:#fafbfc;position:sticky;top:0;z-index:2}
+  .mc-table thead th.emp{z-index:3}
+  .mc-table th.we,.mc-table td.we{background:#f7f9fc}          /* həftəsonu sütunları */
+  .mc-table tbody tr:hover td{background:#f6f9ff}
+  .mc-table tbody tr:hover td.emp{background:#f6f9ff}
+  .mc-table td.tot{font-weight:700;font-variant-numeric:tabular-nums;background:#fcfcfd}
+  .mc-cell{display:inline-block;width:20px;height:20px;line-height:20px;border-radius:5px;font-size:11px;font-weight:700;color:#fff}
+  .c-normal{background:#2ecc71}
+  .c-late{background:#e67e22}
+  .c-early{background:#f1c40f}
+  .c-absent{background:#e74c3c}
+  .c-incomplete{background:#95a5a6}
+  .c-rest{background:#eef1f6;color:#c3c9d2}
+  .c-noschedule{background:transparent;color:transparent}
+  .c-future{background:transparent;color:transparent}      /* gələcək gün — boş */
+  .c-holiday{background:#6366f1}
+  .c-leave{background:#a855f7}
+  .c-trip{background:#0ea5e9}
+</style>
+@{
+    // Həftəsonu sütunlarını çalarlamaq üçün hər günün həftə gününü hesabla.
+    Func<int, bool> isWeekend = day =>
+    {
+        var w = new DateTime(Model.Year, Model.Month, day).DayOfWeek;
+        return w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
+    };
+}
+
+<div class="mc-head">
+  <h3>@Model.MonthLabel</h3>
+  <div style="color:var(--muted)">@Model.Scope</div>
+</div>
+<div class="mc-legend">
+  <span><b class="c-normal">•</b>Vaxtında</span>
+  <span><b class="c-late">G</b>Gecikdi</span>
+  <span><b class="c-early">E</b>Erkən çıxdı</span>
+  <span><b class="c-absent">Q</b>Gəlmədi</span>
+  <span><b class="c-incomplete">N</b>Natamam</span>
+  <span><b class="c-rest">–</b>İstirahət</span>
+  <span><b class="c-holiday">B</b>Bayram</span>
+  <span><b class="c-leave">M</b>Məzuniyyət</span>
+  <span><b class="c-trip">Z</b>Ezamiyyət</span>
+</div>
+
+@if (Model.Rows.Count == 0)
+{
+  <div class="empty-state" style="padding:28px;text-align:center;color:var(--muted)">Bu filtr üzrə işçi yoxdur.</div>
+}
+else
+{
+  <div class="table-wrap" style="overflow-x:auto">
+    <table class="mc-table">
+      <thead>
+        <tr>
+          <th class="emp">İşçi</th>
+          @foreach (var d in Model.Days) { <th class="@(isWeekend(d) ? "we" : "")">@d</th> }
+          <th class="tot">İş</th><th class="tot">Gəlmədi</th><th class="tot">Gecikmə</th><th class="tot">Saat</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var r in Model.Rows)
+        {
+          <tr>
+            <td class="emp"><b>@r.FullName</b><br /><span style="color:var(--faint);font-size:11px">@r.EmployeeNo@(r.Department != null ? " · " + r.Department : "")</span></td>
+            @foreach (var cell in r.Cells)
+            {
+              <td class="@(isWeekend(cell.Day) ? "we" : "")" title="@cell.Title"><span class="mc-cell c-@cell.Status">@cell.Text</span></td>
+            }
+            <td class="tot">@r.PresentDays</td>
+            <td class="tot" style="color:#c0392b">@r.AbsentDays</td>
+            <td class="tot" style="color:#b46a09">@r.LateCount</td>
+            <td class="tot">@r.WorkedHm</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

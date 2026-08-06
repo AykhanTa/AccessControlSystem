@@ -36,6 +36,22 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWN0aXZlUGVybWl0c1xJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Attendance/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXR0ZW5kYW5jZVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Attendance/_DailyBody.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXR0ZW5kYW5jZVxfRGFpbHlCb2R5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Attendance/_MonthlyBody.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXR0ZW5kYW5jZVxfTW9udGhseUJvZHkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Attendance/_SummaryBody.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXR0ZW5kYW5jZVxfU3VtbWFyeUJvZHkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Cards/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2FyZHNcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -58,6 +74,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Leave/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGVhdmVcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Logs/Index.cshtml]
@@ -90,6 +110,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Timetables/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGltZXRhYmxlc1xJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Users/Index.cshtml]

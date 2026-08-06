@@ -69,6 +69,36 @@ public interface IReportService
     Task<DeptAccessReportDto> GetDepartmentAccessAsync(long? companyId, long? departmentId, DateTime from, DateTime to, CancellationToken ct = default);
 }
 
+/// <summary>HR: məzuniyyət/ezamiyyət növləri, işçi qeydləri və bayram təqvimi.</summary>
+public interface ILeaveService
+{
+    // Növlər
+    Task<List<LeaveTypeItemDto>> GetTypesAsync(CancellationToken ct = default);
+    Task<List<LookupDto>> GetTypeLookupAsync(CancellationToken ct = default);
+    Task<long> AddTypeAsync(LeaveTypeInputDto dto, CancellationToken ct = default);
+    Task ToggleTypeAsync(long id, CancellationToken ct = default);
+    Task DeleteTypeAsync(long id, CancellationToken ct = default);
+    // İşçi qeydləri
+    Task<List<LeaveRecordItemDto>> GetRecordsAsync(DateTime from, DateTime to, long? companyId, long? deptId, CancellationToken ct = default);
+    Task<long> AddRecordAsync(LeaveRecordInputDto dto, CancellationToken ct = default);
+    Task DeleteRecordAsync(long id, CancellationToken ct = default);
+    // Bayramlar
+    Task<List<HolidayItemDto>> GetHolidaysAsync(int year, CancellationToken ct = default);
+    Task<long> AddHolidayAsync(HolidayInputDto dto, CancellationToken ct = default);
+    Task DeleteHolidaysAsync(IEnumerable<long> ids, CancellationToken ct = default);
+}
+
+/// <summary>Davamiyyət motoru — iş cədvəli + xam keçidlərdən gündəlik/aylıq nəticə.</summary>
+public interface IAttendanceService
+{
+    Task<AttendanceDailyDto> GetDailyAsync(long? companyId, long? departmentId, long? employeeId,
+        DateTime from, DateTime to, string? kind = null, CancellationToken ct = default);
+    Task<AttendanceSummaryDto> GetSummaryAsync(long? companyId, long? departmentId, long? employeeId,
+        DateTime from, DateTime to, string? kind = null, CancellationToken ct = default);
+    Task<AttendanceMonthlyDto> GetMonthlyAsync(long? companyId, long? departmentId, long? employeeId,
+        int year, int month, CancellationToken ct = default);
+}
+
 public interface IUserService
 {
     Task<List<UserDto>> GetAllAsync(CancellationToken ct = default);
@@ -141,6 +171,15 @@ public interface ISettingsService
     Task<long> AddDepartmentAsync(string name, long companyId, long? parentId, CancellationToken ct = default);
     Task ToggleDepartmentAsync(long id, CancellationToken ct = default);
     Task DeleteDepartmentAsync(long id, CancellationToken ct = default);
+    Task SetDepartmentScheduleAsync(long departmentId, long? scheduleId, CancellationToken ct = default);
+
+    // İş cədvəlləri
+    Task<List<WorkScheduleItemDto>> GetWorkSchedulesAsync(CancellationToken ct = default);
+    Task<List<LookupDto>> GetWorkScheduleLookupAsync(CancellationToken ct = default);
+    Task<long> AddWorkScheduleAsync(WorkScheduleInputDto dto, CancellationToken ct = default);
+    Task UpdateWorkScheduleAsync(long id, WorkScheduleInputDto dto, CancellationToken ct = default);
+    Task ToggleWorkScheduleAsync(long id, CancellationToken ct = default);
+    Task DeleteWorkScheduleAsync(long id, CancellationToken ct = default);
 
     // Vəzifələr
     Task<List<PositionItemDto>> GetPositionsAsync(CancellationToken ct = default);

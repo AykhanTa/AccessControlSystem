@@ -36,7 +36,8 @@ public class EmployeesController : Controller
             Departments = await _settings.GetDepartmentsAsync(),
             Positions = await _settings.GetPositionsAsync(),
             Floors = await _lookups.GetFloorsAsync(),
-            Devices = await _settings.GetDevicesAsync()
+            Devices = await _settings.GetDevicesAsync(),
+            WorkSchedules = await _settings.GetWorkScheduleLookupAsync()
         };
         return View(model);
     }
@@ -116,6 +117,12 @@ public class EmployeesController : Controller
         CompanyId = f.CompanyId,
         DepartmentId = f.DepartmentId,
         PositionId = f.PositionId,
+        ScheduleChoice = f.ScheduleChoice ?? "",
+        CustomStart = f.CustomStart,
+        CustomEnd = f.CustomEnd,
+        CustomGrace = f.CustomGrace,
+        CustomEarly = f.CustomEarly,
+        SMon = f.SMon, STue = f.STue, SWed = f.SWed, SThu = f.SThu, SFri = f.SFri, SSat = f.SSat, SSun = f.SSun,
         EmploymentStartAt = f.EmploymentStartAt,
         DeviceNumbers = f.DeviceNumbers,
         DeviceName = f.DeviceName,

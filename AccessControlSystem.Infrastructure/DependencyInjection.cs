@@ -33,6 +33,10 @@ public static class DependencyInjection
         services.AddScoped<ICompanyRepository, CompanyRepository>();
         services.AddScoped<IDepartmentRepository, DepartmentRepository>();
         services.AddScoped<IPositionRepository, PositionRepository>();
+        services.AddScoped<IWorkScheduleRepository, WorkScheduleRepository>();
+        services.AddScoped<ILeaveTypeRepository, LeaveTypeRepository>();
+        services.AddScoped<ILeaveRecordRepository, LeaveRecordRepository>();
+        services.AddScoped<IHolidayRepository, HolidayRepository>();
         services.AddScoped<ICenterRepository, CenterRepository>();
         services.AddScoped<IFloorRepository, FloorRepository>();
         services.AddScoped<IDeviceRepository, DeviceRepository>();

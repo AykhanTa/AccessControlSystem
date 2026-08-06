@@ -127,32 +127,8 @@
             @foreach (var c in Model.Companies) { <option value="@c.Id">@c.Name</option> }
           </select>
         </div>
-        @* <div class="fld md"><label>Ana şöbə</label>
-          <select name="parentId" id="dptParent">
-            <option value="" data-company="">— Yoxdur —</option>
-            @foreach (var d in Model.Departments) { <option value="@d.Id" data-company="@d.CompanyId">@d.Name</option> }
-          </select>
-        </div>
-        *@
         <div class="fld end"><button class="btn btn-primary" type="submit">Əlavə et</button></div>
       </form>
-      <script>
-        (function () {
-          var comp = document.getElementById('dptCompany'), par = document.getElementById('dptParent');
-          if (!comp || !par) return;
-          function sync() {
-            var cid = comp.value;
-            Array.from(par.options).forEach(function (o) {
-              var oc = o.getAttribute('data-company') || '';
-              var show = (oc === '' || oc === cid);
-              o.hidden = !show; o.disabled = !show;
-              if (!show && o.selected) par.value = '';
-            });
-          }
-          comp.addEventListener('change', sync);
-          sync();
-        })();
-      </script>
     }
     <div>
       @foreach (var d in Model.Departments)
@@ -160,11 +136,21 @@
         <div class="param-item">
           <div class="param-item-info">
             <b>@d.Name</b>
-            <span>@d.CompanyName@(d.ParentName != null ? " · " + d.ParentName : "") · <span class="@(d.IsActive ? "st-on" : "st-off")">@(d.IsActive ? "Aktiv" : "Deaktiv")</span></span>
+            <span>@d.CompanyName@(d.ParentName != null ? " · " + d.ParentName : "") · <span class="@(d.IsActive ? "st-on" : "st-off")">@(d.IsActive ? "Aktiv" : "Deaktiv")</span> · İş cədvəli: <b>@(d.WorkScheduleName ?? "—")</b></span>
           </div>
           <div class="host-actions">
             @if (canEdit)
             {
+              <form asp-action="SetDepartmentSchedule" method="post" style="display:inline">
+                <input type="hidden" name="id" value="@d.Id" />
+                <select name="scheduleId" onchange="this.form.submit()" class="mini-sel" title="İş cədvəli">
+                  <option value="">— Cədvəl yoxdur —</option>
+                  @foreach (var ws in Model.WorkSchedules)
+                  {
+                    <option value="@ws.Id" selected="@(d.WorkScheduleId == ws.Id)">@ws.Name (@ws.StartTime–@ws.EndTime)</option>
+                  }
+                </select>
+              </form>
               <form asp-action="ToggleDepartment" method="post" style="display:inline">
                 <input type="hidden" name="id" value="@d.Id" />
                 <button class="btn-sm outline" type="submit">@(d.IsActive ? "Deaktiv et" : "Aktiv et")</button>
@@ -229,6 +215,20 @@
     </div>
   </section>
 </div>
+
+<style>
+  .mini-sel{
+    height:36px; max-width:230px; padding:0 32px 0 12px;
+    border:1px solid var(--border,#dde1e8); border-radius:9px; background:#fff;
+    font-size:13px; color:var(--text,#2b303b); cursor:pointer; line-height:34px;
+    appearance:none; -webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239095a1' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat:no-repeat; background-position:right 11px center; background-size:12px;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .mini-sel:hover{ border-color:#c3c9d2; }
+  .mini-sel:focus{ outline:none; border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15); }
+</style>
 
 <!-- Qəbul edən şəxslər -->
 <section class="panel">

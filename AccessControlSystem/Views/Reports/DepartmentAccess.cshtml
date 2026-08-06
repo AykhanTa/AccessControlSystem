@@ -9,6 +9,7 @@
     var deptId = ViewBag.DeptId as long?;
     var from = ViewBag.From as string ?? "";
     var to = ViewBag.To as string ?? "";
+    var canSeeAllCompanies = ViewData["CanManageGlobal"] as bool? ?? false;
 }
 
 <style>
@@ -44,10 +45,10 @@
 
 <form id="repForm" class="panel no-print" style="padding:16px" onsubmit="return false">
   <div class="rep-toolbar">
-    <div class="field">
+    <div class="field" style="@(canSeeAllCompanies ? "" : "display:none")">
       <label>Müəssisə</label>
       <select id="fCompany" class="input">
-        <option value="">Bütün müəssisələr</option>
+        @if (canSeeAllCompanies) { <option value="">Bütün müəssisələr</option> }
         @foreach (var c in companies)
         {
           <option value="@c.Id" selected="@(companyId == c.Id)">@c.Name</option>

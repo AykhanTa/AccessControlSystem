@@ -30,6 +30,7 @@ public class EmployeesViewModel
     public List<PositionItemDto> Positions { get; set; } = new();
     public List<LookupDto> Floors { get; set; } = new();
     public List<DeviceItemDto> Devices { get; set; } = new();
+    public List<LookupDto> WorkSchedules { get; set; } = new();
 }
 
 /// <summary>İşçi əlavə/redaktə formu (binding üçün).</summary>
@@ -48,6 +49,21 @@ public class EmployeeFormModel
     public long CompanyId { get; set; }
     public long? DepartmentId { get; set; }
     public long? PositionId { get; set; }
+
+    // İş cədvəli
+    public string ScheduleChoice { get; set; } = "";     // "" | "custom" | "<id>"
+    public string? CustomStart { get; set; }
+    public string? CustomEnd { get; set; }
+    public int CustomGrace { get; set; }
+    public int CustomEarly { get; set; }
+    public bool SMon { get; set; }
+    public bool STue { get; set; }
+    public bool SWed { get; set; }
+    public bool SThu { get; set; }
+    public bool SFri { get; set; }
+    public bool SSat { get; set; }
+    public bool SSun { get; set; }
+
     public DateTime? EmploymentStartAt { get; set; }
     public string? DeviceNumbers { get; set; }
     public string? DeviceName { get; set; }
@@ -112,6 +128,17 @@ public class RolesViewModel
 }
 
 /// <summary>Parametrlər səhifəsi view modeli.</summary>
+public class LeaveViewModel
+{
+    public List<LeaveTypeItemDto> Types { get; set; } = new();
+    public List<LookupDto> TypeLookup { get; set; } = new();
+    public List<HolidayItemDto> Holidays { get; set; } = new();
+    public List<LeaveRecordItemDto> Records { get; set; } = new();
+    public List<EmployeeRowDto> Employees { get; set; } = new();
+    public List<CompanyItemDto> Companies { get; set; } = new();
+    public int Year { get; set; }
+}
+
 public class SettingsViewModel
 {
     public List<HostItemDto> Hosts { get; set; } = new();
@@ -123,6 +150,7 @@ public class SettingsViewModel
     public List<CenterItemDto> Centers { get; set; } = new();
     public List<FloorItemDto> Floors { get; set; } = new();
     public List<DeviceItemDto> Devices { get; set; } = new();
+    public List<WorkScheduleItemDto> WorkSchedules { get; set; } = new();
 }
 
 /// <summary>Sistem Loqları səhifəsi view modeli.</summary>

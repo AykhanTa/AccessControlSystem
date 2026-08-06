@@ -27,6 +27,24 @@ public class EmployeeRowDto
     public long CompanyId { get; set; }
     public long? DepartmentId { get; set; }
     public long? PositionId { get; set; }
+    public long? WorkScheduleId { get; set; }            // effektiv cədvəl id (fərdi və ya paylaşılan)
+    public string? WorkScheduleName { get; set; }        // effektiv cədvəlin adı (şöbədən miras da ola bilər)
+    public bool ScheduleFromDept { get; set; }           // cədvəl şöbədən miras alınıb?
+
+    // İş cədvəli rejimi (redaktə formunu doldurmaq üçün)
+    public string ScheduleChoice { get; set; } = "";     // "" = miras | "custom" = fərdi | "<id>" = paylaşılan
+    public string SchedStart { get; set; } = "09:00";
+    public string SchedEnd { get; set; } = "18:00";
+    public int SchedGrace { get; set; }
+    public int SchedEarly { get; set; }
+    public bool SMon { get; set; } = true;
+    public bool STue { get; set; } = true;
+    public bool SWed { get; set; } = true;
+    public bool SThu { get; set; } = true;
+    public bool SFri { get; set; } = true;
+    public bool SSat { get; set; }
+    public bool SSun { get; set; }
+
     public string? EmploymentStartAt { get; set; }       // yyyy-MM-dd
     public string? DeviceNumbers { get; set; }           // cihaz alias-ları (cihazId:nömrə)
     public string? DeviceName { get; set; }              // Hikvision-dakı ad
@@ -57,6 +75,21 @@ public class EmployeeCreateDto
     public long CompanyId { get; set; }
     public long? DepartmentId { get; set; }
     public long? PositionId { get; set; }
+
+    // İş cədvəli seçimi
+    public string ScheduleChoice { get; set; } = "";     // "" = şöbədən miras | "custom" = fərdi | "<id>" = paylaşılan
+    public string? CustomStart { get; set; }             // fərdi: HH:mm
+    public string? CustomEnd { get; set; }
+    public int CustomGrace { get; set; }
+    public int CustomEarly { get; set; }
+    public bool SMon { get; set; } = true;
+    public bool STue { get; set; } = true;
+    public bool SWed { get; set; } = true;
+    public bool SThu { get; set; } = true;
+    public bool SFri { get; set; } = true;
+    public bool SSat { get; set; }
+    public bool SSun { get; set; }
+
     public DateTime? EmploymentStartAt { get; set; }
     public string? DeviceNumbers { get; set; }           // cihaz alias-ları ("cihazId:nömrə")
     public string? DeviceName { get; set; }              // Hikvision-dakı ad (əsas uyğunlaşma açarı)

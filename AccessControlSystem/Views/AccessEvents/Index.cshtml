@@ -4,6 +4,16 @@
     ViewData["Heading"] = "Keçid hadisələri";
     ViewData["Active"] = "access_events";
     var devices = ViewBag.Devices as List<Device> ?? new List<Device>();
+    // Defolt cihaz: "2-ci mərtəbə giriş" (ad və ya mərtəbə + giriş istiqaməti). Tapılmasa ilk cihaz.
+    Func<Device, bool> isSecondFloorEntry = d =>
+    {
+        var n = (d.Name ?? "").ToLowerInvariant();
+        var f = (d.Floor?.Name ?? "").ToLowerInvariant();
+        var entry = d.Direction.ToString() == "Entry";
+        var giris = n.Contains("giriş") || n.Contains("giris");
+        return (n.Contains("2") && giris) || ((n.Contains("2") || f.Contains("2")) && entry);
+    };
+    var defaultDeviceId = (devices.FirstOrDefault(isSecondFloorEntry) ?? devices.FirstOrDefault())?.Id ?? 0;
     var defStart = ViewBag.DefaultStart as string ?? "";
     var defEnd = ViewBag.DefaultEnd as string ?? "";
     // "yyyy-MM-ddTHH:mm:ss" → tarix + 24-saatlıq vaxt hissələri
@@ -24,7 +34,7 @@
 </style>
 
 <div class="page-head">
-  <div><p>Hikvision cihazının öz jurnalı — bütün hadisə tipləri (qapı, üz, login). Giriş/çıxış anında çəkilən şəkillərlə. Tarix + saat aralığı ilə axtarış.</p></div>
+  <div><p>Hikvision cihazının jurnalı — yalnız işçilərin <b>üz ilə təsdiqlənməsi</b>. Keçid anında çəkilən şəkillərlə. Tarix + saat aralığı ilə axtarış.</p></div>
 </div>
 
 <div id="imgLightbox" onclick="closeImg()"><img id="imgLightboxSrc" src="" alt="" /></div>
@@ -39,7 +49,7 @@
         <option value="0">Bütün cihazlar</option>
         @for (var idx = 0; idx < devices.Count; idx++)
         {
-          <option value="@devices[idx].Id" selected="@(idx == 0)">@devices[idx].Name (@devices[idx].Ip)</option>
+          <option value="@devices[idx].Id" selected="@(devices[idx].Id == defaultDeviceId)">@devices[idx].Name (@devices[idx].Ip)</option>
         }
       </select>
     </div>

@@ -1,0 +1,90 @@
+@using AccessControlSystem.Application.DTOs
+@model AttendanceDailyDto
+
+<style>
+  .att-sum{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:14px;font-size:14px}
+  .att-sum b{font-size:18px}
+  .att-table{width:100%;border-collapse:collapse;font-size:13.5px}
+  .att-table th,.att-table td{padding:8px 10px;border-bottom:1px solid var(--line,#eef0f4);text-align:left;white-space:nowrap}
+  .att-table th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--faint,#9095a1);font-weight:700}
+  /* Rəqəm sütunları: başlıq və dəyər eyni sağ kənara düzülür (sürüşmə olmasın) */
+  .att-table th.num,.att-table td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .att-table th.num{padding-right:14px}
+  .att-table td.num{padding-right:14px}
+  .att-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px;font-weight:600}
+  .s-normal{background:#e7f6ec;color:#1a7f4b}
+  .s-late{background:#fdeede;color:#b46a09}
+  .s-early{background:#fdeede;color:#b46a09}
+  .s-absent{background:#fde8e8;color:#c0392b}
+  .s-incomplete{background:#eef1f6;color:#4b5563}
+  .s-rest{background:#f1f3f7;color:#9095a1}
+  .s-noschedule{background:#f1f3f7;color:#9095a1}
+  .s-future{background:#f7f9fc;color:#c3c9d2}
+  .s-holiday{background:#e0e7ff;color:#4338ca}
+  .s-leave{background:#f3e8ff;color:#7e22ce}
+  .s-trip{background:#e0f2fe;color:#0369a1}
+  .att-late{color:#b46a09;font-weight:600}
+</style>
+
+<div class="att-sum">
+  <div><span style="color:var(--muted)">Hesabat:</span> <b style="font-size:14px">@Model.KindLabel</b></div>
+  <div><span style="color:var(--muted)">Əhatə:</span> <b style="font-size:14px">@Model.Scope</b></div>
+  <div><span style="color:var(--muted)">Aralıq:</span> <b style="font-size:14px">@Model.FromLabel – @Model.ToLabel</b></div>
+  <div><span style="color:var(--muted)">Sətir:</span> <b>@Model.Rows.Count</b></div>
+  <div><span style="color:var(--muted)">Gecikmə (gün):</span> <b style="color:#b46a09">@Model.TotalLate</b></div>
+  <div><span style="color:var(--muted)">Gəlmədi (gün):</span> <b style="color:#c0392b">@Model.TotalAbsent</b></div>
+  <div><span style="color:var(--muted)">Əlavə iş:</span> <b style="color:#0369a1">@Model.TotalOvertimeHm</b></div>
+</div>
+
+@{
+    // Hesabat növünə görə yalnız uyğun sütunlar göstərilir (artıq "—" sütunları olmasın).
+    var kind = Model.Kind ?? "";
+    bool showIn = kind is "" or "late" or "incomplete";
+    bool showOut = kind is "" or "early" or "incomplete" or "overtime";
+    bool showLate = kind is "" or "late";
+    bool showEarly = kind is "" or "early";
+    bool showOver = kind is "" or "overtime";
+    bool showWorked = kind is "" or "overtime";
+}
+@if (Model.Rows.Count == 0)
+{
+  <div class="empty-state" style="padding:28px;text-align:center;color:var(--muted)">Bu filtr üzrə nəticə yoxdur.</div>
+}
+else
+{
+  <div class="table-wrap" style="overflow-x:auto">
+    <table class="att-table">
+      <thead>
+        <tr>
+          <th>Tarix</th><th>Gün</th><th>İşçi</th><th>Şöbə</th><th>Cədvəl</th>
+          @if (showIn) { <th>Giriş</th> }
+          @if (showOut) { <th>Çıxış</th> }
+          @if (showLate) { <th class="num">Gecikmə</th> }
+          @if (showEarly) { <th class="num">Erkən</th> }
+          @if (showOver) { <th class="num">Əlavə iş</th> }
+          @if (showWorked) { <th class="num">İşlənmiş</th> }
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var r in Model.Rows)
+        {
+          <tr>
+            <td>@r.Date</td>
+            <td>@r.Weekday</td>
+            <td><b>@r.FullName</b> <span style="color:var(--faint)">@r.EmployeeNo</span></td>
+            <td>@(r.Department ?? "—")</td>
+            <td>@r.Schedule</td>
+            @if (showIn) { <td>@(r.In ?? "—")</td> }
+            @if (showOut) { <td>@(r.Out ?? "—")</td> }
+            @if (showLate) { <td class="num att-late">@(r.LateMin > 0 ? r.LateMin + " d" : "—")</td> }
+            @if (showEarly) { <td class="num">@(r.EarlyMin > 0 ? r.EarlyMin + " d" : "—")</td> }
+            @if (showOver) { <td class="num" style="@(r.OvertimeMin > 0 ? "color:#0369a1;font-weight:600" : "")">@(r.OvertimeMin > 0 ? r.OvertimeHm : "—")</td> }
+            @if (showWorked) { <td class="num">@(r.WorkedMin > 0 ? r.WorkedHm : "—")</td> }
+            <td><span class="att-badge s-@r.Status">@r.StatusLabel</span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
