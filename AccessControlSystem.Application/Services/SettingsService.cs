@@ -185,14 +185,12 @@ public class SettingsService : ISettingsService
                 EndTime = s.EndTime.ToString(@"hh\:mm"),
                 GraceMinutes = s.GraceMinutes,
                 EarlyLeaveGraceMinutes = s.EarlyLeaveGraceMinutes,
-                CheckInStart = s.CheckInStart?.ToString(@"hh\:mm"),
-                CheckInEnd = s.CheckInEnd?.ToString(@"hh\:mm"),
-                CheckOutStart = s.CheckOutStart?.ToString(@"hh\:mm"),
-                CheckOutEnd = s.CheckOutEnd?.ToString(@"hh\:mm"),
+                DayStart = s.DayStartTime.ToString(@"hh\:mm"),
                 AbsentAfterMinutes = s.AbsentAfterMinutes,
                 MinWorkMinutes = s.MinWorkMinutes,
                 Color = string.IsNullOrWhiteSpace(s.Color) ? "#3b82f6" : s.Color!,
                 DaysLabel = DaysLabel(s),
+                Mon = s.Mon, Tue = s.Tue, Wed = s.Wed, Thu = s.Thu, Fri = s.Fri, Sat = s.Sat, Sun = s.Sun,
                 UsageCount = await _schedules.UsageCountAsync(s.Id, ct),
                 IsActive = s.IsActive
             });
@@ -276,10 +274,8 @@ public class SettingsService : ISettingsService
         s.EndTime = end;
         s.GraceMinutes = dto.GraceMinutes;
         s.EarlyLeaveGraceMinutes = dto.EarlyLeaveGraceMinutes;
-        s.CheckInStart = ParseTimeOpt(dto.CheckInStart, "giriş başlama");
-        s.CheckInEnd = ParseTimeOpt(dto.CheckInEnd, "giriş bitmə");
-        s.CheckOutStart = ParseTimeOpt(dto.CheckOutStart, "çıxış başlama");
-        s.CheckOutEnd = ParseTimeOpt(dto.CheckOutEnd, "çıxış bitmə");
+        s.DayStartTime = string.IsNullOrWhiteSpace(dto.DayStart)
+            ? new TimeSpan(5, 0, 0) : ParseTime(dto.DayStart, "gün başlanğıcı");
         s.AbsentAfterMinutes = dto.AbsentAfterMinutes;
         s.MinWorkMinutes = dto.MinWorkMinutes;
         s.Color = string.IsNullOrWhiteSpace(dto.Color) ? "#3b82f6" : dto.Color.Trim();
@@ -291,13 +287,6 @@ public class SettingsService : ISettingsService
     private static TimeSpan ParseTime(string? value, string label) =>
         TimeSpan.TryParseExact((value ?? "").Trim(), new[] { @"hh\:mm", @"h\:mm" }, null, out var t)
             ? t : throw new ArgumentException($"Düzgün {label} vaxtı daxil edin (SS:DD).");
-
-    /// <summary>Opsional vaxt — boşdursa null, doludursa parse (yanlışsa xəta).</summary>
-    private static TimeSpan? ParseTimeOpt(string? value, string label)
-    {
-        if (string.IsNullOrWhiteSpace(value)) return null;
-        return ParseTime(value, label);
-    }
 
     private static string DaysLabel(WorkSchedule s)
     {

@@ -56,14 +56,14 @@ else
     <table class="att-table">
       <thead>
         <tr>
-          <th>Tarix</th><th>Gün</th><th>İşçi</th><th>Şöbə</th><th>Cədvəl</th>
-          @if (showIn) { <th>Giriş</th> }
-          @if (showOut) { <th>Çıxış</th> }
-          @if (showLate) { <th class="num">Gecikmə</th> }
-          @if (showEarly) { <th class="num">Erkən</th> }
-          @if (showOver) { <th class="num">Əlavə iş</th> }
-          @if (showWorked) { <th class="num">İşlənmiş</th> }
-          <th>Status</th>
+          <th data-col="date">Tarix</th><th data-col="weekday">Gün</th><th data-col="emp">İşçi</th><th data-col="dept">Şöbə</th><th data-col="sched">Cədvəl</th>
+          @if (showIn) { <th data-col="in">Giriş</th> }
+          @if (showOut) { <th data-col="out">Çıxış</th> }
+          @if (showLate) { <th class="num" data-col="late">Gecikmə</th> }
+          @if (showEarly) { <th class="num" data-col="early">Erkən</th> }
+          @if (showOver) { <th class="num" data-col="over">Əlavə iş</th> }
+          @if (showWorked) { <th class="num" data-col="worked">İşlənmiş</th> }
+          <th data-col="status">Status</th>
         </tr>
       </thead>
       <tbody>

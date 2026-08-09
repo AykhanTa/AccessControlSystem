@@ -148,4 +148,12 @@ C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\obj\De
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\obj\Debug\net8.0\AccessControlSystem.RazorAssemblyInfo.cache
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\obj\Debug\net8.0\AccessControlSystem.RazorAssemblyInfo.cs
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\obj\Debug\net8.0\AccessControlSystem.sourcelink.json
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\bin\Debug\net8.0\ClosedXML.dll
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\bin\Debug\net8.0\ClosedXML.Parser.dll
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\bin\Debug\net8.0\DocumentFormat.OpenXml.dll
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\bin\Debug\net8.0\DocumentFormat.OpenXml.Framework.dll
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\bin\Debug\net8.0\ExcelNumberFormat.dll
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\bin\Debug\net8.0\RBush.dll
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\bin\Debug\net8.0\SixLabors.Fonts.dll
+C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\bin\Debug\net8.0\System.IO.Packaging.dll
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

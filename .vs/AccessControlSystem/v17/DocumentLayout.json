@@ -50,8 +50,7 @@
               "RelativeToolTip": "AccessControlSystem\\Views\\Shared\\_Layout.cshtml",
               "ViewState": "AgIAAGUAAAAAAAAAAAAkwHoAAADrAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-08-06T08:12:43.834Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-06T08:12:43.834Z"
             },
             {
               "$type": "Document",
@@ -63,8 +62,7 @@
               "RelativeToolTip": "AccessControlSystem\\Filters\\PermissionFilter.cs",
               "ViewState": "AgIAAAIAAAAAAAAAAAAcwBYAAAAqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-06T08:12:39.125Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-06T08:12:39.125Z"
             },
             {
               "$type": "Document",
@@ -76,8 +74,7 @@
               "RelativeToolTip": "AccessControlSystem\\Controllers\\AttendanceController.cs",
               "ViewState": "AgIAAAQAAAAAAAAAAAAwwBcAAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-06T08:12:36.244Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-06T08:12:36.244Z"
             },
             {
               "$type": "Document",
@@ -89,8 +86,7 @@
               "RelativeToolTip": "AccessControlSystem\\Views\\Attendance\\Index.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAZAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-08-06T06:29:10.183Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-06T06:29:10.183Z"
             },
             {
               "$type": "Document",
@@ -100,7 +96,7 @@
               "RelativeDocumentMoniker": "AccessControlSystem\\Views\\Settings\\Index.cshtml",
               "ToolTip": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Settings\\Index.cshtml",
               "RelativeToolTip": "AccessControlSystem\\Views\\Settings\\Index.cshtml",
-              "ViewState": "AgIAAOQAAAAAAAAAAAAkwPYAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAACYBAAAAAAAAAAAAACEBAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-08-04T13:38:44.878Z",
               "EditorCaption": ""
@@ -115,8 +111,7 @@
               "RelativeToolTip": "AccessControlSystem\\Views\\Employees\\Index.cshtml",
               "ViewState": "AgIAAKMAAAAAAAAAAAAkwLYAAAAuAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-08-04T11:09:31.217Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-04T11:09:31.217Z"
             },
             {
               "$type": "Document",

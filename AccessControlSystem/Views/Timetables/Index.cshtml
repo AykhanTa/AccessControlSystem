@@ -53,13 +53,6 @@
           <span class="tt-group-title">Əsas</span>
           <div class="tt-grid">
             <div class="tt-fld tt-span2"><label>Ad</label><input name="Name" id="ttName" type="text" placeholder="Standart 09:00–18:00" required /></div>
-            <div class="tt-fld"><label>Tip</label>
-              <select name="Type" id="ttType" onchange="ttTypeToggle()">
-                <option value="Normal">Normal (sabit)</option>
-                <option value="Flexible">Flexible (çevik)</option>
-              </select>
-            </div>
-            <div class="tt-fld tt-color"><label>Rəng</label><input name="Color" id="ttColor" type="color" value="#3b82f6" /></div>
             @if (isGlobalAdmin)
             {
               <div class="tt-fld"><label>Şirkət</label>
@@ -77,20 +70,17 @@
           <div class="tt-grid">
             @TimeField("Başlama", "StartTime", "09:00", true)
             @TimeField("Bitmə", "EndTime", "18:00", true)
-            <div class="tt-fld tt-normal"><label>İcazəli gecikmə (dəq)</label><input name="GraceMinutes" id="ttGrace" type="number" min="0" max="240" value="0" /></div>
-            <div class="tt-fld tt-normal"><label>İcazəli erkən çıxış (dəq)</label><input name="EarlyLeaveGraceMinutes" id="ttEarly" type="number" min="0" max="240" value="0" /></div>
-            <div class="tt-fld tt-flex" style="display:none"><label>Min. iş müddəti (dəq)</label><input name="MinWorkMinutes" id="ttMinWork" type="number" min="0" max="1440" value="480" /></div>
+            <div class="tt-fld"><label>İcazəli gecikmə (dəq)</label><input name="GraceMinutes" id="ttGrace" type="number" min="0" max="240" value="0" /></div>
+            <div class="tt-fld"><label>İcazəli erkən çıxış (dəq)</label><input name="EarlyLeaveGraceMinutes" id="ttEarly" type="number" min="0" max="240" value="0" /></div>
           </div>
         </div>
 
         <div class="tt-group">
-          <span class="tt-group-title">Keçərli oxutma pəncərələri <em>(opsional)</em></span>
+          <span class="tt-group-title">Gün başlanğıcı (oxutma sərhədi)</span>
           <div class="tt-grid">
-            @TimeField("Giriş — başla", "CheckInStart", "", false)
-            @TimeField("Giriş — bit", "CheckInEnd", "", false)
-            @TimeField("Çıxış — başla", "CheckOutStart", "", false)
-            @TimeField("Çıxış — bit", "CheckOutEnd", "", false)
+            @TimeField("Gün başlanğıcı", "DayStart", "05:00", true)
           </div>
+          <p class="hint">İştirak günü bu vaxtdan növbəti gün eyni vaxta qədərdir. Girişlər bu vaxtdan oxunur, çıxışlar növbəti sərhədə qədər. Məs. <b>05:00</b> → gecə 00:17 oxutması ƏVVƏLKİ günə düşür, bugünkü hesaba qarışmır.</p>
         </div>
 
         <div class="tt-group">
@@ -120,14 +110,11 @@
     <div>
       @foreach (var s in Model)
       {
-        var win = (s.CheckInStart != null || s.CheckOutEnd != null)
-            ? $" · Giriş: {s.CheckInStart ?? "—"}–{s.CheckInEnd ?? "—"} · Çıxış: {s.CheckOutStart ?? "—"}–{s.CheckOutEnd ?? "—"}"
-            : "";
+        var win = $" · Gün başlanğıcı: {s.DayStart}";
         <div class="param-item">
           <div class="param-item-info">
-            <b><span class="tt-dot" style="background:@s.Color"></span>@s.Name
-              <span style="color:var(--faint);font-weight:500">(@s.Type · @s.StartTime–@s.EndTime)</span></b>
-            <span>@s.CompanyName · Günlər: @s.DaysLabel · Gecikmə: @s.GraceMinutes/@s.EarlyLeaveGraceMinutes dəq@(s.Type == "Flexible" ? $" · Min iş: {s.MinWorkMinutes} dəq" : "")@win · @s.UsageCount təyinat · <span class="@(s.IsActive ? "st-on" : "st-off")">@(s.IsActive ? "Aktiv" : "Deaktiv")</span></span>
+            <b>@s.Name <span style="color:var(--faint);font-weight:500">(@s.StartTime–@s.EndTime)</span></b>
+            <span>@s.CompanyName · Günlər: @s.DaysLabel · Gecikmə: @s.GraceMinutes/@s.EarlyLeaveGraceMinutes dəq@(win) · @s.UsageCount təyinat · <span class="@(s.IsActive ? "st-on" : "st-off")">@(s.IsActive ? "Aktiv" : "Deaktiv")</span></span>
           </div>
           <div class="host-actions">
             @if (canEdit)
@@ -193,11 +180,6 @@
 </style>
 <script>
   var TT_DATA = @Html.Raw(Json.Serialize(Model));
-  function ttTypeToggle() {
-    var flex = document.getElementById('ttType').value === 'Flexible';
-    document.querySelectorAll('.tt-normal').forEach(function (e) { e.style.display = flex ? 'none' : ''; });
-    document.querySelectorAll('.tt-flex').forEach(function (e) { e.style.display = flex ? '' : 'none'; });
-  }
   function ttEdit(id) {
     var s = TT_DATA.find(function (x) { return x.id === id; }); if (!s) return;
     var f = document.getElementById('ttForm'); if (!f) return;
@@ -205,20 +187,13 @@
     var g = i => document.getElementById(i);
     g('ttId').value = s.id;
     g('ttName').value = s.name || '';
-    g('ttType').value = s.type || 'Normal';
     ttSetTime('StartTime', s.startTime || '09:00');
     ttSetTime('EndTime', s.endTime || '18:00');
-    g('ttColor').value = s.color || '#3b82f6';
     g('ttGrace').value = s.graceMinutes || 0;
     g('ttEarly').value = s.earlyLeaveGraceMinutes || 0;
-    g('ttMinWork').value = s.minWorkMinutes || 0;
-    ttSetTime('CheckInStart', s.checkInStart || '');
-    ttSetTime('CheckInEnd', s.checkInEnd || '');
-    ttSetTime('CheckOutStart', s.checkOutStart || '');
-    ttSetTime('CheckOutEnd', s.checkOutEnd || '');
+    ttSetTime('DayStart', s.dayStart || '05:00');
     if (g('ttCompany')) g('ttCompany').value = s.companyId || '';
     ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(function (d) { g('tt' + d).checked = !!s[d.toLowerCase()]; });
-    ttTypeToggle();
     g('ttFormTitle').textContent = 'İş cədvəlini redaktə et';
     g('ttSubmit').textContent = 'Yadda saxla';
     g('ttCancel').style.display = '';
@@ -232,8 +207,7 @@
     // vaxt seçicilərini defolt/boşa qaytar
     ttSetTime('StartTime', '09:00');
     ttSetTime('EndTime', '18:00');
-    ['CheckInStart', 'CheckInEnd', 'CheckOutStart', 'CheckOutEnd'].forEach(function (n) { ttSetTime(n, ''); });
-    ttTypeToggle();
+    ttSetTime('DayStart', '05:00');
     document.getElementById('ttFormTitle').textContent = 'Yeni iş cədvəli';
     document.getElementById('ttSubmit').textContent = 'Əlavə et';
     document.getElementById('ttCancel').style.display = 'none';

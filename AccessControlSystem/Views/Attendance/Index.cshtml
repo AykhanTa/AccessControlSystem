@@ -1,6 +1,6 @@
 @using AccessControlSystem.Application.DTOs
 @{
-    ViewData["Title"] = "Davamiyyət";
+    ViewData["Title"] = "İştirak";
     var companies = ViewBag.Companies as List<CompanyItemDto> ?? new List<CompanyItemDto>();
     var departments = ViewBag.Departments as List<DepartmentItemDto> ?? new List<DepartmentItemDto>();
     var employees = ViewBag.Employees as List<EmployeeRowDto> ?? new List<EmployeeRowDto>();
@@ -21,6 +21,15 @@
   .rep-toolbar label{font-size:12.5px;font-weight:600;color:var(--faint,#6b7280);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .rep-toolbar .input{width:100%;box-sizing:border-box;height:40px;padding:0 10px;border:1px solid var(--line,#dde1e8);border-radius:10px;background:#fff;font-size:13.5px}
   .rep-toolbar .btn{flex:0 0 auto;align-self:end}
+  .col-menu{position:relative}
+  .col-panel{position:absolute;right:0;top:calc(100% + 6px);z-index:50;background:#fff;border:1px solid var(--line,#dde1e8);border-radius:12px;box-shadow:0 10px 30px rgba(16,24,40,.14);padding:8px;min-width:230px;max-height:70vh;overflow:auto}
+  .col-panel .col-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--faint,#9095a1);padding:6px 8px}
+  .col-panel .col-item{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;font-size:13.5px;color:var(--ink,#3a4152);cursor:pointer}
+  .col-panel .col-item:hover{background:#f6f9ff}
+  .col-panel .col-item input{width:16px;height:16px;accent-color:#3b82f6;cursor:pointer}
+  .col-panel .col-all{font-weight:600;border-bottom:1px solid var(--line,#eef0f4);border-radius:0;margin-bottom:4px}
+  .col-panel .col-reset{text-align:center;border-top:1px solid var(--line,#eef0f4);margin-top:4px;padding-top:6px}
+  .col-panel .col-reset a{color:#3b82f6;font-size:13px;cursor:pointer;text-decoration:none}
   .att-pager{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}
   .att-pager .muted{color:var(--muted);font-size:13px;margin-right:auto}
   .att-pager .btn{height:34px;min-width:38px;padding:0 12px;font-size:15px}
@@ -41,20 +50,29 @@
     .att-table td:nth-child(4){ min-width:80px; }   /* Şöbə */
     .att-badge{ padding:1px 5px; font-size:8.5px; white-space:nowrap; }
     .att-table td.num{ white-space:nowrap !important; }
-    /* Aylıq kart: sabit yox — auto layout, hər sütun məzmununa görə (sütunlar bir-birinə girməsin) */
-    .mc-table{ width:auto !important; table-layout:auto; font-size:7.5px; border-collapse:collapse; }
-    .mc-table th, .mc-table td{ padding:1px 3px !important; border:1px solid #d0d5dd; text-align:center; }
-    .mc-table th.emp, .mc-table td.emp{ position:static !important; min-width:100px; white-space:normal !important; word-break:normal; text-align:left; }
-    .mc-table th.tot, .mc-table td.tot{ padding:1px 6px !important; white-space:nowrap; }
-    .mc-cell{ width:12px; height:12px; line-height:12px; font-size:7.5px; }
-    .mc-legend{ font-size:8px; gap:8px; }
-    .mc-head h3{ font-size:12px; }
+    /* İşçi üzrə yekun cədvəli — landşaftda sığsın, mətn itməsin */
+    .sm-table{ width:100% !important; table-layout:auto; font-size:8.5px; }
+    .sm-table th, .sm-table td{ padding:2px 4px !important; white-space:normal !important; word-break:normal; vertical-align:top; }
+    .att-sum{ font-size:9.5px !important; gap:12px !important; margin-bottom:8px !important; }
+    /* Aylıq kart: BÜTÜN günlər səhifə eninə sığsın — fixed layout, 100% en, kiçik xanalar */
+    .mc-table{ width:100% !important; table-layout:fixed; font-size:6.5px; border-collapse:collapse; }
+    .mc-table th, .mc-table td{ padding:0 1px !important; border:1px solid #d0d5dd; text-align:center; overflow:hidden; }
+    .mc-table th.emp, .mc-table td.emp{ position:static !important; width:78px; white-space:normal !important; word-break:break-word; text-align:left; line-height:1.05; }
+    .mc-table th.emp span, .mc-table td.emp span{ font-size:6px !important; }
+    .mc-table th.tot, .mc-table td.tot{ padding:0 1px !important; }
+    .mc-cell{ width:9px; height:9px; line-height:9px; font-size:6px; border-radius:2px; }
+    .mc-legend{ font-size:7.5px; gap:7px; }
+    .mc-head h3{ font-size:11px; }
   }
 </style>
 
 <div class="page-head">
   <div><p>İş cədvəlinə əsasən gecikmə, erkən çıxış, əlavə iş, işlənmiş saat və qayıb. Filtr seçib göstərin, Excel-ə/PDF-ə çıxarın.</p></div>
-  <div class="no-print" style="display:flex;gap:8px">
+  <div class="no-print" style="display:flex;gap:8px;align-items:center">
+    <div class="col-menu">
+      <button class="btn btn-ghost" id="colBtn" type="button" onclick="toggleColMenu(event)">⚙ Sütunlar</button>
+      <div id="colMenuPanel" class="col-panel" style="display:none"></div>
+    </div>
     <button class="btn btn-ghost att-dw" type="button" onclick="exportExcel()">Excel</button>
     <button class="btn btn-ghost" type="button" onclick="window.print()">Çap et (PDF)</button>
   </div>
@@ -93,8 +111,8 @@
     <div class="field att-dw">
       <label>Görünüş</label>
       <select id="fView" class="input">
+        <option value="summary" selected>Yekun (işçi üzrə)</option>
         <option value="detailed">Detallı (gün-gün)</option>
-        <option value="summary">Yekun (işçi üzrə)</option>
       </select>
     </div>
     <div class="field att-dw" id="kindField">
@@ -207,11 +225,13 @@
   function exportExcel(){
     var cid=$('fCompany').value, did=$('fDept').value, eid=$('fEmp').value;
     var rng = effectiveRange();
+    // Gizlədilmiş sütunlar Excel-ə də getməsin.
+    var hide = Array.from(COL_STORE[colViewKey()]).join(',');
     if($('fView').value==='summary'){
-      var qs = new URLSearchParams({ companyId:cid, deptId:did, employeeId:eid, from:rng.from, to:rng.to, kind:$('fKind').value });
+      var qs = new URLSearchParams({ companyId:cid, deptId:did, employeeId:eid, from:rng.from, to:rng.to, kind:$('fKind').value, hide:hide });
       window.location = '/Attendance/ExportSummary?' + qs.toString();
     } else {
-      var qs2 = new URLSearchParams({ companyId:cid, deptId:did, employeeId:eid, from:rng.from, to:rng.to, kind:$('fKind').value });
+      var qs2 = new URLSearchParams({ companyId:cid, deptId:did, employeeId:eid, from:rng.from, to:rng.to, kind:$('fKind').value, hide:hide });
       window.location = '/Attendance/ExportDaily?' + qs2.toString();
     }
   }
@@ -275,6 +295,7 @@
       if(my !== reqId) return;             // daha yeni sorğu var — bunu tətbiq etmə
       body.innerHTML = html;
       initPager();
+      afterRender();
     } catch(e){
       if(my !== reqId) return;
       body.innerHTML = '<div class="empty-state" style="padding:32px;text-align:center;color:var(--muted)">Şəbəkə xətası.</div>';
@@ -311,6 +332,71 @@
   }
   function pageGo(d){ pager.page += d; drawPage(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
   function pageSize(v){ pager.size = (v === 'all') ? 'all' : parseInt(v, 10); pager.page = 1; drawPage(); }
+
+  // ---- Sütun özəlləşdirmə (göstər/gizlət, localStorage-da yadda qalır) ----
+  var COL_STORE = { detailed: colLoad('detailed'), summary: colLoad('summary'), monthly: colLoad('monthly') };
+  function colLoad(v){ try{ return new Set(JSON.parse(localStorage.getItem('attCols_'+v)||'[]')); }catch(e){ return new Set(); } }
+  function colSave(v){ localStorage.setItem('attCols_'+v, JSON.stringify(Array.from(COL_STORE[v]))); }
+  function colViewKey(){ return (mode==='monthly') ? 'monthly' : (($('fView').value==='summary') ? 'summary' : 'detailed'); }
+  function currentTable(){ return $('reportBody').querySelector('table.att-table, table.sm-table, table.mc-table'); }
+  // Yalnız data-col açarı olan başlıqlar özəlləşdirilə bilər (aylıqda gün sütunları yox).
+  function colHeaders(tbl){
+    return Array.prototype.filter.call(tbl.querySelectorAll('thead th'), function(th){ return th.getAttribute('data-col'); });
+  }
+
+  // Hər yükləmədən sonra: düymə görünüşü + saxlanmış gizli sütunları tətbiq et.
+  function afterRender(){
+    var tbl = currentTable();
+    $('colBtn').style.display = tbl ? '' : 'none';
+    $('colMenuPanel').style.display = 'none';
+    applyColStyle();
+  }
+  function applyColStyle(){
+    var st = $('colHideStyle'); if(!st){ st=document.createElement('style'); st.id='colHideStyle'; document.head.appendChild(st); }
+    var tbl = currentTable();
+    if(!tbl){ st.textContent=''; return; }
+    var hidden = COL_STORE[colViewKey()];
+    var ths = tbl.querySelectorAll('thead th'); var sel=[];
+    ths.forEach(function(th,i){ var key=th.getAttribute('data-col');
+      if(key && hidden.has(key)){ var n=i+1; sel.push('#reportBody table th:nth-child('+n+')'); sel.push('#reportBody table td:nth-child('+n+')'); } });
+    st.textContent = sel.length ? sel.join(',')+'{display:none !important}' : '';
+  }
+  function toggleColMenu(ev){
+    if(ev) ev.stopPropagation();
+    var panel = $('colMenuPanel');
+    if(panel.style.display==='none'){ buildColMenu(); panel.style.display='block'; } else panel.style.display='none';
+  }
+  function buildColMenu(){
+    var tbl = currentTable(), panel=$('colMenuPanel');
+    if(!tbl){ panel.innerHTML=''; return; }
+    var vkey = colViewKey(), hidden = COL_STORE[vkey];
+    var cols = colHeaders(tbl);
+    var html = '<div class="col-head">Sütunları özəlləşdir</div>';
+    html += '<label class="col-item col-all"><input type="checkbox" id="colAll"> Hamısı</label>';
+    cols.forEach(function(th){ var key=th.getAttribute('data-col'); var checked=!hidden.has(key);
+      html += '<label class="col-item"><input type="checkbox" data-key="'+key+'" '+(checked?'checked':'')+'> '+(th.textContent.trim()||key)+'</label>'; });
+    html += '<div class="col-reset"><a onclick="colReset()">Sıfırla</a></div>';
+    panel.innerHTML = html;
+    panel.querySelectorAll('input[data-key]').forEach(function(cb){
+      cb.addEventListener('change', function(){
+        var k=cb.getAttribute('data-key'); if(cb.checked) hidden.delete(k); else hidden.add(k);
+        colSave(vkey); applyColStyle(); syncColAll();
+      });
+    });
+    $('colAll').addEventListener('change', function(){
+      var on=$('colAll').checked; hidden.clear();
+      if(!on) cols.forEach(function(th){ hidden.add(th.getAttribute('data-col')); });
+      panel.querySelectorAll('input[data-key]').forEach(function(cb){ cb.checked=on; });
+      colSave(vkey); applyColStyle();
+    });
+    syncColAll();
+  }
+  function syncColAll(){ var all=$('colAll'); if(!all) return; var cbs=$('colMenuPanel').querySelectorAll('input[data-key]');
+    all.checked = Array.prototype.every.call(cbs, function(c){ return c.checked; }); }
+  function colReset(){ var v=colViewKey(); COL_STORE[v].clear(); colSave(v); applyColStyle(); buildColMenu(); }
+  document.addEventListener('click', function(e){
+    var m=$('colMenuPanel'); if(m && m.style.display!=='none' && !e.target.closest('.col-menu')) m.style.display='none';
+  });
 
   // Filtr dəyişikliyi AVTOMATİK yükləmir — yalnız asılı seçimləri süzür / sahə görünüşünü yeniləyir.
   $('fCompany').addEventListener('change', syncCascade);

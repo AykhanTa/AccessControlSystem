@@ -1,9 +1,11 @@
+using AccessControlSystem.Application.DTOs;
 using AccessControlSystem.Application.Interfaces.Services;
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AccessControlSystem.Controllers;
 
-/// <summary>Davamiyyət — iş cədvəlinə əsasən gündəlik və aylıq nəticələr.
+/// <summary>İştirak — iş cədvəlinə əsasən gündəlik və aylıq nəticələr.
 /// İcazə "reports" bölməsindən (SectionMap: Attendance → reports).</summary>
 public class AttendanceController : Controller
 {
@@ -21,8 +23,8 @@ public class AttendanceController : Controller
     public async Task<IActionResult> Index()
     {
         ViewData["Active"] = "attendance";
-        ViewData["Heading"] = "Davamiyyət";
-        ViewData["Title"] = "Davamiyyət";
+        ViewData["Heading"] = "İştirak";
+        ViewData["Title"] = "İştirak";
         ViewBag.Companies = await _settings.GetCompaniesAsync();
         ViewBag.Departments = await _settings.GetDepartmentsAsync();
         ViewBag.Employees = await _employees.GetAllAsync();
@@ -61,50 +63,63 @@ public class AttendanceController : Controller
         return PartialView("_SummaryBody", await _attendance.GetSummaryAsync(companyId, deptId, employeeId, f, t, kind));
     }
 
-    /// <summary>İşçi üzrə yekunu Excel (.xls) kimi endirir.</summary>
+    /// <summary>İşçi üzrə yekunu real Excel (.xlsx) faylı kimi endirir. Gizlədilmiş sütunlar (hide) buraxılmır.</summary>
     [HttpGet]
     public async Task<IActionResult> ExportSummary(long? companyId, long? deptId, long? employeeId,
-        DateTime? from, DateTime? to, string? kind)
+        DateTime? from, DateTime? to, string? kind, string? hide)
     {
         var f = (from ?? DateTime.Today).Date;
         var t = (to ?? DateTime.Today).Date;
         if (t < f) t = f;
         var data = await _attendance.GetSummaryAsync(companyId, deptId, employeeId, f, t, kind);
+        var hidden = ParseHide(hide);
 
-        var sb = new System.Text.StringBuilder();
-        sb.Append("<html><head><meta charset=\"utf-8\"></head><body>");
-        sb.Append($"<h3>Davamiyyət — İşçi üzrə yekun ({Esc(data.KindLabel)})</h3>");
-        sb.Append($"<p>{Esc(data.Scope)} · {data.FromLabel}–{data.ToLabel}</p>");
-        sb.Append("<table border=\"1\" cellspacing=\"0\" cellpadding=\"4\"><tr>");
-        foreach (var h in new[] { "İşçi İD", "İşçi", "Şöbə", "İş günü", "Gəlmədi", "Gecikmə (gün)", "Gecikmə (dəq)",
-                                  "Erkən (gün)", "Əlavə iş (dəq)", "İşlənmiş (dəq)", "Məzuniyyət", "Ezamiyyət", "Bayram" })
-            sb.Append($"<th>{Esc(h)}</th>");
-        sb.Append("</tr>");
+        // (başlıq, açar, dəyər) — açar view-dakı data-col ilə eynidir.
+        var cols = new List<(string H, string Key, Func<AttSumRowDto, XLCellValue> V)>
+        {
+            ("İşçi İD", "emp", r => r.EmployeeNo),
+            ("İşçi", "emp", r => r.FullName),
+            ("Şöbə", "dept", r => r.Department ?? ""),
+            ("İş günü", "present", r => r.PresentDays),
+            ("Gəlmədi", "absent", r => r.AbsentDays),
+            ("Gecikmə (gün)", "lateDays", r => r.LateDays),
+            ("Gecikmə (dəq)", "lateMin", r => r.LateMin),
+            ("Erkən (gün)", "earlyDays", r => r.EarlyDays),
+            ("Əlavə iş (dəq)", "over", r => r.OvertimeMin),
+            ("İşlənmiş (dəq)", "worked", r => r.WorkedMin),
+            ("Məzuniyyət", "leave", r => r.LeaveDays),
+            ("Ezamiyyət", "trip", r => r.TripDays),
+            ("Bayram", "holiday", r => r.HolidayDays),
+        }.Where(c => !hidden.Contains(c.Key)).ToList();
+
+        using var wb = new XLWorkbook();
+        var ws = wb.Worksheets.Add("Yekun");
+        WriteTitle(ws, $"İştirak — İşçi üzrə yekun ({data.KindLabel})", $"{data.Scope} · {data.FromLabel}–{data.ToLabel}");
+
+        const int hr = 4;
+        for (var i = 0; i < cols.Count; i++) StyleHeader(ws.Cell(hr, i + 1), cols[i].H);
+        var rr = hr + 1;
         foreach (var r in data.Rows)
         {
-            sb.Append("<tr>");
-            sb.Append($"<td>{Esc(r.EmployeeNo)}</td><td>{Esc(r.FullName)}</td><td>{Esc(r.Department ?? "")}</td>");
-            sb.Append($"<td>{r.PresentDays}</td><td>{r.AbsentDays}</td><td>{r.LateDays}</td><td>{r.LateMin}</td>");
-            sb.Append($"<td>{r.EarlyDays}</td><td>{r.OvertimeMin}</td><td>{r.WorkedMin}</td><td>{r.LeaveDays}</td><td>{r.TripDays}</td><td>{r.HolidayDays}</td>");
-            sb.Append("</tr>");
+            for (var i = 0; i < cols.Count; i++) ws.Cell(rr, i + 1).Value = cols[i].V(r);
+            rr++;
         }
-        sb.Append("</table></body></html>");
-        var bytes = System.Text.Encoding.UTF8.GetPreamble()
-            .Concat(System.Text.Encoding.UTF8.GetBytes(sb.ToString())).ToArray();
-        return File(bytes, "application/vnd.ms-excel", $"davamiyyet_yekun_{f:yyyyMMdd}_{t:yyyyMMdd}.xls");
+        Finalize(ws, hr, cols.Count);
+        return Xlsx(wb, $"davamiyyet_yekun_{f:yyyyMMdd}_{t:yyyyMMdd}.xlsx");
     }
 
-    /// <summary>Gündəlik/həftəlik hesabatı Excel (.xls) faylı kimi endirir.</summary>
+    /// <summary>Gündəlik/həftəlik hesabatı real Excel (.xlsx) faylı kimi endirir. Gizlədilmiş sütunlar (hide) buraxılmır.</summary>
     [HttpGet]
     public async Task<IActionResult> ExportDaily(long? companyId, long? deptId, long? employeeId,
-        DateTime? from, DateTime? to, string? kind)
+        DateTime? from, DateTime? to, string? kind, string? hide)
     {
         var f = (from ?? DateTime.Today).Date;
         var t = (to ?? DateTime.Today).Date;
         if (t < f) t = f;
         var data = await _attendance.GetDailyAsync(companyId, deptId, employeeId, f, t, kind);
         var k = data.Kind;
-        // Növə uyğun sütunlar (ekrandakı ilə eyni məntiq — artıq sütun olmasın).
+        var hidden = ParseHide(hide);
+        // Növə uyğun sütunlar (ekrandakı ilə eyni məntiq).
         bool showIn = k is "" or "late" or "incomplete";
         bool showOut = k is "" or "early" or "incomplete" or "overtime";
         bool showLate = k is "" or "late";
@@ -112,43 +127,70 @@ public class AttendanceController : Controller
         bool showOver = k is "" or "overtime";
         bool showWorked = k is "" or "overtime";
 
-        var sb = new System.Text.StringBuilder();
-        sb.Append("<html><head><meta charset=\"utf-8\"></head><body>");
-        sb.Append($"<h3>Davamiyyət — {Esc(data.KindLabel)}</h3>");
-        sb.Append($"<p>{Esc(data.Scope)} · {data.FromLabel}–{data.ToLabel}</p>");
-        sb.Append("<table border=\"1\" cellspacing=\"0\" cellpadding=\"4\"><tr>");
-        void Th(string h) => sb.Append($"<th>{Esc(h)}</th>");
-        Th("Tarix"); Th("Gün"); Th("İşçi İD"); Th("İşçi"); Th("Şöbə"); Th("Cədvəl");
-        if (showIn) Th("Giriş");
-        if (showOut) Th("Çıxış");
-        if (showLate) Th("Gecikmə (dəq)");
-        if (showEarly) Th("Erkən (dəq)");
-        if (showOver) Th("Əlavə iş (dəq)");
-        if (showWorked) Th("İşlənmiş (dəq)");
-        Th("Status");
-        sb.Append("</tr>");
+        var cols = new List<(string H, string Key, Func<AttDayRowDto, XLCellValue> V)>
+        {
+            ("Tarix", "date", r => r.Date),
+            ("Gün", "weekday", r => r.Weekday),
+            ("İşçi İD", "emp", r => r.EmployeeNo),
+            ("İşçi", "emp", r => r.FullName),
+            ("Şöbə", "dept", r => r.Department ?? ""),
+            ("Cədvəl", "sched", r => r.Schedule),
+        };
+        if (showIn) cols.Add(("Giriş", "in", r => r.In ?? ""));
+        if (showOut) cols.Add(("Çıxış", "out", r => r.Out ?? ""));
+        if (showLate) cols.Add(("Gecikmə (dəq)", "late", r => r.LateMin));
+        if (showEarly) cols.Add(("Erkən (dəq)", "early", r => r.EarlyMin));
+        if (showOver) cols.Add(("Əlavə iş (dəq)", "over", r => r.OvertimeMin));
+        if (showWorked) cols.Add(("İşlənmiş (dəq)", "worked", r => r.WorkedMin));
+        cols.Add(("Status", "status", r => r.StatusLabel));
+        cols = cols.Where(c => !hidden.Contains(c.Key)).ToList();
+
+        using var wb = new XLWorkbook();
+        var ws = wb.Worksheets.Add("İştirak");
+        WriteTitle(ws, $"İştirak — {data.KindLabel}", $"{data.Scope} · {data.FromLabel}–{data.ToLabel}");
+
+        const int hr = 4;
+        for (var i = 0; i < cols.Count; i++) StyleHeader(ws.Cell(hr, i + 1), cols[i].H);
+        var rr = hr + 1;
         foreach (var r in data.Rows)
         {
-            sb.Append("<tr>");
-            sb.Append($"<td>{Esc(r.Date)}</td><td>{Esc(r.Weekday)}</td><td>{Esc(r.EmployeeNo)}</td>");
-            sb.Append($"<td>{Esc(r.FullName)}</td><td>{Esc(r.Department ?? "")}</td><td>{Esc(r.Schedule)}</td>");
-            if (showIn) sb.Append($"<td>{Esc(r.In ?? "")}</td>");
-            if (showOut) sb.Append($"<td>{Esc(r.Out ?? "")}</td>");
-            if (showLate) sb.Append($"<td>{r.LateMin}</td>");
-            if (showEarly) sb.Append($"<td>{r.EarlyMin}</td>");
-            if (showOver) sb.Append($"<td>{r.OvertimeMin}</td>");
-            if (showWorked) sb.Append($"<td>{r.WorkedMin}</td>");
-            sb.Append($"<td>{Esc(r.StatusLabel)}</td></tr>");
+            for (var i = 0; i < cols.Count; i++) ws.Cell(rr, i + 1).Value = cols[i].V(r);
+            rr++;
         }
-        sb.Append("</table></body></html>");
-
-        var bytes = System.Text.Encoding.UTF8.GetPreamble()
-            .Concat(System.Text.Encoding.UTF8.GetBytes(sb.ToString())).ToArray();
-        return File(bytes, "application/vnd.ms-excel", $"davamiyyet_{f:yyyyMMdd}_{t:yyyyMMdd}.xls");
+        Finalize(ws, hr, cols.Count);
+        return Xlsx(wb, $"davamiyyet_{f:yyyyMMdd}_{t:yyyyMMdd}.xlsx");
     }
 
-    private static string Esc(string s) =>
-        System.Net.WebUtility.HtmlEncode(s ?? "");
+    private static HashSet<string> ParseHide(string? hide) =>
+        (hide ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToHashSet();
+
+    // ---- Excel köməkçiləri (ClosedXML) ----
+    private static void WriteTitle(IXLWorksheet ws, string title, string sub)
+    {
+        var c1 = ws.Cell(1, 1); c1.Value = title; c1.Style.Font.Bold = true; c1.Style.Font.FontSize = 14;
+        var c2 = ws.Cell(2, 1); c2.Value = sub; c2.Style.Font.FontColor = XLColor.Gray;
+    }
+    private static void StyleHeader(IXLCell cell, string text)
+    {
+        cell.Value = text;
+        cell.Style.Font.Bold = true;
+        cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#EEF2F7");
+        cell.Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+    }
+    private static void Finalize(IXLWorksheet ws, int headerRow, int lastCol)
+    {
+        if (lastCol < 1) return;
+        ws.Range(headerRow, 1, headerRow, lastCol).SetAutoFilter();
+        ws.SheetView.FreezeRows(headerRow);
+        ws.Columns().AdjustToContents();
+    }
+    private IActionResult Xlsx(XLWorkbook wb, string fileName)
+    {
+        using var ms = new MemoryStream();
+        wb.SaveAs(ms);
+        return File(ms.ToArray(),
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+    }
 
     private static (DateTime monday, DateTime sunday) WeekOf(DateTime d)
     {

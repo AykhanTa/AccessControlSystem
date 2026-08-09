@@ -11,11 +11,21 @@
 }
 
 <div class="page-head">
-  <div>
-    <p>Mərkəzlər, mərtəbələr, cihazlar, qəbul edən şəxslər və məqsədlər bazadan idarə olunur.</p>
-  </div>
+  <div><p>Sistem parametrləri — bölmələr arasında keçid edin.</p></div>
 </div>
 
+<div class="settings-tabs no-print" id="settingsTabs">
+  <button type="button" class="stab" data-pane="centers">Mərkəzlər</button>
+  @if (isGlobalAdmin) { <button type="button" class="stab" data-pane="companies">Şirkətlər</button> }
+  <button type="button" class="stab" data-pane="departments">Şöbələr</button>
+  <button type="button" class="stab" data-pane="positions">Vəzifələr</button>
+  <button type="button" class="stab" data-pane="hosts">Qəbul edən şəxslər</button>
+  <button type="button" class="stab" data-pane="purposes">Gəliş məqsədləri</button>
+  <button type="button" class="stab" data-pane="floors">Mərtəbələr</button>
+  <button type="button" class="stab" data-pane="devices">Cihazlar</button>
+</div>
+
+<div class="tab-pane" data-pane="centers">
 <!-- Mərkəzlər (binalar) -->
 <section class="panel">
   <div class="param-head"><h3>Mərkəzlər (binalar)</h3></div>
@@ -67,10 +77,12 @@
     }
   </div>
 </section>
+</div>
 
-<!-- Şirkətlər (yalnız qlobal admin idarə edir) -->
 @if (isGlobalAdmin)
 {
+<div class="tab-pane" data-pane="companies">
+<!-- Şirkətlər -->
 <section class="panel">
   <div class="param-head"><h3>Şirkətlər</h3></div>
   @if (canAdd)
@@ -112,9 +124,10 @@
     @if (Model.Companies.Count == 0) { <p class="hint" style="padding:14px 22px">Hələ şirkət əlavə edilməyib.</p> }
   </div>
 </section>
+</div>
 }
 
-<div class="param-grid">
+<div class="tab-pane" data-pane="departments">
   <!-- Şöbələr -->
   <section class="panel">
     <div class="param-head"><h3>Şöbələr</h3></div>
@@ -169,7 +182,9 @@
       }
     </div>
   </section>
+</div>
 
+<div class="tab-pane" data-pane="positions">
   <!-- Vəzifələr -->
   <section class="panel">
     <div class="param-head"><h3>Vəzifələr</h3></div>
@@ -230,6 +245,7 @@
   .mini-sel:focus{ outline:none; border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15); }
 </style>
 
+<div class="tab-pane" data-pane="hosts">
 <!-- Qəbul edən şəxslər -->
 <section class="panel">
   <div class="param-head"><h3>Qəbul edən şəxslər</h3></div>
@@ -278,8 +294,9 @@
     }
   </div>
 </section>
+</div>
 
-<div class="param-grid">
+<div class="tab-pane" data-pane="purposes">
   <!-- Gəliş məqsədləri -->
   <section class="panel">
     <div class="param-head"><h3>Gəliş məqsədləri</h3></div>
@@ -319,7 +336,9 @@
       }
     </div>
   </section>
+</div>
 
+<div class="tab-pane" data-pane="floors">
   <!-- Mərtəbələr -->
   <section class="panel">
     <div class="param-head"><h3>Mərtəbələr</h3></div>
@@ -367,6 +386,7 @@
   </section>
 </div>
 
+<div class="tab-pane" data-pane="devices">
 <!-- Cihazlar (Hikvision) -->
 <section class="panel">
   <div class="param-head"><h3>Cihazlar (Hikvision)</h3></div>
@@ -467,3 +487,31 @@
     }
   </div>
 </section>
+</div>
+
+<style>
+  .settings-tabs{ display:flex; gap:4px; flex-wrap:wrap; margin-bottom:18px; border-bottom:1px solid var(--line,#e5e8ee); }
+  .settings-tabs .stab{ border:none; background:none; padding:10px 16px; border-radius:9px 9px 0 0; cursor:pointer;
+    font-weight:600; font-size:14px; color:var(--muted,#6b7280); border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .15s, background .15s; }
+  .settings-tabs .stab:hover{ color:var(--ink,#3a4152); background:#f6f9ff; }
+  .settings-tabs .stab.on{ color:#3b82f6; border-bottom-color:#3b82f6; }
+  .tab-pane{ display:none; }
+  .tab-pane.on{ display:block; }
+  .tab-pane > .param-grid{ margin:0; }
+</style>
+<script>
+  (function () {
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('#settingsTabs .stab'));
+    var panes = Array.prototype.slice.call(document.querySelectorAll('.tab-pane'));
+    if (!tabs.length) return;
+    function show(key) {
+      tabs.forEach(function (t) { t.classList.toggle('on', t.getAttribute('data-pane') === key); });
+      panes.forEach(function (p) { p.classList.toggle('on', p.getAttribute('data-pane') === key); });
+      try { localStorage.setItem('settingsTab', key); } catch (e) {}
+    }
+    tabs.forEach(function (t) { t.addEventListener('click', function () { show(t.getAttribute('data-pane')); }); });
+    var saved = null; try { saved = localStorage.getItem('settingsTab'); } catch (e) {}
+    var valid = tabs.some(function (t) { return t.getAttribute('data-pane') === saved; });
+    show(valid ? saved : tabs[0].getAttribute('data-pane'));
+  })();
+</script>

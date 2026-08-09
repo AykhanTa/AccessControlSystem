@@ -62,7 +62,9 @@ wwwroot\uploads\employees\15c3e4da01bb4da58c7da7f8ea78b03d.jpeg
 wwwroot\uploads\employees\27afdde9bb0c411298aa89869761a80d.jpeg
 wwwroot\uploads\employees\49818faf32134495ada9e784a3ae895e.jpeg
 wwwroot\uploads\employees\5e389adec04e47a4af2c9e5dfbe91ade.jpg
+wwwroot\uploads\employees\7e0a4e05a35746399906391717555f13.jpeg
 wwwroot\uploads\employees\978ca641a267437386d51e1719f65622.jpeg
+wwwroot\uploads\employees\f3001cddf68249ff8e31fdb1cf74a42d.jpg
 wwwroot\uploads\guests\48454bb87d334fc6b195985754878aab.png
 wwwroot\uploads\guests\73c5f99bd92542c9956adbfbd81197e8.png
 wwwroot\uploads\guests\75b556ab641948d9bd781abae164d9b2.png

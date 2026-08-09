@@ -4,6 +4,22 @@
     var to = ViewBag.To as string ?? "";
 }
 
+<style>
+  /* Tək cədvəl — bütün şöbələr eyni sütunlarda düzülür, kəsilmə yoxdur */
+  .dept-table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  .dept-table th, .dept-table td{ padding:9px 14px; border-bottom:1px solid var(--line,#eef0f4); text-align:left; white-space:nowrap; vertical-align:middle; }
+  .dept-table th{ font-size:12px; text-transform:uppercase; letter-spacing:.03em; color:var(--faint,#9095a1); font-weight:700; }
+  .dept-table thead th{ background:#fafbfc; }
+  .dept-table td.num, .dept-table th.num{ text-align:center; }
+  .dept-sep td{ background:#f2f6fb; font-weight:700; padding:8px 14px; }
+  .dept-sep .muted{ font-weight:500; color:var(--muted); font-size:12.5px; margin-left:8px; }
+  @@media print {
+    @@page { size: landscape; margin: 8mm; }
+    .dept-table{ font-size:10px; }
+    .dept-table th, .dept-table td{ padding:3px 6px !important; }
+  }
+</style>
+
 <!-- Çap başlığı -->
 <div class="print-only" style="margin-bottom:12px">
   <h2 style="margin:0">Şöbə üzrə giriş-çıxış hesabatı</h2>
@@ -21,21 +37,23 @@
 {
   <div class="empty-state" style="padding:24px;text-align:center;color:var(--muted)">İşçi tapılmadı.</div>
 }
-
-@foreach (var g in Model.Groups)
+else
 {
-  <div class="dept-group">
-    <h3>@g.Department <span class="muted">@g.Company · @g.Employees.Count işçi</span></h3>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>İşçi İD</th><th>Ad Soyad</th><th>Vəzifə</th>
-            <th>İlk giriş</th><th>Son çıxış</th>
-            <th>Giriş</th><th>Çıxış</th><th>Cəmi</th><th class="no-print"></th>
+  <div class="table-wrap" style="overflow-x:auto">
+    <table class="dept-table">
+      <thead>
+        <tr>
+          <th>İşçi İD</th><th>Ad Soyad</th><th>Vəzifə</th>
+          <th>İlk giriş</th><th>Son çıxış</th>
+          <th class="num">Giriş</th><th class="num">Çıxış</th><th class="num">Cəmi</th><th class="no-print"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var g in Model.Groups)
+        {
+          <tr class="dept-sep">
+            <td colspan="9">@g.Department <span class="muted">@g.Company · @g.Employees.Count işçi</span></td>
           </tr>
-        </thead>
-        <tbody>
           @foreach (var e in g.Employees)
           {
             var detailUrl = $"/AccessEvents?empId={Uri.EscapeDataString(e.EmployeeNo)}&start={from}T00:00:00&end={to}T23:59:59";
@@ -45,9 +63,9 @@
               <td class="cell-sub">@(e.Position ?? "—")</td>
               <td class="cell-sub">@(e.FirstIn ?? "—")</td>
               <td class="cell-sub">@(e.LastOut ?? "—")</td>
-              <td><span class="chip @(e.EntryCount > 0 ? "in" : "")">@e.EntryCount</span></td>
-              <td><span class="chip @(e.ExitCount > 0 ? "out" : "")">@e.ExitCount</span></td>
-              <td class="cell-sub"><b>@e.TotalEvents</b></td>
+              <td class="num"><span class="chip @(e.EntryCount > 0 ? "in" : "")">@e.EntryCount</span></td>
+              <td class="num"><span class="chip @(e.ExitCount > 0 ? "out" : "")">@e.ExitCount</span></td>
+              <td class="num cell-sub"><b>@e.TotalEvents</b></td>
               <td class="no-print">
                 @if (e.TotalEvents > 0)
                 {
@@ -56,8 +74,8 @@
               </td>
             </tr>
           }
-        </tbody>
-      </table>
-    </div>
+        }
+      </tbody>
+    </table>
   </div>
 }

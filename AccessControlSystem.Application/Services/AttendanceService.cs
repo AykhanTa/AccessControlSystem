@@ -302,8 +302,10 @@ public class AttendanceService : IAttendanceService
         var all = await _employees.GetAllAsync(ct);
         var matcher = new EmployeeMatcher(all);
 
+        // Son gün üçün gün-sərhədi (məs. 05:00) növbəti gün səhərinə qədər uzana bilir —
+        // ona görə +2 gün çəkirik (motor pəncərəyə görə süzür).
         var raws = await FetchRawScansAsync(
-            new DateTimeOffset(fromD), new DateTimeOffset(toD.AddDays(1).AddSeconds(-1)), ct);
+            new DateTimeOffset(fromD), new DateTimeOffset(toD.AddDays(2).AddSeconds(-1)), ct);
 
         var byEmp = new Dictionary<long, List<(DateTime, bool)>>();
         foreach (var r in raws)
@@ -354,7 +356,11 @@ public class AttendanceService : IAttendanceService
     private static DayResult Compute(WorkSchedule? ws, DateTime day, List<(DateTime time, bool isExit)> scans,
         bool isHoliday, LeaveSpan? leave)
     {
-        var dayScans = scans.Where(x => x.time.Date == day.Date).ToList();
+        // İştirak günü pəncərəsi: [gün + DayStart, növbəti gün + DayStart).
+        // Beləliklə gecə oxutmaları (məs. 00:17) əvvəlki günə düşür, bu günə qarışmır.
+        var winStart = day.Date + (ws?.DayStartTime ?? TimeSpan.Zero);
+        var winEnd = winStart.AddDays(1);
+        var dayScans = scans.Where(x => x.time >= winStart && x.time < winEnd).ToList();
         var entries = dayScans.Where(x => !x.isExit).Select(x => x.time).ToList();
         var exits = dayScans.Where(x => x.isExit).Select(x => x.time).ToList();
         var allTimes = dayScans.Select(x => x.time).OrderBy(t => t).ToList();
@@ -465,15 +471,62 @@ public class AttendanceService : IAttendanceService
         return $"{company} · {dept}";
     }
 
-    // ---------------- Cihazdan xam çəkmə (ReportService ilə eyni məntiq) ----------------
+    // ---------------- Cihazdan xam çəkmə + gün-gün keş ----------------
 
     private readonly record struct RawScan(long deviceId, string number, string? name, DateTime time, bool isExit);
+
+    // Prosesboyu keş: (cihaz, təqvim-günü) → o günün oxutmaları. Keçmiş günlər dəyişmədiyi üçün
+    // uzun saxlanır (bir dəfə çəkilir), bu gün/gələcək qısa (yeni oxutma gələ bilər).
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (DateTime exp, List<RawScan> scans)> _scanCache = new();
+
+    private static string ScanKey(long deviceId, DateTime day) => $"{deviceId}:{day:yyyyMMdd}";
+    private static TimeSpan CacheTtl(DateTime day) =>
+        day.Date < DateTime.Today ? TimeSpan.FromHours(6) : TimeSpan.FromSeconds(90);
 
     private async Task<List<RawScan>> FetchRawScansAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
     {
         var devices = (await _devices.GetAllWithFloorAsync(ct)).Where(x => x.IsActive).ToList();
-        var perDevice = await Task.WhenAll(devices.Select(d => FetchOneDeviceRawAsync(d, from, to, ct)));
+        var fromDate = from.Date;
+        var toDate = to.Date;
+        // Vaxtaşırı vaxtı keçmiş keş girişlərini təmizlə (sonsuz böyüməsin).
+        if (_scanCache.Count > 4000)
+        {
+            var now0 = DateTime.Now;
+            foreach (var kv in _scanCache)
+                if (kv.Value.exp <= now0) _scanCache.TryRemove(kv.Key, out _);
+        }
+        var perDevice = await Task.WhenAll(devices.Select(d => FetchDeviceCachedAsync(d, fromDate, toDate, ct)));
         return perDevice.SelectMany(x => x).ToList();
+    }
+
+    /// <summary>Bir cihaz üçün [fromDate, toDate] oxutmalarını keşdən + çatmayan günləri cihazdan çəkir.</summary>
+    private async Task<List<RawScan>> FetchDeviceCachedAsync(Device d, DateTime fromDate, DateTime toDate, CancellationToken ct)
+    {
+        var result = new List<RawScan>();
+        var missing = new List<DateTime>();
+        var now = DateTime.Now;
+        for (var day = fromDate; day <= toDate; day = day.AddDays(1))
+        {
+            if (_scanCache.TryGetValue(ScanKey(d.Id, day), out var e) && e.exp > now)
+                result.AddRange(e.scans);
+            else
+                missing.Add(day);
+        }
+        if (missing.Count > 0)
+        {
+            var lo = missing.Min();
+            var hi = missing.Max();
+            var fetched = await FetchOneDeviceRawAsync(d,
+                new DateTimeOffset(lo), new DateTimeOffset(hi.AddDays(1).AddSeconds(-1)), ct);
+            var byDay = fetched.GroupBy(s => s.time.Date).ToDictionary(g => g.Key, g => g.ToList());
+            foreach (var day in missing)
+            {
+                var dayScans = byDay.TryGetValue(day.Date, out var l) ? l : new List<RawScan>();
+                _scanCache[ScanKey(d.Id, day)] = (DateTime.Now.Add(CacheTtl(day)), dayScans);
+                result.AddRange(dayScans);
+            }
+        }
+        return result;
     }
 
     private async Task<List<RawScan>> FetchOneDeviceRawAsync(Device d, DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
@@ -483,17 +536,20 @@ public class AttendanceService : IAttendanceService
         var isExit = (d.AccessPoint?.Direction ?? d.Direction) == DeviceDirection.Exit;
         var position = 0;
 
-        for (var page = 0; page < 200; page++)
+        // Cihaz səviyyəsində YALNIZ üz təsdiqi (major 5 / minor 75) çəkilir. Qapı açıldı/bağlandı
+        // və s. səs-küy gəlmir — uzun aralıqda (aylıq) hadisə sayı limitə çatıb köhnə günləri
+        // İTİRMİR (əvvəl bütün hadisələr çəkilirdi, cap 20000-ə çatanda köhnə günlər düşürdü).
+        for (var page = 0; page < 500; page++)
         {
             HikEventRawPage res;
-            try { res = await _hik.SearchEventPageAsync(target, from, to, position, 100, ct: ct); }
+            try { res = await _hik.SearchEventPageAsync(target, from, to, position, 100, major: 5, minor: 75, ct: ct); }
             catch { break; }
             if (!res.Ok || res.Items.Count == 0) break;
 
             foreach (var e in res.Items)
             {
                 if (string.IsNullOrWhiteSpace(e.EmployeeNo)) continue;
-                if (e.Minor is not (1 or 75)) continue;
+                if (e.Minor is not (1 or 75)) continue;   // yalnız uğurlu keçid (kart/üz), 76 uğursuz üz yox
                 if (e.Time is not { } t) continue;
                 result.Add(new RawScan(d.Id, e.EmployeeNo!.Trim(), e.Name, t.LocalDateTime, isExit));
             }

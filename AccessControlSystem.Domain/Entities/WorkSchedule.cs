@@ -3,8 +3,8 @@ using AccessControlSystem.Domain.Enums;
 
 namespace AccessControlSystem.Domain.Entities;
 
-/// <summary>İş cədvəli (Timetable) — bir günün davamiyyət qaydası: iş saatları, günlər,
-/// keçərli giriş/çıxış pəncərələri, tip. Gecikmə / erkən çıxış / qayıb / işlənmiş saat
+/// <summary>İş cədvəli (Timetable) — bir günün iştirak qaydası: iş saatları, günlər,
+/// gün başlanğıcı (oxutma sərhədi), tip. Gecikmə / erkən çıxış / gəlmədi / işlənmiş saat
 /// hesabatları buna əsaslanır. Bax: docs/ATTENDANCE_DESIGN.md</summary>
 public class WorkSchedule : BaseEntity
 {
@@ -31,15 +31,10 @@ public class WorkSchedule : BaseEntity
     /// <summary>İcazəli erkən çıxış (dəqiqə).</summary>
     public int EarlyLeaveGraceMinutes { get; set; } = 0;
 
-    // --- Keçərli oxutma pəncərələri (opsional; null = məhdudiyyət yoxdur) ---
-    /// <summary>Girişin qəbul olunduğu ən erkən vaxt (məs. 07:00).</summary>
-    public TimeSpan? CheckInStart { get; set; }
-    /// <summary>Girişin qəbul olunduğu ən gec vaxt (məs. 11:00).</summary>
-    public TimeSpan? CheckInEnd { get; set; }
-    /// <summary>Çıxışın qəbul olunduğu ən erkən vaxt (məs. 16:00).</summary>
-    public TimeSpan? CheckOutStart { get; set; }
-    /// <summary>Çıxışın qəbul olunduğu ən gec vaxt (məs. 20:00).</summary>
-    public TimeSpan? CheckOutEnd { get; set; }
+    /// <summary>İştirak günü başlanğıcı (oxutma sərhədi). İştirak günü bu vaxtdan növbəti gün
+    /// eyni vaxta qədərdir. Girişlər bu vaxtdan oxunur, çıxışlar növbəti sərhədə qədər.
+    /// Məs. 05:00 → gecə 00:17 oxutması ƏVVƏLKİ günə düşür, bugünkü hesaba qarışmır.</summary>
+    public TimeSpan DayStartTime { get; set; } = new(5, 0, 0);
 
     /// <summary>Giriş bu qədər dəqiqədən çox gecikərsə → qayıb sayılır (null = qayda default-u).</summary>
     public int? AbsentAfterMinutes { get; set; }

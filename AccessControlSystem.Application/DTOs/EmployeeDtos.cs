@@ -82,11 +82,12 @@ public class EmployeeCreateDto
     public string? CustomEnd { get; set; }
     public int CustomGrace { get; set; }
     public int CustomEarly { get; set; }
-    public bool SMon { get; set; } = true;
-    public bool STue { get; set; } = true;
-    public bool SWed { get; set; } = true;
-    public bool SThu { get; set; } = true;
-    public bool SFri { get; set; } = true;
+    // Default FALSE — işarəsiz checkbox göndərilmir; true default olsaydı seçilməyən günlər də true qalardı.
+    public bool SMon { get; set; }
+    public bool STue { get; set; }
+    public bool SWed { get; set; }
+    public bool SThu { get; set; }
+    public bool SFri { get; set; }
     public bool SSat { get; set; }
     public bool SSun { get; set; }
 

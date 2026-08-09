@@ -13,7 +13,7 @@
 @if (TempData["Error"] != null) { <div class="alert alert-error">@TempData["Error"]</div> }
 
 <div class="page-head">
-  <div><p>HR: işçilərin məzuniyyət/ezamiyyət qeydləri və bayram təqvimi. Bunlar davamiyyət hesabatında avtomatik nəzərə alınır.</p></div>
+  <div><p>HR: işçilərin məzuniyyət/ezamiyyət qeydləri və bayram təqvimi. Bunlar iştirak hesabatında avtomatik nəzərə alınır.</p></div>
   <form method="get" style="display:flex;gap:8px;align-items:center">
     <label style="font-size:13px;color:var(--muted)">İl:</label>
     <select name="year" class="lv-input" onchange="this.form.submit()">
@@ -23,61 +23,7 @@
   </form>
 </div>
 
-<!-- ================= İşçi qeydləri ================= -->
-<section class="panel">
-  <div class="param-head"><h3>İşçi qeydləri (@Model.Year)</h3></div>
-  @if (canAdd)
-  {
-    <form asp-action="AddRecord" method="post" class="lv-form">
-      <div class="lv-fld grow"><label>İşçi</label>
-        <select name="employeeId" required>
-          <option value="">Seçin</option>
-          @foreach (var e in Model.Employees) { <option value="@e.Id">@e.Name (@e.EmployeeNo)</option> }
-        </select>
-      </div>
-      <div class="lv-fld"><label>Növ</label>
-        <select name="leaveTypeId" required>
-          <option value="">Seçin</option>
-          @foreach (var t in Model.TypeLookup) { <option value="@t.Id">@t.Name</option> }
-        </select>
-      </div>
-      <div class="lv-fld sm"><label>Başlanğıc</label><input name="startDate" type="date" value="@today" required /></div>
-      <div class="lv-fld sm"><label>Son</label><input name="endDate" type="date" value="@today" required /></div>
-      <div class="lv-fld grow"><label>Qeyd (istəyə görə)</label><input name="reason" type="text" placeholder="Qeyd" /></div>
-      <div class="lv-fld end"><button class="btn btn-primary" type="submit">Əlavə et</button></div>
-    </form>
-  }
-  <div class="table-wrap" style="overflow-x:auto">
-    <table class="lv-table">
-      <thead><tr><th>İşçi</th><th>Şöbə</th><th>Növ</th><th>Aralıq</th><th>Gün</th><th>Qeyd</th><th></th></tr></thead>
-      <tbody>
-        @foreach (var r in Model.Records)
-        {
-          <tr>
-            <td><b>@r.EmployeeName</b> <span style="color:var(--faint)">@r.EmployeeNo</span></td>
-            <td>@(r.Department ?? "—")</td>
-            <td><span class="lv-badge" style="background:@r.Color">@r.TypeName@(r.CountsAsWorked ? " · işdə" : "")</span></td>
-            <td>@r.StartDate – @r.EndDate</td>
-            <td>@r.Days</td>
-            <td>@(string.IsNullOrEmpty(r.Reason) ? "—" : r.Reason)</td>
-            <td style="text-align:right">
-              @if (canDelete)
-              {
-                <form asp-action="DeleteRecord" method="post" style="display:inline" onsubmit="return confirm('Qeyd silinsin?');">
-                  <input type="hidden" name="id" value="@r.Id" />
-                  <button class="btn-sm danger" type="submit">Sil</button>
-                </form>
-              }
-            </td>
-          </tr>
-        }
-        @if (Model.Records.Count == 0) { <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Bu il üçün qeyd yoxdur.</td></tr> }
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<div class="param-grid" style="margin-top:16px">
+<div class="param-grid">
   <!-- ================= Növlər ================= -->
   <section class="panel">
     <div class="param-head"><h3>Məzuniyyət / Ezamiyyət növləri</h3></div>
@@ -149,8 +95,8 @@
       {
         <div class="param-item">
           <div class="param-item-info">
-            <b>@h.RangeLabel @if (h.Days > 1) { <span style="color:var(--faint);font-weight:500">(@h.Days gün)</span> }</b>
-            <span>@h.Name · @h.CompanyName</span>
+            <b>@h.RangeLabel @if (h.Days > 1) { <span style="color:var(--faint);font-weight:500">(@h.Days gün)</span> } – @h.Name</b>
+            <span>@h.CompanyName</span>
           </div>
           <div class="host-actions">
             @if (canDelete)
@@ -165,6 +111,61 @@
     </div>
   </section>
 </div>
+
+<!-- ================= İşçi qeydləri (aşağıda — siyahı böyüyür) ================= -->
+<section class="panel" style="margin-top:16px">
+  <div class="param-head"><h3>İşçi qeydləri (@Model.Year)</h3></div>
+  @if (canAdd)
+  {
+    <form asp-action="AddRecord" method="post" class="lv-form">
+      <div class="lv-fld grow"><label>İşçi</label>
+        <select name="employeeId" required>
+          <option value="">Seçin</option>
+          @foreach (var e in Model.Employees) { <option value="@e.Id">@e.Name (@e.EmployeeNo)</option> }
+        </select>
+      </div>
+      <div class="lv-fld"><label>Növ</label>
+        <select name="leaveTypeId" required>
+          <option value="">Seçin</option>
+          @foreach (var t in Model.TypeLookup) { <option value="@t.Id">@t.Name</option> }
+        </select>
+      </div>
+      <div class="lv-fld sm"><label>Başlanğıc</label><input name="startDate" type="date" value="@today" required /></div>
+      <div class="lv-fld sm"><label>Son</label><input name="endDate" type="date" value="@today" required /></div>
+      <div class="lv-fld grow"><label>Qeyd (istəyə görə)</label><input name="reason" type="text" placeholder="Qeyd" /></div>
+      <div class="lv-fld end"><button class="btn btn-primary" type="submit">Əlavə et</button></div>
+    </form>
+  }
+  <div class="table-wrap" style="overflow-x:auto">
+    <table class="lv-table">
+      <thead><tr><th>İşçi</th><th>Şöbə</th><th>Növ</th><th>Aralıq</th><th>Gün</th><th>Qeyd</th><th></th></tr></thead>
+      <tbody id="lvRows">
+        @foreach (var r in Model.Records)
+        {
+          <tr data-rec>
+            <td><b>@r.EmployeeName</b> <span style="color:var(--faint)">@r.EmployeeNo</span></td>
+            <td>@(r.Department ?? "—")</td>
+            <td><span class="lv-badge" style="background:@r.Color">@r.TypeName@(r.CountsAsWorked ? " · işdə" : "")</span></td>
+            <td>@r.StartDate – @r.EndDate</td>
+            <td>@r.Days</td>
+            <td>@(string.IsNullOrEmpty(r.Reason) ? "—" : r.Reason)</td>
+            <td style="text-align:right">
+              @if (canDelete)
+              {
+                <form asp-action="DeleteRecord" method="post" style="display:inline" onsubmit="return confirm('Qeyd silinsin?');">
+                  <input type="hidden" name="id" value="@r.Id" />
+                  <button class="btn-sm danger" type="submit">Sil</button>
+                </form>
+              }
+            </td>
+          </tr>
+        }
+        @if (Model.Records.Count == 0) { <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Bu il üçün qeyd yoxdur.</td></tr> }
+      </tbody>
+    </table>
+  </div>
+  <div id="lvPager" class="lv-pager"></div>
+</section>
 
 <style>
   .lv-form{display:flex;gap:12px;align-items:end;flex-wrap:wrap;padding:6px 22px 16px}
@@ -183,4 +184,30 @@
   .lv-table th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--faint,#9095a1);font-weight:700}
   .lv-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px;font-weight:600;color:#fff}
   .lv-dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+  .lv-pager{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap;padding:12px 22px}
+  .lv-pager .muted{color:var(--muted);font-size:13px;margin-right:auto}
+  .lv-pager .btn{height:34px;min-width:38px;padding:0 12px;font-size:15px}
 </style>
+<script>
+  (function () {
+    var rows = Array.prototype.slice.call(document.querySelectorAll('#lvRows tr[data-rec]'));
+    var host = document.getElementById('lvPager');
+    var size = 15, page = 1;
+    function draw() {
+      var total = rows.length;
+      var pages = Math.max(1, Math.ceil(total / size));
+      if (page > pages) page = pages;
+      var start = (page - 1) * size, end = start + size;
+      for (var i = 0; i < total; i++) rows[i].style.display = (i >= start && i < end) ? '' : 'none';
+      if (total <= size) { host.innerHTML = ''; return; }
+      host.innerHTML =
+        '<span class="muted">Cəmi ' + total + ' qeyd · Səhifə ' + page + '/' + pages + '</span>'
+        + '<button class="btn btn-ghost" type="button" ' + (page <= 1 ? 'disabled' : '') + ' id="lvPrev">‹ Əvvəlki</button>'
+        + '<button class="btn btn-ghost" type="button" ' + (page >= pages ? 'disabled' : '') + ' id="lvNext">Sonrakı ›</button>';
+      var p = document.getElementById('lvPrev'), n = document.getElementById('lvNext');
+      if (p) p.onclick = function () { page--; draw(); };
+      if (n) n.onclick = function () { page++; draw(); };
+    }
+    draw();
+  })();
+</script>

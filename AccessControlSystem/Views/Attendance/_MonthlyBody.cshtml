@@ -63,9 +63,9 @@ else
     <table class="mc-table">
       <thead>
         <tr>
-          <th class="emp">İşçi</th>
+          <th class="emp" data-col="emp">İşçi</th>
           @foreach (var d in Model.Days) { <th class="@(isWeekend(d) ? "we" : "")">@d</th> }
-          <th class="tot">İş</th><th class="tot">Gəlmədi</th><th class="tot">Gecikmə</th><th class="tot">Saat</th>
+          <th class="tot" data-col="present">İş</th><th class="tot" data-col="absent">Gəlmədi</th><th class="tot" data-col="late">Gecikmə</th><th class="tot" data-col="worked">Saat</th>
         </tr>
       </thead>
       <tbody>

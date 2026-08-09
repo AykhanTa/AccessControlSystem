@@ -80,7 +80,6 @@
   <div class="rstat"><div class="rstat-lbl">QR istifadəsi</div><div class="rstat-num">@r.QrUse</div></div>
   <div class="rstat"><div class="rstat-lbl">Hazırda binada</div><div class="rstat-num">@r.Inside</div></div>
   <div class="rstat"><div class="rstat-lbl">Gecikmiş çıxış</div><div class="rstat-num">@r.Late</div></div>
-  <div class="rstat"><div class="rstat-lbl">Nəzarət göstəricisi</div><div class="rstat-num">@r.ExitRatePercent%</div></div>
   <div class="rstat"><div class="rstat-lbl">Orta qalma müddəti</div><div class="rstat-num">@r.AvgStayMinutes <small>dəq</small></div></div>
 </div>
 
@@ -101,21 +100,6 @@
   <div class="rpanel">
     <h3>Ərazilər üzrə</h3>
     @ListRows(r.Areas)
-  </div>
-  <div class="rpanel">
-    <h3>Kartların istifadə tezliyi</h3>
-    @ListRows(r.Cards)
-  </div>
-  <div class="rpanel">
-    <h3>Nəzarət göstəricisi</h3>
-    <div class="gauge">
-      <div class="gauge-cap">
-        <span class="person-ico">@Html.Raw(PersonIcon())</span>
-        <div><b>Çıxışı qeydə alınmış ziyarətlərin payı</b></div>
-      </div>
-      <div class="gauge-num">@r.ExitRatePercent%</div>
-      <div class="gauge-bar"><span style="width:@(r.ExitRatePercent)%"></span></div>
-    </div>
   </div>
 </div>
 

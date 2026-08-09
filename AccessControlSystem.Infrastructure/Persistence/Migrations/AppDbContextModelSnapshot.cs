@@ -1312,18 +1312,6 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
                     b.Property<int?>("AbsentAfterMinutes")
                         .HasColumnType("int");
 
-                    b.Property<TimeSpan?>("CheckInEnd")
-                        .HasColumnType("time");
-
-                    b.Property<TimeSpan?>("CheckInStart")
-                        .HasColumnType("time");
-
-                    b.Property<TimeSpan?>("CheckOutEnd")
-                        .HasColumnType("time");
-
-                    b.Property<TimeSpan?>("CheckOutStart")
-                        .HasColumnType("time");
-
                     b.Property<string>("Color")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
@@ -1333,6 +1321,9 @@ namespace AccessControlSystem.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan>("DayStartTime")
+                        .HasColumnType("time");
 
                     b.Property<int>("EarlyLeaveGraceMinutes")
                         .HasColumnType("int");

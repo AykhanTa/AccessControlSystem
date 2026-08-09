@@ -20,7 +20,7 @@ public static class SectionMap
         ["History"] = "history",
         ["ActivePermits"] = "active_permits",
         ["Reports"] = "reports",
-        ["Attendance"] = "reports",    // Davamiyyət — Hesabatlar icazəsi ilə
+        ["Attendance"] = "reports",    // İştirak — Hesabatlar icazəsi ilə
         ["Logs"] = "logs",
         ["Users"] = "users",
         ["Roles"] = "roles",
