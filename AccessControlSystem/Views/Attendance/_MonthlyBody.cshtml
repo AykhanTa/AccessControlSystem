@@ -6,10 +6,16 @@
   .mc-head h3{margin:0;font-size:17px}
   .mc-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-bottom:12px}
   .mc-legend span b{display:inline-block;width:16px;height:16px;border-radius:4px;text-align:center;line-height:16px;font-size:11px;margin-right:4px;vertical-align:middle;color:#fff}
+  /* Sticky sütun üçün border-collapse:separate lazımdır — çərçivə sol/üst kənarlarda
+     ayrıca bağlanır ki, cədvəl tam xanalı şəbəkə kimi görünsün. */
   .mc-table{border-collapse:separate;border-spacing:0;font-size:12.5px;min-width:100%}
-  .mc-table th,.mc-table td{border-bottom:1px solid var(--line,#eef0f4);border-right:1px solid var(--line,#f2f4f7);padding:5px 4px;text-align:center;white-space:nowrap}
-  .mc-table th.emp,.mc-table td.emp{text-align:left;position:sticky;left:0;background:#fff;z-index:1;min-width:180px;border-right:1px solid var(--line,#e5e8ee)}
-  .mc-table thead th{font-size:11px;color:var(--faint,#9095a1);background:#fafbfc;position:sticky;top:0;z-index:2}
+  .mc-table th,.mc-table td{border-bottom:1px solid #e7ebf1;border-right:1px solid #e7ebf1;padding:5px 4px;text-align:center;white-space:nowrap}
+  .mc-table th:first-child,.mc-table td:first-child{border-left:1px solid #d7dce5}
+  .mc-table thead th{border-top:1px solid #d7dce5}
+  .mc-table th:last-child,.mc-table td:last-child{border-right:1px solid #d7dce5}
+  .mc-table tbody tr:last-child td{border-bottom:1px solid #d7dce5}
+  .mc-table th.emp,.mc-table td.emp{text-align:left;position:sticky;left:0;background:#fff;z-index:1;min-width:180px;border-right:1px solid #dfe4ec}
+  .mc-table thead th{font-size:11px;color:var(--faint,#9095a1);background:#f7f9fc;position:sticky;top:0;z-index:2}
   .mc-table thead th.emp{z-index:3}
   .mc-table th.we,.mc-table td.we{background:#f7f9fc}          /* həftəsonu sütunları */
   .mc-table tbody tr:hover td{background:#f6f9ff}

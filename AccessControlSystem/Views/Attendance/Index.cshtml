@@ -43,6 +43,19 @@
     .page-head{ margin-bottom:6px; }
     .panel{ box-shadow:none !important; border:none !important; padding:0 !important; margin:0 !important; }
     .table-wrap{ overflow:visible !important; }
+
+    /* --- Çapda cədvəl quruluşu: tam xanalı şəbəkə --- */
+    /* Fon rəngləri (status nişanları, aylıq kartın rəngli xanaları) kağıza da düşsün —
+       əks halda aylıq kart boş kvadratlar kimi çap olunur. */
+    #reportBody, #reportBody *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+    /* Xətlər kağızda seçilsin deyə ekrandakından tünd boz. */
+    #reportBody table{ border:1px solid #6b7280 !important; }
+    #reportBody table th, #reportBody table td{ border:1px solid #9aa4b3 !important; }
+    #reportBody table thead th{ background:#eef1f6 !important; border-color:#6b7280 !important; }
+    /* Çoxsəhifəli PDF-də başlıq sətri hər səhifədə təkrarlansın, sətir yarıda kəsilməsin. */
+    #reportBody thead{ display:table-header-group; }
+    #reportBody tr{ break-inside:avoid; page-break-inside:avoid; }
+
     /* Cədvəl səhifə eninə sığsın, amma mətn İTMƏSİN — söz keçsin (wrap), kəsilməsin */
     .att-table{ width:100% !important; table-layout:auto; font-size:9px; }
     .att-table th, .att-table td{ padding:3px 5px !important; white-space:normal !important; word-break:normal; overflow:visible !important; vertical-align:top; }
@@ -60,6 +73,8 @@
     .mc-table th.emp, .mc-table td.emp{ position:static !important; width:78px; white-space:normal !important; word-break:break-word; text-align:left; line-height:1.05; }
     .mc-table th.emp span, .mc-table td.emp span{ font-size:6px !important; }
     .mc-table th.tot, .mc-table td.tot{ padding:0 1px !important; }
+    /* Yekun sütunlarının başlıqları ("Gəlmədi", "Gecikmə") kəsilməsin — sətrə keçsin */
+    .mc-table th.tot{ white-space:normal !important; word-break:break-word; line-height:1.05; }
     .mc-cell{ width:9px; height:9px; line-height:9px; font-size:6px; border-radius:2px; }
     .mc-legend{ font-size:7.5px; gap:7px; }
     .mc-head h3{ font-size:11px; }

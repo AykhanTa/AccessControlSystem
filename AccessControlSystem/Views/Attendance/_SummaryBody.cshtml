@@ -3,9 +3,11 @@
 
 <style>
   .att-sum{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:14px;font-size:14px}
-  .sm-table{width:100%;border-collapse:collapse;font-size:13.5px}
-  .sm-table th,.sm-table td{padding:9px 12px;border-bottom:1px solid var(--line,#eef0f4);text-align:left;white-space:nowrap}
-  .sm-table th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--faint,#9095a1);font-weight:700}
+  /* Tam xanalı şəbəkə: hər sətir və sütun xətlə ayrılır, cədvəl çərçivəyə alınır. */
+  .sm-table{width:100%;border-collapse:collapse;font-size:13.5px;border:1px solid #d7dce5}
+  .sm-table th,.sm-table td{padding:9px 12px;border:1px solid #e7ebf1;text-align:left;white-space:nowrap}
+  .sm-table th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--faint,#9095a1);font-weight:700;
+    background:#f7f9fc;border-color:#dfe4ec}
   .sm-table td.num,.sm-table th.num{text-align:right;font-variant-numeric:tabular-nums}
   .sm-table tbody tr:hover{background:#f6f9ff}
   .sm-pos{color:#1a7f4b;font-weight:600}
