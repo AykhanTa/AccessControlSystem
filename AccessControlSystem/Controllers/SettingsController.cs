@@ -9,9 +9,26 @@ namespace AccessControlSystem.Controllers;
 public class SettingsController : Controller
 {
     private readonly ISettingsService _settings;
-    public SettingsController(ISettingsService settings) => _settings = settings;
+    private readonly ILeaveService _leave;
+    private readonly IEmployeeService _employees;
+    private readonly ICardService _cards;
+    private readonly IRoleService _roles;
 
-    public async Task<IActionResult> Index()
+    public SettingsController(ISettingsService settings, ILeaveService leave, IEmployeeService employees,
+                              ICardService cards, IRoleService roles)
+    {
+        _settings = settings;
+        _leave = leave;
+        _employees = employees;
+        _cards = cards;
+        _roles = roles;
+    }
+
+    /// <summary>Parametrlər — bütün bölmələr tab-larda
+    /// (İş cədvəlləri, Məzuniyyət &amp; Bayram, Kartlar və Rollar daxil).</summary>
+    /// <param name="tab">Açılacaq tab (POST-dan sonra qayıdış üçün).</param>
+    /// <param name="year">Məzuniyyət &amp; Bayram tabının ili.</param>
+    public async Task<IActionResult> Index(string? tab, int? year)
     {
         var model = new SettingsViewModel
         {
@@ -26,27 +43,67 @@ public class SettingsController : Controller
             Devices = await _settings.GetDevicesAsync(),
             WorkSchedules = await _settings.GetWorkSchedulesAsync()
         };
+
+        // Hər tabın öz bölmə icazəsi var — baxış icazəsi olmayan tab ümumiyyətlə render olunmur.
+        var access = BuildAccessMap();
+        ViewData["Access"] = access;
+
+        if (access["cards"].CanView) model.Cards = await _cards.GetAllAsync();
+        if (access["roles"].CanView) model.Roles = await _roles.GetAllAsync();
+
+        if (access["employees"].CanView)
+        {
+            var y = year ?? DateTime.Today.Year;
+            model.Leave = new LeaveViewModel
+            {
+                Year = y,
+                Types = await _leave.GetTypesAsync(),
+                TypeLookup = await _leave.GetTypeLookupAsync(),
+                Holidays = await _leave.GetHolidaysAsync(y),
+                Records = await _leave.GetRecordsAsync(new DateTime(y, 1, 1), new DateTime(y, 12, 31), null, null),
+                Employees = await _employees.GetAllAsync(),
+                Companies = model.Companies
+            };
+        }
+
+        ViewData["Tab"] = tab;
         return View(model);
     }
 
+    /// <summary>Səhifədəki bütün tabların icazələri — kod → icazə. Qlobal admin üçün hamısı açıqdır.</summary>
+    private Dictionary<string, SectionAccessDto> BuildAccessMap()
+    {
+        var isGlobalAdmin = ViewData["IsGlobalAdmin"] as bool? == true;
+        var map = HttpContext.Items[SectionMap.PermMapKey] as Dictionary<string, SectionAccessDto>;
+
+        var result = new Dictionary<string, SectionAccessDto>(StringComparer.OrdinalIgnoreCase);
+        foreach (var code in Sections.SettingsTabs)
+        {
+            result[code] = isGlobalAdmin
+                ? SectionAccessDto.All()
+                : (map is not null && map.TryGetValue(code, out var a) ? a : new SectionAccessDto());
+        }
+        return result;
+    }
+
     // ---- Qəbul edən şəxslər ----
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Add)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Hosts, PermType.Add)]
     public Task<IActionResult> AddHost(string firstName, string lastName, string? email, string? phone, string? department) =>
         Guard(() => _settings.AddHostAsync(new HostInputDto
         { FirstName = firstName, LastName = lastName, Email = email, Phone = phone, Department = department }),
         "Qəbul edən əlavə edildi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Hosts, PermType.Edit)]
     public Task<IActionResult> UpdateHost(long id, string firstName, string lastName, string? email, string? phone, string? department) =>
         Guard(() => _settings.UpdateHostAsync(id, new HostInputDto
         { FirstName = firstName, LastName = lastName, Email = email, Phone = phone, Department = department }),
         "Qəbul edən yeniləndi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Hosts, PermType.Edit)]
     public Task<IActionResult> ToggleHost(long id) =>
         Guard(() => _settings.ToggleHostAsync(id), "Status dəyişdirildi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Delete)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Hosts, PermType.Delete)]
     public Task<IActionResult> DeleteHost(long id) =>
         Guard(() => _settings.DeleteHostAsync(id), "Qəbul edən silindi.");
 
@@ -60,15 +117,15 @@ public class SettingsController : Controller
         Guard(() => _settings.DeleteAreaAsync(id), "Ərazi silindi.");
 
     // ---- Məqsədlər ----
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Add)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Purposes, PermType.Add)]
     public Task<IActionResult> AddPurpose(string name) =>
         Guard(() => _settings.AddPurposeAsync(name), "Məqsəd əlavə edildi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Purposes, PermType.Edit)]
     public Task<IActionResult> TogglePurpose(long id) =>
         Guard(() => _settings.TogglePurposeAsync(id), "Məqsədin statusu dəyişdirildi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Delete)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Purposes, PermType.Delete)]
     public Task<IActionResult> DeletePurpose(long id) =>
         Guard(() => _settings.DeletePurposeAsync(id), "Məqsəd silindi.");
 
@@ -88,87 +145,87 @@ public class SettingsController : Controller
         Guard(() => _settings.DeleteCompanyAsync(id), "Şirkət silindi.");
 
     // ---- Şöbələr ----
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Add)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Departments, PermType.Add)]
     public Task<IActionResult> AddDepartment(string name, long companyId, long? parentId) =>
         Guard(() => _settings.AddDepartmentAsync(name, companyId, parentId), "Şöbə əlavə edildi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Departments, PermType.Edit)]
     public Task<IActionResult> ToggleDepartment(long id) =>
         Guard(() => _settings.ToggleDepartmentAsync(id), "Şöbənin statusu dəyişdirildi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Delete)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Departments, PermType.Delete)]
     public Task<IActionResult> DeleteDepartment(long id) =>
         Guard(() => _settings.DeleteDepartmentAsync(id), "Şöbə silindi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Departments, PermType.Edit)]
     public Task<IActionResult> SetDepartmentSchedule(long id, long? scheduleId) =>
         Guard(() => _settings.SetDepartmentScheduleAsync(id, scheduleId), "Şöbənin iş cədvəli yeniləndi.");
 
     // İş cədvəllərinin idarəsi ayrıca səhifədədir → TimetablesController.
 
     // ---- Vəzifələr ----
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Add)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Positions, PermType.Add)]
     public Task<IActionResult> AddPosition(string name, long companyId) =>
         Guard(() => _settings.AddPositionAsync(name, companyId), "Vəzifə əlavə edildi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Positions, PermType.Edit)]
     public Task<IActionResult> TogglePosition(long id) =>
         Guard(() => _settings.TogglePositionAsync(id), "Vəzifənin statusu dəyişdirildi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Delete)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Positions, PermType.Delete)]
     public Task<IActionResult> DeletePosition(long id) =>
         Guard(() => _settings.DeletePositionAsync(id), "Vəzifə silindi.");
 
     // ---- Mərkəzlər ----
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Add)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Centers, PermType.Add)]
     public Task<IActionResult> AddCenter(string code, string name, string? address, string? city) =>
         Guard(() => _settings.AddCenterAsync(new CenterInputDto { Code = code, Name = name, Address = address, City = city }),
         "Mərkəz əlavə edildi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Centers, PermType.Edit)]
     public Task<IActionResult> UpdateCenter(long id, string code, string name, string? address, string? city) =>
         Guard(() => _settings.UpdateCenterAsync(id, new CenterInputDto { Code = code, Name = name, Address = address, City = city }),
         "Mərkəz yeniləndi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Centers, PermType.Edit)]
     public Task<IActionResult> ToggleCenter(long id) =>
         Guard(() => _settings.ToggleCenterAsync(id), "Mərkəzin statusu dəyişdirildi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Delete)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Centers, PermType.Delete)]
     public Task<IActionResult> DeleteCenter(long id) =>
         Guard(() => _settings.DeleteCenterAsync(id), "Mərkəz silindi.");
 
     // ---- Mərtəbələr ----
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Add)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Floors, PermType.Add)]
     public Task<IActionResult> AddFloor(string name, long? centerId) =>
         Guard(() => _settings.AddFloorAsync(name, centerId), "Mərtəbə əlavə edildi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Floors, PermType.Edit)]
     public Task<IActionResult> ToggleFloor(long id) =>
         Guard(() => _settings.ToggleFloorAsync(id), "Mərtəbənin statusu dəyişdirildi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Delete)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Floors, PermType.Delete)]
     public Task<IActionResult> DeleteFloor(long id) =>
         Guard(() => _settings.DeleteFloorAsync(id), "Mərtəbə silindi.");
 
     // ---- Cihazlar ----
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Add)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Devices, PermType.Add)]
     public Task<IActionResult> AddDevice(string name, string ip, int port, bool useHttps, int doorNo, long floorId, string direction, string pointType) =>
         Guard(() => _settings.AddDeviceAsync(new DeviceInputDto
         { Name = name, Ip = ip, Port = port, UseHttps = useHttps, DoorNo = doorNo, FloorId = floorId, Direction = direction, PointType = pointType }),
         "Cihaz əlavə edildi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Devices, PermType.Edit)]
     public Task<IActionResult> UpdateDevice(long id, string name, string ip, int port, bool useHttps, int doorNo, long floorId, string direction, string pointType) =>
         Guard(() => _settings.UpdateDeviceAsync(id, new DeviceInputDto
         { Name = name, Ip = ip, Port = port, UseHttps = useHttps, DoorNo = doorNo, FloorId = floorId, Direction = direction, PointType = pointType }),
         "Cihaz yeniləndi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Edit)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Devices, PermType.Edit)]
     public Task<IActionResult> ToggleDevice(long id) =>
         Guard(() => _settings.ToggleDeviceAsync(id), "Cihazın statusu dəyişdirildi.");
 
-    [HttpPost, ValidateAntiForgeryToken, RequirePermission("settings", PermType.Delete)]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission(Sections.Devices, PermType.Delete)]
     public Task<IActionResult> DeleteDevice(long id) =>
         Guard(() => _settings.DeleteDeviceAsync(id), "Cihaz silindi.");
 

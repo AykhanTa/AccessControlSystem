@@ -90,12 +90,12 @@
         },
         "compile": {
           "lib/netcoreapp3.1/_._": {
-            "related": ".pdb;.xml"
+            "related": ".xml;.pdb"
           }
         },
         "runtime": {
           "lib/netcoreapp3.1/Microsoft.CodeAnalysis.dll": {
-            "related": ".pdb;.xml"
+            "related": ".xml;.pdb"
           }
         },
         "resource": {
@@ -147,12 +147,12 @@
         },
         "compile": {
           "lib/netcoreapp3.1/_._": {
-            "related": ".pdb;.xml"
+            "related": ".xml;.pdb"
           }
         },
         "runtime": {
           "lib/netcoreapp3.1/Microsoft.CodeAnalysis.CSharp.dll": {
-            "related": ".pdb;.xml"
+            "related": ".xml;.pdb"
           }
         },
         "resource": {
@@ -207,12 +207,12 @@
         },
         "compile": {
           "lib/netcoreapp3.1/_._": {
-            "related": ".pdb;.xml"
+            "related": ".xml;.pdb"
           }
         },
         "runtime": {
           "lib/netcoreapp3.1/Microsoft.CodeAnalysis.CSharp.Workspaces.dll": {
-            "related": ".pdb;.xml"
+            "related": ".xml;.pdb"
           }
         },
         "resource": {
@@ -269,12 +269,12 @@
         },
         "compile": {
           "lib/netcoreapp3.1/_._": {
-            "related": ".pdb;.xml"
+            "related": ".xml;.pdb"
           }
         },
         "runtime": {
           "lib/netcoreapp3.1/Microsoft.CodeAnalysis.Workspaces.dll": {
-            "related": ".pdb;.xml"
+            "related": ".xml;.pdb"
           }
         },
         "resource": {
@@ -347,12 +347,12 @@
         },
         "compile": {
           "ref/net6.0/Microsoft.Data.SqlClient.dll": {
-            "related": ".pdb;.xml"
+            "related": ".xml;.pdb"
           }
         },
         "runtime": {
           "lib/net6.0/Microsoft.Data.SqlClient.dll": {
-            "related": ".pdb;.xml"
+            "related": ".xml;.pdb"
           }
         },
         "runtimeTargets": {
@@ -833,12 +833,12 @@
         "type": "package",
         "compile": {
           "lib/netstandard2.0/Microsoft.SqlServer.Server.dll": {
-            "related": ".pdb;.xml"
+            "related": ".xml;.pdb"
           }
         },
         "runtime": {
           "lib/netstandard2.0/Microsoft.SqlServer.Server.dll": {
-            "related": ".pdb;.xml"
+            "related": ".xml;.pdb"
           }
         }
       },
@@ -4003,23 +4003,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Aykhan Taghizada\\.nuget\\packages\\": {},
+    "C:\\Users\\MSNADMIN\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Infrastructure\\AccessControlSystem.Infrastructure.csproj",
+      "projectUniqueName": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem.Infrastructure\\AccessControlSystem.Infrastructure.csproj",
       "projectName": "AccessControlSystem.Infrastructure",
-      "projectPath": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Infrastructure\\AccessControlSystem.Infrastructure.csproj",
-      "packagesPath": "C:\\Users\\Aykhan Taghizada\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Infrastructure\\obj\\",
+      "projectPath": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem.Infrastructure\\AccessControlSystem.Infrastructure.csproj",
+      "packagesPath": "C:\\Users\\MSNADMIN\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\Aykhan Taghizada\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\MSNADMIN\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -4034,8 +4034,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Application\\AccessControlSystem.Application.csproj": {
-              "projectPath": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Application\\AccessControlSystem.Application.csproj"
+            "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem.Application\\AccessControlSystem.Application.csproj": {
+              "projectPath": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem.Application\\AccessControlSystem.Application.csproj"
             }
           }
         }

@@ -151,6 +151,15 @@ public class SettingsViewModel
     public List<FloorItemDto> Floors { get; set; } = new();
     public List<DeviceItemDto> Devices { get; set; } = new();
     public List<WorkScheduleItemDto> WorkSchedules { get; set; } = new();
+
+    /// <summary>Məzuniyyət &amp; Bayram tabı — yalnız "employees" baxış icazəsi varsa doldurulur.</summary>
+    public LeaveViewModel Leave { get; set; } = new();
+
+    /// <summary>Kartlar tabı — yalnız "cards" baxış icazəsi varsa doldurulur.</summary>
+    public List<CardDto> Cards { get; set; } = new();
+
+    /// <summary>Rollar tabı — yalnız "roles" baxış icazəsi varsa doldurulur.</summary>
+    public List<RoleDto> Roles { get; set; } = new();
 }
 
 /// <summary>Sistem Loqları səhifəsi view modeli.</summary>

@@ -1,21 +1,21 @@
 using AccessControlSystem.Application.DTOs;
 using AccessControlSystem.Application.Interfaces.Services;
 using AccessControlSystem.Filters;
-using AccessControlSystem.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AccessControlSystem.Controllers;
 
+/// <summary>Rollar və icazə matrisi. Səhifə Parametrlərin "Rollar" tabındadır —
+/// bu kontroller yalnız POST-ları emal edir, Index isə həmin taba yönləndirir.</summary>
 public class RolesController : Controller
 {
+    private const string Tab = "roles";
+
     private readonly IRoleService _roles;
     public RolesController(IRoleService roles) => _roles = roles;
 
-    public async Task<IActionResult> Index()
-    {
-        var model = new RolesViewModel { Roles = await _roles.GetAllAsync() };
-        return View(model);
-    }
+    /// <summary>Köhnə /Roles ünvanı — Parametrlərin rollar tabına yönləndirilir.</summary>
+    public IActionResult Index() => Back();
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -24,7 +24,7 @@ public class RolesController : Controller
     {
         await Guard(() => _roles.CreateAsync(new RoleCreateDto { Name = name, Description = description }),
                     "Rol yaradıldı.");
-        return RedirectToAction(nameof(Index));
+        return Back();
     }
 
     /// <summary>Bir rolun icazə matrisini bütövlükdə yadda saxlayır.</summary>
@@ -48,7 +48,7 @@ public class RolesController : Controller
         }).ToList();
 
         await Guard(() => _roles.UpdatePermissionsAsync(roleId, perms), "İcazələr yadda saxlanıldı.");
-        return RedirectToAction(nameof(Index));
+        return Back();
     }
 
     [HttpPost]
@@ -57,8 +57,10 @@ public class RolesController : Controller
     public async Task<IActionResult> Delete(long id)
     {
         await Guard(() => _roles.DeleteAsync(id), "Rol silindi.");
-        return RedirectToAction(nameof(Index));
+        return Back();
     }
+
+    private IActionResult Back() => RedirectToAction("Index", "Settings", new { tab = Tab });
 
     private async Task Guard(Func<Task> action, string success)
     {

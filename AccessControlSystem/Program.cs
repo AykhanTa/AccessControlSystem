@@ -79,6 +79,7 @@ using (var scope = app.Services.CreateScope())
     await DbSeeder.SeedEmployeesSectionAsync(db);
     await DbSeeder.SeedAccessEventsSectionAsync(db);
     await DbSeeder.SeedSecuritySectionAsync(db);
+    await DbSeeder.SeedSettingsSubSectionsAsync(db);
     await DbSeeder.SeedLeaveTypesAsync(db);
     await DbSeeder.SeedTenantBackfillAsync(db);
 }

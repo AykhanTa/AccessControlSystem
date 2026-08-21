@@ -1,13 +1,33 @@
+@using AccessControlSystem.Application.DTOs
+@using AccessControlSystem.Filters
 @model SettingsViewModel
 @{
     ViewData["Title"] = "Parametrlər";
     ViewData["Heading"] = "Parametrlər";
     ViewData["Active"] = "settings";
-    var canAdd = ViewData["CanAdd"] as bool? ?? false;
-    var canEdit = ViewData["CanEdit"] as bool? ?? false;
-    var canDelete = ViewData["CanDelete"] as bool? ?? false;
     var isGlobalAdmin = ViewData["IsGlobalAdmin"] as bool? ?? false;   // Şirkət yalnız qlobal admin
     var canManageGlobal = ViewData["CanManageGlobal"] as bool? ?? false;   // Mərkəz/Məqsəd: qlobal admin + təhlükəsizlik admini
+    var activeTab = ViewData["Tab"] as string;                             // POST-dan sonra açılacaq tab
+
+    // Hər tabın öz bölmə icazəsi (SettingsController.BuildAccessMap). Baxış icazəsi yoxdursa
+    // nə tab düyməsi, nə də panel render olunur.
+    var access = ViewData["Access"] as Dictionary<string, SectionAccessDto> ?? new();
+    SectionAccessDto A(string code) => access.TryGetValue(code, out var a) ? a : new SectionAccessDto();
+
+    var centers = A(Sections.Centers);
+    var departments = A(Sections.Departments);
+    var positions = A(Sections.Positions);
+    var hosts = A(Sections.Hosts);
+    var purposes = A(Sections.Purposes);
+    var floors = A(Sections.Floors);
+    var devices = A(Sections.Devices);
+    var leave = A("employees");
+    var cards = A("cards");
+    var roles = A("roles");
+    // Şirkətlər tabının öz kodu yoxdur — yalnız qlobal admin görür, əməliyyatlar "settings" icazəsi ilə.
+    var companyCanAdd = isGlobalAdmin;
+    var companyCanEdit = isGlobalAdmin;
+    var companyCanDelete = isGlobalAdmin;
 }
 
 <div class="page-head">
@@ -15,21 +35,27 @@
 </div>
 
 <div class="settings-tabs no-print" id="settingsTabs">
-  <button type="button" class="stab" data-pane="centers">Mərkəzlər</button>
+  @if (centers.CanView) { <button type="button" class="stab" data-pane="centers">Mərkəzlər</button> }
   @if (isGlobalAdmin) { <button type="button" class="stab" data-pane="companies">Şirkətlər</button> }
-  <button type="button" class="stab" data-pane="departments">Şöbələr</button>
-  <button type="button" class="stab" data-pane="positions">Vəzifələr</button>
-  <button type="button" class="stab" data-pane="hosts">Qəbul edən şəxslər</button>
-  <button type="button" class="stab" data-pane="purposes">Gəliş məqsədləri</button>
-  <button type="button" class="stab" data-pane="floors">Mərtəbələr</button>
-  <button type="button" class="stab" data-pane="devices">Cihazlar</button>
+  @if (departments.CanView) { <button type="button" class="stab" data-pane="departments">Şöbələr</button> }
+  @if (positions.CanView) { <button type="button" class="stab" data-pane="positions">Vəzifələr</button> }
+  @if (hosts.CanView) { <button type="button" class="stab" data-pane="hosts">Qəbul edən şəxslər</button> }
+  @if (purposes.CanView) { <button type="button" class="stab" data-pane="purposes">Gəliş məqsədləri</button> }
+  @if (floors.CanView) { <button type="button" class="stab" data-pane="floors">Mərtəbələr</button> }
+  @if (devices.CanView) { <button type="button" class="stab" data-pane="devices">Cihazlar</button> }
+  @if (A(Sections.Timetables).CanView) { <button type="button" class="stab" data-pane="timetables">İş cədvəlləri</button> }
+  @if (leave.CanView) { <button type="button" class="stab" data-pane="leave">Məzuniyyət &amp; Bayram</button> }
+  @if (cards.CanView) { <button type="button" class="stab" data-pane="cards">Kartlar</button> }
+  @if (roles.CanView) { <button type="button" class="stab" data-pane="roles">Rollar</button> }
 </div>
 
+@if (centers.CanView)
+{
 <div class="tab-pane" data-pane="centers">
 <!-- Mərkəzlər (binalar) -->
 <section class="panel">
   <div class="param-head"><h3>Mərkəzlər (binalar)</h3></div>
-  @if (canAdd && canManageGlobal)
+  @if (centers.CanAdd && canManageGlobal)
   {
     <form asp-action="AddCenter" method="post" class="device-form device-add">
       <div class="fld sm"><label>Kod</label><input name="code" type="text" placeholder="HQ" required /></div>
@@ -53,14 +79,14 @@
           <span>@(string.IsNullOrEmpty(c.City) ? "—" : c.City) · @c.FloorCount mərtəbə · <span class="@(c.IsActive ? "st-on" : "st-off")">@(c.IsActive ? "Aktiv" : "Deaktiv")</span></span>
         </div>
         <div class="host-actions">
-          @if (canEdit && canManageGlobal)
+          @if (centers.CanEdit && canManageGlobal)
           {
             <form asp-action="ToggleCenter" method="post" style="display:inline">
               <input type="hidden" name="id" value="@c.Id" />
               <button class="btn-sm outline" type="submit">@(c.IsActive ? "Deaktiv et" : "Aktiv et")</button>
             </form>
           }
-          @if (canDelete && canManageGlobal)
+          @if (centers.CanDelete && canManageGlobal)
           {
             <form asp-action="DeleteCenter" method="post" style="display:inline"
                   onsubmit="return confirm('&quot;@c.Name&quot; mərkəzi silinsin?');">
@@ -78,6 +104,7 @@
   </div>
 </section>
 </div>
+}
 
 @if (isGlobalAdmin)
 {
@@ -85,7 +112,7 @@
 <!-- Şirkətlər -->
 <section class="panel">
   <div class="param-head"><h3>Şirkətlər</h3></div>
-  @if (canAdd)
+  @if (companyCanAdd)
   {
     <form asp-action="AddCompany" method="post" class="device-form device-add">
       <div class="fld grow"><label>Ad</label><input name="name" type="text" placeholder="Şirkət adı" required /></div>
@@ -103,14 +130,14 @@
           <span>@c.DepartmentCount şöbə · <span class="@(c.IsActive ? "st-on" : "st-off")">@(c.IsActive ? "Aktiv" : "Deaktiv")</span></span>
         </div>
         <div class="host-actions">
-          @if (canEdit)
+          @if (companyCanEdit)
           {
             <form asp-action="ToggleCompany" method="post" style="display:inline">
               <input type="hidden" name="id" value="@c.Id" />
               <button class="btn-sm outline" type="submit">@(c.IsActive ? "Deaktiv et" : "Aktiv et")</button>
             </form>
           }
-          @if (canDelete)
+          @if (companyCanDelete)
           {
             <form asp-action="DeleteCompany" method="post" style="display:inline"
                   onsubmit="return confirm('&quot;@c.Name&quot; şirkəti silinsin?');">
@@ -127,11 +154,13 @@
 </div>
 }
 
+@if (departments.CanView)
+{
 <div class="tab-pane" data-pane="departments">
   <!-- Şöbələr -->
   <section class="panel">
     <div class="param-head"><h3>Şöbələr</h3></div>
-    @if (canAdd)
+    @if (departments.CanAdd)
     {
       <form asp-action="AddDepartment" method="post" class="device-form device-add">
         <div class="fld grow"><label>Şöbə adı</label><input name="name" type="text" placeholder="Mühasibatlıq" required /></div>
@@ -152,7 +181,7 @@
             <span>@d.CompanyName@(d.ParentName != null ? " · " + d.ParentName : "") · <span class="@(d.IsActive ? "st-on" : "st-off")">@(d.IsActive ? "Aktiv" : "Deaktiv")</span> · İş cədvəli: <b>@(d.WorkScheduleName ?? "—")</b></span>
           </div>
           <div class="host-actions">
-            @if (canEdit)
+            @if (departments.CanEdit)
             {
               <form asp-action="SetDepartmentSchedule" method="post" style="display:inline">
                 <input type="hidden" name="id" value="@d.Id" />
@@ -169,7 +198,7 @@
                 <button class="btn-sm outline" type="submit">@(d.IsActive ? "Deaktiv et" : "Aktiv et")</button>
               </form>
             }
-            @if (canDelete)
+            @if (departments.CanDelete)
             {
               <form asp-action="DeleteDepartment" method="post" style="display:inline"
                     onsubmit="return confirm('&quot;@d.Name&quot; şöbəsi silinsin?');">
@@ -183,12 +212,15 @@
     </div>
   </section>
 </div>
+}
 
+@if (positions.CanView)
+{
 <div class="tab-pane" data-pane="positions">
   <!-- Vəzifələr -->
   <section class="panel">
     <div class="param-head"><h3>Vəzifələr</h3></div>
-    @if (canAdd)
+    @if (positions.CanAdd)
     {
       <form asp-action="AddPosition" method="post" class="device-form device-add">
         <div class="fld grow"><label>Vəzifə adı</label><input name="name" type="text" placeholder="Mühasib" required /></div>
@@ -209,14 +241,14 @@
             <span>@p.CompanyName · <span class="@(p.IsActive ? "st-on" : "st-off")">@(p.IsActive ? "Aktiv" : "Deaktiv")</span></span>
           </div>
           <div class="host-actions">
-            @if (canEdit)
+            @if (positions.CanEdit)
             {
               <form asp-action="TogglePosition" method="post" style="display:inline">
                 <input type="hidden" name="id" value="@p.Id" />
                 <button class="btn-sm outline" type="submit">@(p.IsActive ? "Deaktiv et" : "Aktiv et")</button>
               </form>
             }
-            @if (canDelete)
+            @if (positions.CanDelete)
             {
               <form asp-action="DeletePosition" method="post" style="display:inline"
                     onsubmit="return confirm('&quot;@p.Name&quot; vəzifəsi silinsin?');">
@@ -230,6 +262,7 @@
     </div>
   </section>
 </div>
+}
 
 <style>
   .mini-sel{
@@ -245,11 +278,13 @@
   .mini-sel:focus{ outline:none; border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15); }
 </style>
 
+@if (hosts.CanView)
+{
 <div class="tab-pane" data-pane="hosts">
 <!-- Qəbul edən şəxslər -->
 <section class="panel">
   <div class="param-head"><h3>Qəbul edən şəxslər</h3></div>
-  @if (canAdd)
+  @if (hosts.CanAdd)
   {
     <form asp-action="AddHost" method="post" class="host-add">
       <input name="firstName" type="text" placeholder="Ad" required />
@@ -267,13 +302,13 @@
       var fid = $"h{h.Id}";
       <div class="host-row">
         <form id="@fid" asp-action="UpdateHost" method="post" style="display:none"><input type="hidden" name="id" value="@h.Id" /></form>
-        <input class="cell-input" form="@fid" name="firstName" value="@h.FirstName" placeholder="Ad" @(canEdit ? "" : "readonly") />
-        <input class="cell-input" form="@fid" name="lastName" value="@h.LastName" placeholder="Soyad" @(canEdit ? "" : "readonly") />
-        <input class="cell-input" form="@fid" name="email" value="@h.Email" placeholder="Email" @(canEdit ? "" : "readonly") />
-        <input class="cell-input" form="@fid" name="phone" value="@h.Phone" placeholder="Telefon" @(canEdit ? "" : "readonly") />
-        <input class="cell-input" form="@fid" name="department" value="@h.Department" placeholder="Şöbə/vəzifə" @(canEdit ? "" : "readonly") />
+        <input class="cell-input" form="@fid" name="firstName" value="@h.FirstName" placeholder="Ad" @(hosts.CanEdit ? "" : "readonly") />
+        <input class="cell-input" form="@fid" name="lastName" value="@h.LastName" placeholder="Soyad" @(hosts.CanEdit ? "" : "readonly") />
+        <input class="cell-input" form="@fid" name="email" value="@h.Email" placeholder="Email" @(hosts.CanEdit ? "" : "readonly") />
+        <input class="cell-input" form="@fid" name="phone" value="@h.Phone" placeholder="Telefon" @(hosts.CanEdit ? "" : "readonly") />
+        <input class="cell-input" form="@fid" name="department" value="@h.Department" placeholder="Şöbə/vəzifə" @(hosts.CanEdit ? "" : "readonly") />
         <div class="host-actions">
-          @if (canEdit)
+          @if (hosts.CanEdit)
           {
             <button class="btn-sm dark" type="submit" form="@fid">Yadda saxla</button>
             <form asp-action="ToggleHost" method="post" style="display:inline">
@@ -281,7 +316,7 @@
               <button class="btn-sm @(h.IsActive ? "ok" : "muted")" type="submit">@(h.IsActive ? "Aktiv" : "Deaktiv")</button>
             </form>
           }
-          @if (canDelete)
+          @if (hosts.CanDelete)
           {
             <form asp-action="DeleteHost" method="post" style="display:inline"
                   onsubmit="return confirm('&quot;@h.FirstName @h.LastName&quot; qəbul edəni silinsin?');">
@@ -295,12 +330,15 @@
   </div>
 </section>
 </div>
+}
 
+@if (purposes.CanView)
+{
 <div class="tab-pane" data-pane="purposes">
   <!-- Gəliş məqsədləri -->
   <section class="panel">
     <div class="param-head"><h3>Gəliş məqsədləri</h3></div>
-    @if (canAdd && canManageGlobal)
+    @if (purposes.CanAdd && canManageGlobal)
     {
       <form asp-action="AddPurpose" method="post" class="param-add">
         <input name="name" type="text" placeholder="Yeni məqsəd" required />
@@ -316,14 +354,14 @@
             <span class="@(p.IsActive ? "st-on" : "st-off")">@(p.IsActive ? "Aktiv" : "Deaktiv")</span>
           </div>
           <div class="host-actions">
-            @if (canEdit && canManageGlobal)
+            @if (purposes.CanEdit && canManageGlobal)
             {
               <form asp-action="TogglePurpose" method="post" style="display:inline">
                 <input type="hidden" name="id" value="@p.Id" />
                 <button class="btn-sm outline" type="submit">@(p.IsActive ? "Deaktiv et" : "Aktiv et")</button>
               </form>
             }
-            @if (canDelete && canManageGlobal)
+            @if (purposes.CanDelete && canManageGlobal)
             {
               <form asp-action="DeletePurpose" method="post" style="display:inline"
                     onsubmit="return confirm('&quot;@p.Name&quot; məqsədi silinsin?');">
@@ -337,12 +375,15 @@
     </div>
   </section>
 </div>
+}
 
+@if (floors.CanView)
+{
 <div class="tab-pane" data-pane="floors">
   <!-- Mərtəbələr -->
   <section class="panel">
     <div class="param-head"><h3>Mərtəbələr</h3></div>
-    @if (canAdd)
+    @if (floors.CanAdd)
     {
       <form asp-action="AddFloor" method="post" class="device-form device-add">
         <div class="fld grow"><label>Mərtəbə adı</label><input name="name" type="text" placeholder="1-ci mərtəbə" required /></div>
@@ -364,14 +405,14 @@
             <span>@(f.CenterName ?? "Mərkəzsiz") · @f.DeviceCount cihaz · <span class="@(f.IsActive ? "st-on" : "st-off")">@(f.IsActive ? "Aktiv" : "Deaktiv")</span></span>
           </div>
           <div class="host-actions">
-            @if (canEdit)
+            @if (floors.CanEdit)
             {
               <form asp-action="ToggleFloor" method="post" style="display:inline">
                 <input type="hidden" name="id" value="@f.Id" />
                 <button class="btn-sm outline" type="submit">@(f.IsActive ? "Deaktiv et" : "Aktiv et")</button>
               </form>
             }
-            @if (canDelete)
+            @if (floors.CanDelete)
             {
               <form asp-action="DeleteFloor" method="post" style="display:inline"
                     onsubmit="return confirm('&quot;@f.Name&quot; mərtəbəsi silinsin?');">
@@ -385,13 +426,16 @@
     </div>
   </section>
 </div>
+}
 
+@if (devices.CanView)
+{
 <div class="tab-pane" data-pane="devices">
 <!-- Cihazlar (Hikvision) -->
 <section class="panel">
   <div class="param-head"><h3>Cihazlar (Hikvision)</h3></div>
   <p class="hint" style="margin:0 0 4px">Hər mərtəbənin giriş və çıxış terminalı. Admin login/parol bütün cihazlar üçün ortaqdır (konfiqurasiyada saxlanır).</p>
-  @if (canAdd)
+  @if (devices.CanAdd)
   {
     <form asp-action="AddDevice" method="post" class="device-form device-add">
       <div class="fld grow"><label>Cihaz adı</label><input name="name" type="text" placeholder="1-ci mərtəbə - Giriş" required /></div>
@@ -431,11 +475,11 @@
       var did = $"d{d.Id}";
       <div class="device-form device-row">
         <form id="@did" asp-action="UpdateDevice" method="post" style="display:none"><input type="hidden" name="id" value="@d.Id" /></form>
-        <div class="fld grow"><input form="@did" name="name" value="@d.Name" @(canEdit ? "" : "readonly") /></div>
-        <div class="fld"><input form="@did" name="ip" value="@d.Ip" @(canEdit ? "" : "readonly") /></div>
-        <div class="fld sm"><input form="@did" name="port" type="number" value="@d.Port" @(canEdit ? "" : "readonly") /></div>
+        <div class="fld grow"><input form="@did" name="name" value="@d.Name" @(devices.CanEdit ? "" : "readonly") /></div>
+        <div class="fld"><input form="@did" name="ip" value="@d.Ip" @(devices.CanEdit ? "" : "readonly") /></div>
+        <div class="fld sm"><input form="@did" name="port" type="number" value="@d.Port" @(devices.CanEdit ? "" : "readonly") /></div>
         <div class="fld md">
-          <select form="@did" name="floorId" @(canEdit ? "" : "disabled")>
+          <select form="@did" name="floorId" @(devices.CanEdit ? "" : "disabled")>
             @foreach (var f in Model.Floors)
             {
               if (f.Id == d.FloorId) { <option value="@f.Id" selected>@f.Name</option> }
@@ -444,13 +488,13 @@
           </select>
         </div>
         <div class="fld md">
-          <select form="@did" name="direction" @(canEdit ? "" : "disabled")>
+          <select form="@did" name="direction" @(devices.CanEdit ? "" : "disabled")>
             <option value="Entry" selected="@(d.Direction == "Entry")">Giriş</option>
             <option value="Exit" selected="@(d.Direction == "Exit")">Çıxış</option>
           </select>
         </div>
         <div class="fld md">
-          <select form="@did" name="pointType" @(canEdit ? "" : "disabled")>
+          <select form="@did" name="pointType" @(devices.CanEdit ? "" : "disabled")>
             <option value="Door" selected="@(d.PointType == "Door")">Adi qapı</option>
             <option value="MainEntrance" selected="@(d.PointType == "MainEntrance")">Əsas giriş</option>
             <option value="FloorEntrance" selected="@(d.PointType == "FloorEntrance")">Mərtəbə girişi</option>
@@ -459,10 +503,10 @@
             <option value="Turnstile" selected="@(d.PointType == "Turnstile")">Turniket</option>
           </select>
         </div>
-        <div class="fld sm"><input form="@did" name="doorNo" type="number" value="@d.DoorNo" @(canEdit ? "" : "readonly") /></div>
-        <div class="fld chk"><input form="@did" name="useHttps" type="checkbox" value="true" checked="@d.UseHttps" @(canEdit ? "" : "disabled") /></div>
+        <div class="fld sm"><input form="@did" name="doorNo" type="number" value="@d.DoorNo" @(devices.CanEdit ? "" : "readonly") /></div>
+        <div class="fld chk"><input form="@did" name="useHttps" type="checkbox" value="true" checked="@d.UseHttps" @(devices.CanEdit ? "" : "disabled") /></div>
         <div class="host-actions">
-          @if (canEdit)
+          @if (devices.CanEdit)
           {
             <button class="btn-sm dark" type="submit" form="@did">Yadda saxla</button>
             <form asp-action="ToggleDevice" method="post" style="display:inline">
@@ -470,7 +514,7 @@
               <button class="btn-sm @(d.IsActive ? "ok" : "muted")" type="submit">@(d.IsActive ? "Aktiv" : "Deaktiv")</button>
             </form>
           }
-          @if (canDelete)
+          @if (devices.CanDelete)
           {
             <form asp-action="DeleteDevice" method="post" style="display:inline"
                   onsubmit="return confirm('&quot;@d.Name&quot; cihazı silinsin?');">
@@ -488,11 +532,43 @@
   </div>
 </section>
 </div>
+}
+
+@if (A(Sections.Timetables).CanView)
+{
+  <div class="tab-pane" data-pane="timetables">
+    @await Html.PartialAsync("_Timetables", Model)
+  </div>
+}
+
+@if (leave.CanView)
+{
+  <div class="tab-pane" data-pane="leave">
+    @await Html.PartialAsync("_Leave", Model.Leave)
+  </div>
+}
+
+@if (cards.CanView)
+{
+  <div class="tab-pane" data-pane="cards">
+    @await Html.PartialAsync("_Cards", Model.Cards)
+  </div>
+}
+
+@if (roles.CanView)
+{
+  <div class="tab-pane" data-pane="roles">
+    @await Html.PartialAsync("_Roles", Model.Roles)
+  </div>
+}
 
 <style>
-  .settings-tabs{ display:flex; gap:4px; flex-wrap:wrap; margin-bottom:18px; border-bottom:1px solid var(--line,#e5e8ee); }
-  .settings-tabs .stab{ border:none; background:none; padding:10px 16px; border-radius:9px 9px 0 0; cursor:pointer;
-    font-weight:600; font-size:14px; color:var(--muted,#6b7280); border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .15s, background .15s; }
+  /* Bərabər enli sütunlar: tablar sətirə sığmayıb aşağı düşəndə də yuxarıdakı sütunlarla düz hizalanır. */
+  .settings-tabs{ display:grid; grid-template-columns:repeat(auto-fit, minmax(176px, 1fr)); gap:2px 4px;
+    margin-bottom:18px; border-bottom:1px solid var(--line,#e5e8ee); }
+  .settings-tabs .stab{ border:none; background:none; padding:10px 12px; border-radius:9px 9px 0 0; cursor:pointer;
+    font-weight:600; font-size:14px; color:var(--muted,#6b7280); border-bottom:2px solid transparent; margin-bottom:-1px;
+    text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:color .15s, background .15s; }
   .settings-tabs .stab:hover{ color:var(--ink,#3a4152); background:#f6f9ff; }
   .settings-tabs .stab.on{ color:#3b82f6; border-bottom-color:#3b82f6; }
   .tab-pane{ display:none; }
@@ -510,8 +586,10 @@
       try { localStorage.setItem('settingsTab', key); } catch (e) {}
     }
     tabs.forEach(function (t) { t.addEventListener('click', function () { show(t.getAttribute('data-pane')); }); });
+    function exists(key) { return !!key && tabs.some(function (t) { return t.getAttribute('data-pane') === key; }); }
+    // Prioritet: serverdən gələn tab (POST-dan sonra qayıdış) → yadda saxlanmış → ilk tab.
+    var wanted = @Html.Raw(Json.Serialize(activeTab));
     var saved = null; try { saved = localStorage.getItem('settingsTab'); } catch (e) {}
-    var valid = tabs.some(function (t) { return t.getAttribute('data-pane') === saved; });
-    show(valid ? saved : tabs[0].getAttribute('data-pane'));
+    show(exists(wanted) ? wanted : (exists(saved) ? saved : tabs[0].getAttribute('data-pane')));
   })();
 </script>

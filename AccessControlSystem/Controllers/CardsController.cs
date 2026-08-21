@@ -1,23 +1,22 @@
 using AccessControlSystem.Application.DTOs;
 using AccessControlSystem.Application.Interfaces.Services;
 using AccessControlSystem.Filters;
-using AccessControlSystem.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AccessControlSystem.Controllers;
 
+/// <summary>Müvəqqəti kartlar. Səhifə Parametrlərin "Kartlar" tabındadır —
+/// bu kontroller yalnız POST-ları emal edir, Index isə həmin taba yönləndirir.</summary>
 public class CardsController : Controller
 {
+    private const string Tab = "cards";
+
     private readonly ICardService _cards;
 
     public CardsController(ICardService cards) => _cards = cards;
 
-    /// <summary>Müvəqqəti kartların siyahısı.</summary>
-    public async Task<IActionResult> Index()
-    {
-        var model = new CardsViewModel { Cards = await _cards.GetAllAsync() };
-        return View(model);
-    }
+    /// <summary>Köhnə /Cards ünvanı — Parametrlərin kartlar tabına yönləndirilir.</summary>
+    public IActionResult Index() => Back();
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -26,7 +25,7 @@ public class CardsController : Controller
     {
         await Guard(() => _cards.CreateAsync(new CardCreateDto { No = no, Note = note }),
                     "Kart əlavə edildi.");
-        return RedirectToAction(nameof(Index));
+        return Back();
     }
 
     [HttpPost]
@@ -36,7 +35,7 @@ public class CardsController : Controller
     {
         await Guard(() => _cards.UpdateAsync(id, new CardUpdateDto { No = no, Note = note }),
                     "Kart yeniləndi.");
-        return RedirectToAction(nameof(Index));
+        return Back();
     }
 
     [HttpPost]
@@ -45,7 +44,7 @@ public class CardsController : Controller
     public async Task<IActionResult> Toggle(long id)
     {
         await Guard(() => _cards.ToggleActiveAsync(id), "Kartın vəziyyəti dəyişdirildi.");
-        return RedirectToAction(nameof(Index));
+        return Back();
     }
 
     [HttpPost]
@@ -54,8 +53,10 @@ public class CardsController : Controller
     public async Task<IActionResult> Delete(long id)
     {
         await Guard(() => _cards.DeleteAsync(id), "Kart silindi.");
-        return RedirectToAction(nameof(Index));
+        return Back();
     }
+
+    private IActionResult Back() => RedirectToAction("Index", "Settings", new { tab = Tab });
 
     private async Task Guard(Func<Task> action, string successMessage)
     {

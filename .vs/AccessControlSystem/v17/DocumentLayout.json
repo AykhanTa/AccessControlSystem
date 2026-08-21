@@ -1,33 +1,29 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\",
+  "WorkspaceRootPath": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem\\views\\settings\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\views\\settings\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem\\views\\attendance\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\views\\attendance\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem\\filters\\permissionfilter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\filters\\permissionfilter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem\\controllers\\attendancecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\controllers\\attendancecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\msnadmin\\desktop\\accesscontroldb\\accesscontrolsystem\\accesscontrolsystem\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem\\views\\employees\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\msnadmin\\desktop\\accesscontroldb\\accesscontrolsystem\\accesscontrolsystem\\views\\settings\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\views\\settings\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\msnadmin\\desktop\\accesscontroldb\\accesscontrolsystem\\accesscontrolsystem\\views\\attendance\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\views\\attendance\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\msnadmin\\desktop\\accesscontroldb\\accesscontrolsystem\\accesscontrolsystem\\controllers\\attendancecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\controllers\\attendancecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\msnadmin\\desktop\\accesscontroldb\\accesscontrolsystem\\accesscontrolsystem\\views\\employees\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\views\\employees\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\aykhan taghizada\\desktop\\accesscontrolsystem\\accesscontrolsystem\\views\\security\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "AbsoluteMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|c:\\users\\msnadmin\\desktop\\accesscontroldb\\accesscontrolsystem\\accesscontrolsystem\\views\\security\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{65084F64-70CD-46D2-B10C-AD0CDF2FB043}|AccessControlSystem\\AccessControlSystem.csproj|solutionrelative:accesscontrolsystem\\views\\security\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
@@ -38,39 +34,28 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 0,
               "Title": "_Layout.cshtml",
-              "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Shared\\_Layout.cshtml",
+              "DocumentMoniker": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem\\Views\\Shared\\_Layout.cshtml",
               "RelativeDocumentMoniker": "AccessControlSystem\\Views\\Shared\\_Layout.cshtml",
-              "ToolTip": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Shared\\_Layout.cshtml",
+              "ToolTip": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem\\Views\\Shared\\_Layout.cshtml",
               "RelativeToolTip": "AccessControlSystem\\Views\\Shared\\_Layout.cshtml",
-              "ViewState": "AgIAAGUAAAAAAAAAAAAkwHoAAADrAAAAAAAAAA==",
+              "ViewState": "AgIAAIkAAAAAAAAAAAAAAH8AAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-08-06T08:12:43.834Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "PermissionFilter.cs",
-              "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Filters\\PermissionFilter.cs",
-              "RelativeDocumentMoniker": "AccessControlSystem\\Filters\\PermissionFilter.cs",
-              "ToolTip": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Filters\\PermissionFilter.cs",
-              "RelativeToolTip": "AccessControlSystem\\Filters\\PermissionFilter.cs",
-              "ViewState": "AgIAAAIAAAAAAAAAAAAcwBYAAAAqAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-06T08:12:39.125Z"
+              "WhenOpened": "2026-08-06T08:12:43.834Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
               "Title": "AttendanceController.cs",
-              "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Controllers\\AttendanceController.cs",
+              "DocumentMoniker": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem\\Controllers\\AttendanceController.cs",
               "RelativeDocumentMoniker": "AccessControlSystem\\Controllers\\AttendanceController.cs",
-              "ToolTip": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Controllers\\AttendanceController.cs",
+              "ToolTip": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem\\Controllers\\AttendanceController.cs",
               "RelativeToolTip": "AccessControlSystem\\Controllers\\AttendanceController.cs",
               "ViewState": "AgIAAAQAAAAAAAAAAAAwwBcAAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -78,11 +63,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "Index.cshtml",
-              "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Attendance\\Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem\\Views\\Attendance\\Index.cshtml",
               "RelativeDocumentMoniker": "AccessControlSystem\\Views\\Attendance\\Index.cshtml",
-              "ToolTip": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Attendance\\Index.cshtml",
+              "ToolTip": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem\\Views\\Attendance\\Index.cshtml",
               "RelativeToolTip": "AccessControlSystem\\Views\\Attendance\\Index.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAZAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
@@ -90,24 +75,23 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Index.cshtml",
-              "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Settings\\Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem\\Views\\Settings\\Index.cshtml",
               "RelativeDocumentMoniker": "AccessControlSystem\\Views\\Settings\\Index.cshtml",
-              "ToolTip": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Settings\\Index.cshtml",
+              "ToolTip": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem\\Views\\Settings\\Index.cshtml",
               "RelativeToolTip": "AccessControlSystem\\Views\\Settings\\Index.cshtml",
-              "ViewState": "AgIAACYBAAAAAAAAAAAAACEBAAATAAAAAAAAAA==",
+              "ViewState": "AgIAABsBAAAAAAAAAAAYwEQBAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-08-04T13:38:44.878Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-04T13:38:44.878Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 4,
               "Title": "Index.cshtml",
-              "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Employees\\Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem\\Views\\Employees\\Index.cshtml",
               "RelativeDocumentMoniker": "AccessControlSystem\\Views\\Employees\\Index.cshtml",
-              "ToolTip": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Employees\\Index.cshtml",
+              "ToolTip": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem\\Views\\Employees\\Index.cshtml",
               "RelativeToolTip": "AccessControlSystem\\Views\\Employees\\Index.cshtml",
               "ViewState": "AgIAAKMAAAAAAAAAAAAkwLYAAAAuAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
@@ -115,11 +99,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 5,
               "Title": "Index.cshtml",
-              "DocumentMoniker": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Security\\Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem\\Views\\Security\\Index.cshtml",
               "RelativeDocumentMoniker": "AccessControlSystem\\Views\\Security\\Index.cshtml",
-              "ToolTip": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem\\Views\\Security\\Index.cshtml",
+              "ToolTip": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem\\Views\\Security\\Index.cshtml",
               "RelativeToolTip": "AccessControlSystem\\Views\\Security\\Index.cshtml",
               "ViewState": "AgIAAAkAAAAAAAAAAAAAABgAAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",

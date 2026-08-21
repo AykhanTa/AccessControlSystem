@@ -71,6 +71,29 @@ function qrDataURL(container) {
   return img ? img.src : '';
 }
 
-/* Mobil sidebar */
+/* ---- Sidebar ----
+   Mobil (≤760px): overlay kimi açılır/bağlanır (fon qaralır).
+   Masaüstü: hamburger sidebar-ı tamamilə yığır → cədvəllərə ~248px əlavə en.
+   Yığılmış vəziyyət localStorage-da saxlanılır və <html>-ə sinif kimi yazılır;
+   səhifə keçidlərində sıçrayış olmasın deyə <head>-dəki skript onu erkən tətbiq edir. */
+var SIDEBAR_KEY = 'navCollapsed';
+function sidebarIsMobile() { return window.matchMedia('(max-width: 760px)').matches; }
+
 function openSidebar()  { document.getElementById('sidebar').classList.add('open');  document.getElementById('backdrop').classList.add('show'); }
 function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('backdrop').classList.remove('show'); }
+
+/// Hamburger düyməsi: ekran ölçüsünə görə uyğun rejimi işə salır.
+function toggleSidebar() {
+  if (sidebarIsMobile()) {
+    var open = document.getElementById('sidebar').classList.contains('open');
+    if (open) { closeSidebar(); } else { openSidebar(); }
+    return;
+  }
+  var collapsed = document.documentElement.classList.toggle('nav-collapsed');
+  try { localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0'); } catch (e) {}
+}
+
+// Mobil overlay ilə masaüstü yığımı bir-birinə qarışmasın: ekran genişlənəndə overlay bağlanır.
+window.addEventListener('resize', function () {
+  if (!sidebarIsMobile()) closeSidebar();
+});

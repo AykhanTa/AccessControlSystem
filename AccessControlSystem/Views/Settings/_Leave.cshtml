@@ -1,20 +1,23 @@
 @using AccessControlSystem.Application.DTOs
 @model LeaveViewModel
+@*  Parametrlər → "Məzuniyyət & Bayram" tabı.
+    Əməliyyatlar LeaveController-dədir və "employees" icazəsi ilə işləyir — buna görə
+    düymələr ViewData["EmpCan*"] (settings deyil, employees bölməsinin icazələri) ilə göstərilir.  *@
 @{
-    ViewData["Title"] = "Məzuniyyət & Bayram";
     var isGlobalAdmin = ViewData["IsGlobalAdmin"] as bool? ?? false;
-    var canAdd = ViewData["CanAdd"] as bool? ?? false;
-    var canEdit = ViewData["CanEdit"] as bool? ?? false;
-    var canDelete = ViewData["CanDelete"] as bool? ?? false;
+
+    var access = ViewData["Access"] as Dictionary<string, SectionAccessDto> ?? new();
+    var acc = access.TryGetValue("employees", out var empA) ? empA : new SectionAccessDto();
+    var canAdd = acc.CanAdd;
+    var canEdit = acc.CanEdit;
+    var canDelete = acc.CanDelete;
     var today = DateTime.Today.ToString("yyyy-MM-dd");
 }
 
-@if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
-@if (TempData["Error"] != null) { <div class="alert alert-error">@TempData["Error"]</div> }
-
 <div class="page-head">
   <div><p>HR: işçilərin məzuniyyət/ezamiyyət qeydləri və bayram təqvimi. Bunlar iştirak hesabatında avtomatik nəzərə alınır.</p></div>
-  <form method="get" style="display:flex;gap:8px;align-items:center">
+  <form method="get" asp-controller="Settings" asp-action="Index" style="display:flex;gap:8px;align-items:center">
+    <input type="hidden" name="tab" value="leave" />
     <label style="font-size:13px;color:var(--muted)">İl:</label>
     <select name="year" class="lv-input" onchange="this.form.submit()">
       @for (int yy = DateTime.Today.Year - 1; yy <= DateTime.Today.Year + 1; yy++)
@@ -29,7 +32,7 @@
     <div class="param-head"><h3>Məzuniyyət / Ezamiyyət növləri</h3></div>
     @if (canAdd)
     {
-      <form asp-action="AddType" method="post" class="lv-form">
+      <form asp-controller="Leave" asp-action="AddType" method="post" class="lv-form">
         <div class="lv-fld grow"><label>Ad</label><input name="name" type="text" placeholder="İllik məzuniyyət" required /></div>
         <div class="lv-fld sm"><label>Rəng</label><input name="color" type="color" value="#8b5cf6" /></div>
         <div class="lv-fld chk"><label><input type="checkbox" name="countsAsWorked" value="true" /> İşdə sayılır (ezamiyyət)</label></div>
@@ -55,12 +58,12 @@
           <div class="host-actions">
             @if (canEdit)
             {
-              <form asp-action="ToggleType" method="post" style="display:inline"><input type="hidden" name="id" value="@t.Id" />
+              <form asp-controller="Leave" asp-action="ToggleType" method="post" style="display:inline"><input type="hidden" name="id" value="@t.Id" />
                 <button class="btn-sm outline" type="submit">@(t.IsActive ? "Deaktiv et" : "Aktiv et")</button></form>
             }
             @if (canDelete)
             {
-              <form asp-action="DeleteType" method="post" style="display:inline" onsubmit="return confirm('&quot;@t.Name&quot; silinsin?');">
+              <form asp-controller="Leave" asp-action="DeleteType" method="post" style="display:inline" onsubmit="return confirm('&quot;@t.Name&quot; silinsin?');">
                 <input type="hidden" name="id" value="@t.Id" /><button class="btn-sm danger" type="submit">Sil</button></form>
             }
           </div>
@@ -75,7 +78,7 @@
     <div class="param-head"><h3>Bayram təqvimi (@Model.Year)</h3></div>
     @if (canAdd)
     {
-      <form asp-action="AddHoliday" method="post" class="lv-form">
+      <form asp-controller="Leave" asp-action="AddHoliday" method="post" class="lv-form">
         <div class="lv-fld sm"><label>Başlanğıc</label><input name="startDate" type="date" value="@today" required /></div>
         <div class="lv-fld sm"><label>Son</label><input name="endDate" type="date" value="@today" required /></div>
         <div class="lv-fld grow"><label>Ad</label><input name="name" type="text" placeholder="Novruz bayramı" required /></div>
@@ -101,7 +104,7 @@
           <div class="host-actions">
             @if (canDelete)
             {
-              <form asp-action="DeleteHoliday" method="post" style="display:inline" onsubmit="return confirm('Bayram silinsin?');">
+              <form asp-controller="Leave" asp-action="DeleteHoliday" method="post" style="display:inline" onsubmit="return confirm('Bayram silinsin?');">
                 <input type="hidden" name="ids" value="@h.Ids" /><button class="btn-sm danger" type="submit">Sil</button></form>
             }
           </div>
@@ -117,7 +120,7 @@
   <div class="param-head"><h3>İşçi qeydləri (@Model.Year)</h3></div>
   @if (canAdd)
   {
-    <form asp-action="AddRecord" method="post" class="lv-form">
+    <form asp-controller="Leave" asp-action="AddRecord" method="post" class="lv-form">
       <div class="lv-fld grow"><label>İşçi</label>
         <select name="employeeId" required>
           <option value="">Seçin</option>
@@ -152,7 +155,7 @@
             <td style="text-align:right">
               @if (canDelete)
               {
-                <form asp-action="DeleteRecord" method="post" style="display:inline" onsubmit="return confirm('Qeyd silinsin?');">
+                <form asp-controller="Leave" asp-action="DeleteRecord" method="post" style="display:inline" onsubmit="return confirm('Qeyd silinsin?');">
                   <input type="hidden" name="id" value="@r.Id" />
                   <button class="btn-sm danger" type="submit">Sil</button>
                 </form>

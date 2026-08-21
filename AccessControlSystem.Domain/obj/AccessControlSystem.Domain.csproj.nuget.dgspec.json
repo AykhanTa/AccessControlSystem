@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Domain\\AccessControlSystem.Domain.csproj": {}
+    "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem.Domain\\AccessControlSystem.Domain.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Domain\\AccessControlSystem.Domain.csproj": {
+    "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem.Domain\\AccessControlSystem.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Domain\\AccessControlSystem.Domain.csproj",
+        "projectUniqueName": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem.Domain\\AccessControlSystem.Domain.csproj",
         "projectName": "AccessControlSystem.Domain",
-        "projectPath": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Domain\\AccessControlSystem.Domain.csproj",
-        "packagesPath": "C:\\Users\\Aykhan Taghizada\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Domain\\obj\\",
+        "projectPath": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem.Domain\\AccessControlSystem.Domain.csproj",
+        "packagesPath": "C:\\Users\\MSNADMIN\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\MSNADMIN\\Desktop\\AccessControlDB\\AccessControlSystem\\AccessControlSystem.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Aykhan Taghizada\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\MSNADMIN\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],

@@ -363,6 +363,59 @@ public static class DbSeeder
         await db.SaveChangesAsync();
     }
 
+    /// <summary>Parametrlər səhifəsinin tabları üçün alt-bölmələri (ayrıca icazə kodları) yaradır.
+    /// Beləcə rol matrisində məsələn "Cihazlar" bağlanıb "Mərtəbələr" açıq saxlanıla bilir.
+    /// Miqrasiya: hər rola öz cari "settings" icazəsi köçürülür — heç kim mövcud çıxışını itirmir.
+    /// İdempotentdir; yalnız çatışmayan bölmələri əlavə edir.</summary>
+    public static async Task SeedSettingsSubSectionsAsync(AppDbContext db)
+    {
+        var defs = new (string Code, string Name, int Sort)[]
+        {
+            ("set_centers",     "Parametrlər: Mərkəzlər",          20),
+            ("set_departments", "Parametrlər: Şöbələr",            21),
+            ("set_positions",   "Parametrlər: Vəzifələr",          22),
+            ("set_hosts",       "Parametrlər: Qəbul edən şəxslər", 23),
+            ("set_purposes",    "Parametrlər: Gəliş məqsədləri",   24),
+            ("set_floors",      "Parametrlər: Mərtəbələr",         25),
+            ("set_devices",     "Parametrlər: Cihazlar",           26),
+            ("set_timetables",  "Parametrlər: İş cədvəlləri",      27),
+        };
+
+        var codes = defs.Select(d => d.Code).ToList();
+        var existing = await db.Sections.Where(s => codes.Contains(s.Code)).Select(s => s.Code).ToListAsync();
+        var missing = defs.Where(d => !existing.Contains(d.Code)).ToList();
+        if (missing.Count == 0) return;
+
+        var added = missing.Select(d => new Section { Code = d.Code, Name = d.Name, SortOrder = d.Sort }).ToList();
+        db.Sections.AddRange(added);
+        await db.SaveChangesAsync();
+
+        // Mövcud rollara "settings" icazəsinin eynisini ver (Administrator — hamısı açıq).
+        var settingsSection = await db.Sections.FirstOrDefaultAsync(s => s.Code == "settings");
+        var roles = await db.Roles.Include(r => r.Permissions).ToListAsync();
+        foreach (var role in roles)
+        {
+            var src = settingsSection is null
+                ? null
+                : role.Permissions.FirstOrDefault(p => p.SectionId == settingsSection.Id);
+
+            foreach (var sec in added)
+            {
+                if (role.Permissions.Any(p => p.SectionId == sec.Id)) continue;
+                db.RolePermissions.Add(new RolePermission
+                {
+                    RoleId = role.Id,
+                    SectionId = sec.Id,
+                    CanView = role.IsSystem || (src?.CanView ?? false),
+                    CanAdd = role.IsSystem || (src?.CanAdd ?? false),
+                    CanEdit = role.IsSystem || (src?.CanEdit ?? false),
+                    CanDelete = role.IsSystem || (src?.CanDelete ?? false)
+                });
+            }
+        }
+        await db.SaveChangesAsync();
+    }
+
     /// <summary>
     /// Çoxkiracılığa keçid: CompanyId-si boş olan mövcud strukturu (mərkəz/mərtəbə/cihaz/keçid nöqtəsi)
     /// və qeyri-qlobal istifadəçiləri default (ilk) şirkətə bağlayır. Bir dəfə tətbiq olunur.
