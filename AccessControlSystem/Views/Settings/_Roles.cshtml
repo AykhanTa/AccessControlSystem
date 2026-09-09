@@ -1,11 +1,14 @@
-@model RolesViewModel
+@using AccessControlSystem.Application.DTOs
+@model List<RoleDto>
+@*  Parametrlər → "Rollar" tabı.
+    Əməliyyatlar RolesController-dədir və "roles" icazəsi ilə işləyir — buna görə
+    düymələr ViewData["RoleCan*"] (settings deyil, roles bölməsinin icazələri) ilə göstərilir.  *@
 @{
-    ViewData["Title"] = "Rollar";
-    ViewData["Heading"] = "Rollar";
-    ViewData["Active"] = "roles";
-    var canAdd = ViewData["CanAdd"] as bool? ?? false;
-    var canEdit = ViewData["CanEdit"] as bool? ?? false;
-    var canDelete = ViewData["CanDelete"] as bool? ?? false;
+    var access = ViewData["Access"] as Dictionary<string, SectionAccessDto> ?? new();
+    var acc = access.TryGetValue("roles", out var roleA) ? roleA : new SectionAccessDto();
+    var canAdd = acc.CanAdd;
+    var canEdit = acc.CanEdit;
+    var canDelete = acc.CanDelete;
 }
 
 @functions {
@@ -31,7 +34,7 @@
 @if (canAdd)
 {
   <section class="panel">
-    <form asp-action="Create" method="post" class="role-add">
+    <form asp-controller="Roles" asp-action="Create" method="post" class="role-add">
       <input name="name" type="text" placeholder="Rolun adı" required />
       <input name="description" type="text" placeholder="Təsvir" />
       <button class="btn btn-primary" type="submit">Yeni rol</button>
@@ -39,7 +42,7 @@
   </section>
 }
 
-@foreach (var role in Model.Roles)
+@foreach (var role in Model)
 {
   <section class="panel role-card">
     <div class="role-card-head">
@@ -49,7 +52,7 @@
       </div>
       @if (!role.IsSystem && canDelete)
       {
-        <form asp-action="Delete" method="post"
+        <form asp-controller="Roles" asp-action="Delete" method="post"
               onsubmit="return confirm('&quot;@role.Name&quot; rolunu silmək istəyirsiniz?');">
           <input type="hidden" name="id" value="@role.Id" />
           <button class="btn-sm danger" type="submit">Rolu sil</button>
@@ -57,7 +60,7 @@
       }
     </div>
 
-    <form asp-action="SavePermissions" method="post">
+    <form asp-controller="Roles" asp-action="SavePermissions" method="post">
       <input type="hidden" name="roleId" value="@role.Id" />
       @foreach (var p in role.Permissions)
       {

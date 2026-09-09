@@ -1,14 +1,20 @@
 @using AccessControlSystem.Application.DTOs
+@using AccessControlSystem.Filters
 @using System.Text
 @using Microsoft.AspNetCore.Html
-@model List<WorkScheduleItemDto>
+@model SettingsViewModel
+@*  Parametrlər → "İş cədvəlləri" tabı. Əməliyyatlar TimetablesController-dədir
+    və "set_timetables" bölmə icazəsi ilə işləyir.  *@
 @{
-    ViewData["Title"] = "İş cədvəlləri";
-    var companies = ViewBag.Companies as List<CompanyItemDto> ?? new List<CompanyItemDto>();
+    var companies = Model.Companies;
+    var schedules = Model.WorkSchedules;
     var isGlobalAdmin = ViewData["IsGlobalAdmin"] as bool? ?? false;
-    var canAdd = ViewData["CanAdd"] as bool? ?? false;
-    var canEdit = ViewData["CanEdit"] as bool? ?? false;
-    var canDelete = ViewData["CanDelete"] as bool? ?? false;
+
+    var access = ViewData["Access"] as Dictionary<string, SectionAccessDto> ?? new();
+    var acc = access.TryGetValue(Sections.Timetables, out var ttA) ? ttA : new SectionAccessDto();
+    var canAdd = acc.CanAdd;
+    var canEdit = acc.CanEdit;
+    var canDelete = acc.CanDelete;
 
     // 24-saatlıq vaxt seçici: gizli input (name) + saat/dəqiqə dropdown-ları.
     // required=false → boş ("—") seçim mümkündür (opsional pəncərələr üçün).
@@ -37,9 +43,6 @@
         return new HtmlString(sb.ToString());
     };
 }
-
-@if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
-@if (TempData["Error"] != null) { <div class="alert alert-error">@TempData["Error"]</div> }
 
 <div class="tt-wrap">
   @if (canAdd)
@@ -106,9 +109,9 @@
   }
 
   <section class="panel">
-    <div class="param-head"><h3>Mövcud cədvəllər (@Model.Count)</h3></div>
+    <div class="param-head"><h3>Mövcud cədvəllər (@schedules.Count)</h3></div>
     <div>
-      @foreach (var s in Model)
+      @foreach (var s in schedules)
       {
         var win = $" · Gün başlanğıcı: {s.DayStart}";
         <div class="param-item">
@@ -136,7 +139,7 @@
           </div>
         </div>
       }
-      @if (Model.Count == 0)
+      @if (schedules.Count == 0)
       {
         <p class="hint" style="padding:14px 22px">Hələ iş cədvəli əlavə edilməyib.</p>
       }
@@ -179,7 +182,7 @@
   @@media (max-width: 640px) { .tt-span2 { grid-column:span 1; } }
 </style>
 <script>
-  var TT_DATA = @Html.Raw(Json.Serialize(Model));
+  var TT_DATA = @Html.Raw(Json.Serialize(schedules));
   function ttEdit(id) {
     var s = TT_DATA.find(function (x) { return x.id === id; }); if (!s) return;
     var f = document.getElementById('ttForm'); if (!f) return;

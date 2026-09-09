@@ -6,5 +6,15 @@
   "expectedPackageFiles": [
     "C:\\Users\\Aykhan Taghizada\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.2\\microsoft.extensions.dependencyinjection.abstractions.8.0.2.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "Undefined",
+      "level": "Warning",
+      "message": "Problem reading the cache file C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Application\\obj\\project.nuget.cache : '<' is an invalid start of a property name. Expected a '\"'. Path: $ | LineNumber: 2 | BytePositionInLine: 0.",
+      "projectPath": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Application\\AccessControlSystem.Application.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\Users\\Aykhan Taghizada\\Desktop\\AccessControlSystem\\AccessControlSystem.Application\\AccessControlSystem.Application.csproj",
+      "targetGraphs": []
+    }
+  ]
 }

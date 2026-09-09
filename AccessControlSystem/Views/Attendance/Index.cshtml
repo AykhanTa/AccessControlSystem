@@ -43,6 +43,19 @@
     .page-head{ margin-bottom:6px; }
     .panel{ box-shadow:none !important; border:none !important; padding:0 !important; margin:0 !important; }
     .table-wrap{ overflow:visible !important; }
+
+    /* --- Çapda cədvəl quruluşu: tam xanalı şəbəkə --- */
+    /* Fon rəngləri (status nişanları, aylıq kartın rəngli xanaları) kağıza da düşsün —
+       əks halda aylıq kart boş kvadratlar kimi çap olunur. */
+    #reportBody, #reportBody *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+    /* Xətlər kağızda seçilsin deyə ekrandakından tünd boz. */
+    #reportBody table{ border:1px solid #6b7280 !important; }
+    #reportBody table th, #reportBody table td{ border:1px solid #9aa4b3 !important; }
+    #reportBody table thead th{ background:#eef1f6 !important; border-color:#6b7280 !important; }
+    /* Çoxsəhifəli PDF-də başlıq sətri hər səhifədə təkrarlansın, sətir yarıda kəsilməsin. */
+    #reportBody thead{ display:table-header-group; }
+    #reportBody tr{ break-inside:avoid; page-break-inside:avoid; }
+
     /* Cədvəl səhifə eninə sığsın, amma mətn İTMƏSİN — söz keçsin (wrap), kəsilməsin */
     .att-table{ width:100% !important; table-layout:auto; font-size:9px; }
     .att-table th, .att-table td{ padding:3px 5px !important; white-space:normal !important; word-break:normal; overflow:visible !important; vertical-align:top; }
@@ -60,6 +73,8 @@
     .mc-table th.emp, .mc-table td.emp{ position:static !important; width:78px; white-space:normal !important; word-break:break-word; text-align:left; line-height:1.05; }
     .mc-table th.emp span, .mc-table td.emp span{ font-size:6px !important; }
     .mc-table th.tot, .mc-table td.tot{ padding:0 1px !important; }
+    /* Yekun sütunlarının başlıqları ("Gəlmədi", "Gecikmə") kəsilməsin — sətrə keçsin */
+    .mc-table th.tot{ white-space:normal !important; word-break:break-word; line-height:1.05; }
     .mc-cell{ width:9px; height:9px; line-height:9px; font-size:6px; border-radius:2px; }
     .mc-legend{ font-size:7.5px; gap:7px; }
     .mc-head h3{ font-size:11px; }
@@ -68,13 +83,19 @@
 
 <div class="page-head">
   <div><p>İş cədvəlinə əsasən gecikmə, erkən çıxış, əlavə iş, işlənmiş saat və qayıb. Filtr seçib göstərin, Excel-ə/PDF-ə çıxarın.</p></div>
-  <div class="no-print" style="display:flex;gap:8px;align-items:center">
+  <div class="no-print head-actions">
     <div class="col-menu">
-      <button class="btn btn-ghost" id="colBtn" type="button" onclick="toggleColMenu(event)">⚙ Sütunlar</button>
+      <button class="btn btn-ghost" id="colBtn" type="button" onclick="toggleColMenu(event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Sütunlar
+      </button>
       <div id="colMenuPanel" class="col-panel" style="display:none"></div>
     </div>
     <button class="btn btn-ghost att-dw" type="button" onclick="exportExcel()">Excel</button>
-    <button class="btn btn-ghost" type="button" onclick="window.print()">Çap et (PDF)</button>
+    <button class="btn btn-ghost" type="button" onclick="window.print()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Çap et (PDF)
+    </button>
   </div>
 </div>
 

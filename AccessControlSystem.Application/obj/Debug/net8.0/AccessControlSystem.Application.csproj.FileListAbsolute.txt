@@ -14,3 +14,22 @@ C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Applic
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.pdb
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\ref\AccessControlSystem.Application.dll
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.sourcelink.json
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Application\bin\Debug\net8.0\AccessControlSystem.Application.deps.json
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Application\bin\Debug\net8.0\AccessControlSystem.Application.dll
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Application\bin\Debug\net8.0\AccessControlSystem.Application.pdb
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Application\bin\Debug\net8.0\AccessControlSystem.Domain.dll
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Application\bin\Debug\net8.0\AccessControlSystem.Domain.pdb
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.csproj.AssemblyReference.cache
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.AssemblyInfoInputs.cache
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.AssemblyInfo.cs
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.csproj.CoreCompileInputs.cache
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.sourcelink.json
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessCo.90F15D36.Up2Date
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.dll
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\refint\AccessControlSystem.Application.dll
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\AccessControlSystem.Application.pdb
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Application\obj\Debug\net8.0\ref\AccessControlSystem.Application.dll
+C:\Users\MSNADMIN\AppData\Local\Temp\claude\c--Users-MSNADMIN-Desktop-AccessControlDB\e220efe2-8596-42db-ac8b-40996189d532\scratchpad\out\AccessControlSystem.Application.deps.json
+C:\Users\MSNADMIN\AppData\Local\Temp\claude\c--Users-MSNADMIN-Desktop-AccessControlDB\e220efe2-8596-42db-ac8b-40996189d532\scratchpad\out\AccessControlSystem.Application.dll
+C:\Users\MSNADMIN\AppData\Local\Temp\claude\c--Users-MSNADMIN-Desktop-AccessControlDB\e220efe2-8596-42db-ac8b-40996189d532\scratchpad\out\AccessControlSystem.Application.pdb

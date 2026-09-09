@@ -4,9 +4,12 @@
 <style>
   .att-sum{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:14px;font-size:14px}
   .att-sum b{font-size:18px}
-  .att-table{width:100%;border-collapse:collapse;font-size:13.5px}
-  .att-table th,.att-table td{padding:8px 10px;border-bottom:1px solid var(--line,#eef0f4);text-align:left;white-space:nowrap}
-  .att-table th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--faint,#9095a1);font-weight:700}
+  /* Tam xanalı şəbəkə: hər sətir və sütun xətlə ayrılır, cədvəl çərçivəyə alınır. */
+  .att-table{width:100%;border-collapse:collapse;font-size:13.5px;border:1px solid #d7dce5}
+  .att-table th,.att-table td{padding:8px 10px;border:1px solid #e7ebf1;text-align:left;white-space:nowrap}
+  .att-table th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--faint,#9095a1);font-weight:700;
+    background:#f7f9fc;border-color:#dfe4ec}
+  .att-table tbody tr:hover td{background:#f6f9ff}
   /* Rəqəm sütunları: başlıq və dəyər eyni sağ kənara düzülür (sürüşmə olmasın) */
   .att-table th.num,.att-table td.num{text-align:right;font-variant-numeric:tabular-nums}
   .att-table th.num{padding-right:14px}

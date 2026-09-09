@@ -52,10 +52,6 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXR0ZW5kYW5jZVxfU3VtbWFyeUJvZHkuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Cards/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2FyZHNcSW5kZXguY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
 [C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Employees/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbG95ZWVzXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -76,10 +72,6 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Leave/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGVhdmVcSW5kZXguY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
 [C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Logs/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9nc1xJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -96,10 +88,6 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVwb3J0c1xfRGVwYXJ0bWVudEFjY2Vzc0JvZHkuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Roles/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUm9sZXNcSW5kZXguY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
 [C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Security/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VjdXJpdHlcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -108,12 +96,24 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2V0dGluZ3NcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Shared/_Layout.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
+[C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Settings/_Cards.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2V0dGluZ3NcX0NhcmRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Timetables/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGltZXRhYmxlc1xJbmRleC5jc2h0bWw=
+[C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Settings/_Leave.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2V0dGluZ3NcX0xlYXZlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Settings/_Roles.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2V0dGluZ3NcX1JvbGVzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Settings/_Timetables.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2V0dGluZ3NcX1RpbWV0YWJsZXMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Aykhan Taghizada/Desktop/AccessControlSystem/AccessControlSystem/Views/Users/Index.cshtml]

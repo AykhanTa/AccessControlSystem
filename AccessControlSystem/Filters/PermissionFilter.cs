@@ -5,6 +5,29 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace AccessControlSystem.Filters;
 
+/// <summary>Parametrlər səhifəsinin tabları üçün bölmə kodları (DbSeeder.SeedSettingsSubSectionsAsync
+/// eyni kodları bazaya yazır). Hər tab öz icazəsi ilə idarə olunur.</summary>
+public static class Sections
+{
+    public const string Centers = "set_centers";
+    public const string Departments = "set_departments";
+    public const string Positions = "set_positions";
+    public const string Hosts = "set_hosts";
+    public const string Purposes = "set_purposes";
+    public const string Floors = "set_floors";
+    public const string Devices = "set_devices";
+    public const string Timetables = "set_timetables";
+
+    /// <summary>Parametrlər səhifəsindəki bütün tabların kodları. Səhifəyə giriş bunlardan
+    /// ən azı birinin baxış icazəsi ilə açılır; heç biri yoxdursa sol menyuda da görünmür.
+    /// ("Şirkətlər" tabının öz kodu yoxdur — yalnız qlobal admin görür.)</summary>
+    public static readonly string[] SettingsTabs =
+    {
+        Centers, Departments, Positions, Hosts, Purposes, Floors, Devices, Timetables,
+        "employees", "cards", "roles", "settings"
+    };
+}
+
 /// <summary>Controller adı → bölmə kodu xəritəsi (bütün icazə yoxlamaları üçün ortaq).</summary>
 public static class SectionMap
 {
@@ -73,8 +96,13 @@ public class PermissionFilter : IAsyncActionFilter
                 var access = section is not null && map.TryGetValue(section, out var a) ? a : new SectionAccessDto();
                 SetAccess(controller, access);
 
+                // Parametrlər səhifəsi: tablardan ən azı biri açıqdırsa səhifə açılır
+                // (məs. yalnız "Kartlar" icazəsi olan rol da ora çata bilsin).
+                var canOpen = access.CanView ||
+                    (section == "settings" && Sections.SettingsTabs.Any(c => map.TryGetValue(c, out var t) && t.CanView));
+
                 // Baxış icazəsi yoxdursa bölməyə buraxma (Ana səhifə həmişə açıqdır)
-                if (section is not null && section != "dashboard" && !access.CanView)
+                if (section is not null && section != "dashboard" && !canOpen)
                 {
                     controller.TempData["Error"] = "Bu bölməyə giriş icazəniz yoxdur.";
                     context.Result = new RedirectToActionResult("Index", "Home", null);

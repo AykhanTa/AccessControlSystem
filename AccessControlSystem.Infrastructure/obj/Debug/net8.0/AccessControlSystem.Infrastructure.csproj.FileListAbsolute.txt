@@ -18,3 +18,27 @@ C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Infras
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\AccessControlSystem.Infrastructure.genruntimeconfig.cache
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\ref\AccessControlSystem.Infrastructure.dll
 C:\Users\Aykhan Taghizada\Desktop\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\AccessControlSystem.Infrastructure.sourcelink.json
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\bin\Debug\net8.0\AccessControlSystem.Infrastructure.deps.json
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\bin\Debug\net8.0\AccessControlSystem.Infrastructure.runtimeconfig.json
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\bin\Debug\net8.0\AccessControlSystem.Infrastructure.dll
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\bin\Debug\net8.0\AccessControlSystem.Infrastructure.pdb
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\bin\Debug\net8.0\AccessControlSystem.Application.dll
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\bin\Debug\net8.0\AccessControlSystem.Domain.dll
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\bin\Debug\net8.0\AccessControlSystem.Application.pdb
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\bin\Debug\net8.0\AccessControlSystem.Domain.pdb
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\AccessControlSystem.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\AccessControlSystem.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\AccessControlSystem.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\AccessControlSystem.Infrastructure.AssemblyInfo.cs
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\AccessControlSystem.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\AccessControlSystem.Infrastructure.sourcelink.json
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\AccessCo.A2D9762D.Up2Date
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\AccessControlSystem.Infrastructure.dll
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\refint\AccessControlSystem.Infrastructure.dll
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\AccessControlSystem.Infrastructure.pdb
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\AccessControlSystem.Infrastructure.genruntimeconfig.cache
+C:\Users\MSNADMIN\Desktop\AccessControlDB\AccessControlSystem\AccessControlSystem.Infrastructure\obj\Debug\net8.0\ref\AccessControlSystem.Infrastructure.dll
+C:\Users\MSNADMIN\AppData\Local\Temp\claude\c--Users-MSNADMIN-Desktop-AccessControlDB\e220efe2-8596-42db-ac8b-40996189d532\scratchpad\out\AccessControlSystem.Infrastructure.deps.json
+C:\Users\MSNADMIN\AppData\Local\Temp\claude\c--Users-MSNADMIN-Desktop-AccessControlDB\e220efe2-8596-42db-ac8b-40996189d532\scratchpad\out\AccessControlSystem.Infrastructure.runtimeconfig.json
+C:\Users\MSNADMIN\AppData\Local\Temp\claude\c--Users-MSNADMIN-Desktop-AccessControlDB\e220efe2-8596-42db-ac8b-40996189d532\scratchpad\out\AccessControlSystem.Infrastructure.dll
+C:\Users\MSNADMIN\AppData\Local\Temp\claude\c--Users-MSNADMIN-Desktop-AccessControlDB\e220efe2-8596-42db-ac8b-40996189d532\scratchpad\out\AccessControlSystem.Infrastructure.pdb
